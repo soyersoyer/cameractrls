@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=cameractrls
+Comment=Camera controls for Linux
+Exec=$PWD/cameractrlsgui.py
+Path=$PWD
+Icon=$PWD/images/kiyopro_240.png
+Terminal=false
+Categories=Settings;
