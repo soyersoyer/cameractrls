@@ -22,7 +22,7 @@ optional arguments:
   -c CONTROLS   set CONTROLS (eg.: hdr=on,fov=wide)
 
 example:
-  ./cameractrls.py -c brigtness=128,hdr=on,hdr_mode=dark,fov=wide
+  ./cameractrls.py -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide
 ```
 
 ```shell

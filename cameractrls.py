@@ -733,7 +733,7 @@ def usage():
     print(f'  -c CONTROLS   set CONTROLS (eg.: hdr=on,fov=wide)')
     print()
     print(f'example:')
-    print(f'  {sys.argv[0]} -c brigtness=128,hdr=on,hdr_mode=dark,fov=wide')
+    print(f'  {sys.argv[0]} -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide')
 
 def main():
     try:
