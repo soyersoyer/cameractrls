@@ -118,6 +118,7 @@ class CameraCtrlsGui:
             if c.type == 'integer':
                 c.var = IntVar(cframe, c.value)
                 c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
+                # ttk.Scale doesn't support resolution, using tk.Scale
                 sc = Scale(cframe, from_=c.min, to=c.max, resolution=c.step, variable=c.var, showvalue=False, orient='horizontal')
                 sc.set(c.value)
                 sc.grid(row=row,column=1, sticky='NESW', ipadx=2)
@@ -140,22 +141,32 @@ class CameraCtrlsGui:
                 c.gui_ctrls = menuctrls.winfo_children() + [btn]
 
             elif c.type == 'menu':
-                menuctrls = ttk.Frame(cframe)
-                menuctrls.grid(row=row, column=1, sticky='NESW')
-                c.var = StringVar(menuctrls, c.value)
+                c.var = StringVar(cframe, c.value)
                 c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
-                for m in c.menu:
-                    ttk.Radiobutton(menuctrls, text=m.name, variable=c.var, value=m.text_id).grid(column=column, row=0, sticky='NESW', ipadx=10)
-                    column += 1
+                if len(c.menu) < 4:
+                    menuctrls = ttk.Frame(cframe)
+                    menuctrls.grid(row=row, column=1, sticky='NESW')
+                    for m in c.menu:
+                        ttk.Radiobutton(menuctrls, text=m.name, variable=c.var, value=m.text_id).grid(column=column, row=0, sticky='NESW', ipadx=10)
+                        column += 1
+                    c.gui_ctrls = menuctrls.winfo_children()
+                else:
+                    menulabels = [m.name for m in c.menu]
+                    cb = ttk.Combobox(cframe, state='readonly', exportselection=0, values=menulabels)
+                    cb.grid(column=1, row=row, sticky='NESW')
+                    current = next((m for m in c.menu if m.text_id == c.value), None)
+                    if current:
+                        cb.set(current.name)
+                    cb.bind('<<ComboboxSelected>>', lambda e, c=c, cb=cb: c.var.set(c.menu[cb.current()].text_id))
+                    c.gui_ctrls = [cb]
 
-                c.gui_ctrls = menuctrls.winfo_children()
                 if c.default != None:
                     btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: c.var.set(c.default))
                     btn.grid(row=row, column=3, sticky='N')
                     c.gui_ctrls += [btn]
 
             row += 1
-        
+
         self.update_ctrls_state()
 
     def update_ctrl(self, ctrl):
@@ -166,9 +177,14 @@ class CameraCtrlsGui:
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
-            state = 'disabled' if c.inactive else 'normal'
             for gui_ctrl in c.gui_ctrls:
-                gui_ctrl.configure(state=state)
+                if hasattr(gui_ctrl, 'state'):
+                    state = 'disabled' if c.inactive else '!disabled'
+                    gui_ctrl.state([state])
+                else:
+                    #tk.Scale doesn't support the ttk's .state(), using .configure()
+                    state = 'disabled' if c.inactive else 'normal'
+                    gui_ctrl.configure(state=state)
 
     def start(self):
         self.window.mainloop()
