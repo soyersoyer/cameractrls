@@ -4,7 +4,7 @@ import os, logging, sys, webbrowser
 from cameractrls import CameraCtrls, get_device_capabilities, V4L2_CAP_VIDEO_CAPTURE
 
 try:
-    from tkinter import Tk, ttk, PhotoImage, Scale, IntVar, StringVar, Button
+    from tkinter import Tk, ttk, PhotoImage, Scale, IntVar, StringVar
 except Exception as e:
     logging.error(f'tkinter import failed: {e}, please install the python3-tk package')
     sys.exit(3)
@@ -42,6 +42,9 @@ class CameraCtrlsGui:
         self.window = Tk(className='cameractrls')
         self.kpsmallimg = PhotoImage(file='images/kiyopro_240.png')
         self.window.wm_iconphoto(True, self.kpsmallimg)
+
+        s = ttk.Style()
+        s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
         
         head = ttk.Frame(self.frame)
         head.grid(row=1, sticky='E')
@@ -121,7 +124,7 @@ class CameraCtrlsGui:
                 label = ttk.Label(cframe, textvariable=c.var, justify='right')
                 label.grid(row=row, column=2, sticky='NE', ipadx=4)
                 
-                btn = Button(cframe, text='⟳', width=1, pady=0, borderwidth=0, command=lambda ctrl=c: ctrl.var.set(ctrl.default))
+                btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
                 btn.grid(row=row, column=3, sticky='N')
                 c.gui_ctrls = [sc, label, btn]
 
@@ -132,7 +135,7 @@ class CameraCtrlsGui:
                 c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
                 ttk.Radiobutton(menuctrls, text='Off', variable=c.var, value=0).grid(row=0, column=0, sticky='NESW', ipadx=10)
                 ttk.Radiobutton(menuctrls, text='On', variable=c.var, value=1).grid(row=0, column=1, sticky='NESW', ipadx=10)
-                btn = Button(cframe, text='⟳', width=1, pady=0, borderwidth=0, command=lambda ctrl=c: c.var.set(c.default))
+                btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: c.var.set(c.default))
                 btn.grid(row=row, column=3, sticky='N')
                 c.gui_ctrls = menuctrls.winfo_children() + [btn]
 
@@ -147,7 +150,7 @@ class CameraCtrlsGui:
 
                 c.gui_ctrls = menuctrls.winfo_children()
                 if c.default != None:
-                    btn = Button(cframe, text='⟳', width=1, pady=0, borderwidth=0, command=lambda ctrl=c: c.var.set(c.default))
+                    btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: c.var.set(c.default))
                     btn.grid(row=row, column=3, sticky='N')
                     c.gui_ctrls += [btn]
 
