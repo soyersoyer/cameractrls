@@ -12,14 +12,28 @@ except Exception as e:
 ghurl = 'https://github.com/soyersoyer/cameractrls'
 version = 'v0.1.0'
 
-v4ldir = '/dev/v4l/by-id/'
+v4ldirs = {
+    '/dev/v4l/by-id/': '',
+    '/dev/v4l/by-path/': '',
+    '/dev/': 'video',
+}
 
-def get_devices(dir):
-    if not os.path.isdir(dir):
-        return []
-    devices = os.listdir(dir)
-    devices.sort()
-    devices = list(filter(lambda device: get_device_capabilities(dir + device) & V4L2_CAP_VIDEO_CAPTURE, devices))
+def get_devices(dirs):
+    devices = []
+    resolved_devices = []
+    for dir, prefix in dirs.items():
+        if not os.path.isdir(dir):
+            continue
+        for device in os.listdir(dir):
+            if not device.startswith(prefix):
+                continue
+            device = dir + device
+            resolved = device if not os.path.islink(device) else os.path.abspath(dir + os.readlink(device))
+            if resolved in resolved_devices:
+                continue
+            devices.append(device)
+            resolved_devices.append(resolved)
+    devices = [d for d in devices if get_device_capabilities(d) & V4L2_CAP_VIDEO_CAPTURE]
     return devices
 
 class CameraCtrlsGui:
@@ -55,7 +69,7 @@ class CameraCtrlsGui:
         gh.grid(row=0, column=1)
 
     def refresh_devices(self):
-        self.devices = get_devices(v4ldir)
+        self.devices = get_devices(v4ldirs)
         if self.device not in self.devices:
             self.close_device()
             if len(self.devices):
@@ -70,15 +84,14 @@ class CameraCtrlsGui:
         self.init_gui_device()
 
     def open_device(self, device):
-        devpath = v4ldir + device
         logging.info(f'opening device: {device}')
         
         try:
-            self.fd = os.open(devpath, os.O_RDWR, 0)
+            self.fd = os.open(device, os.O_RDWR, 0)
         except Exception as e:
-            logging.error(f'os.open({devpath}, os.O_RDWR, 0) failed: {e}')
+            logging.error(f'os.open({device}, os.O_RDWR, 0) failed: {e}')
 
-        self.camera = CameraCtrls(devpath, self.fd)
+        self.camera = CameraCtrls(device, self.fd)
         self.device = device
 
     def close_device(self):
