@@ -60,7 +60,7 @@ class CameraCtrlsGui:
         s = ttk.Style()
         s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
         
-        head = ttk.Frame(self.frame)
+        head = ttk.Frame(self.window)
         head.grid(row=1, sticky='E')
 
         ttk.Label(head, text=f'cameractrls {version} | ').grid(row=0, column=0)
