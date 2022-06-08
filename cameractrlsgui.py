@@ -10,7 +10,7 @@ except Exception as e:
     sys.exit(3)
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
-version = 'v0.1.1'
+version = 'v0.1.2'
 
 v4ldirs = {
     '/dev/v4l/by-id/': '',

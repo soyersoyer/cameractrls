@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2022-06-08
+
+### Added
+- Hide the default buttons when the values are the defaults
+
 ## [0.1.1] - 2022-06-07
 
 ### Added
