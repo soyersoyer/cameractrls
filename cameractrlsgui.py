@@ -59,7 +59,7 @@ class CameraCtrlsGui:
 
         s = ttk.Style()
         s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
-        
+
         head = ttk.Frame(self.window)
         head.grid(row=1, sticky='E')
 
@@ -85,7 +85,7 @@ class CameraCtrlsGui:
 
     def open_device(self, device):
         logging.info(f'opening device: {device}')
-        
+
         try:
             self.fd = os.open(device, os.O_RDWR, 0)
         except Exception as e:
@@ -127,20 +127,16 @@ class CameraCtrlsGui:
         for c in self.camera.get_ctrls():
             ttk.Label(cframe, text=c.name).grid(column=0, row=row, sticky='NW', ipadx=2)
             column = 1
-            
+
             if c.type == 'integer':
                 c.var = IntVar(cframe, c.value)
                 c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
                 # ttk.Scale doesn't support resolution, using tk.Scale
                 sc = Scale(cframe, from_=c.min, to=c.max, resolution=c.step, variable=c.var, showvalue=False, orient='horizontal')
-                sc.set(c.value)
                 sc.grid(row=row,column=1, sticky='NESW', ipadx=2)
                 label = ttk.Label(cframe, textvariable=c.var, justify='right')
                 label.grid(row=row, column=2, sticky='NE', ipadx=4)
-                
-                btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
-                btn.grid(row=row, column=3, sticky='N')
-                c.gui_ctrls = [sc, label, btn]
+                c.gui_ctrls = [sc, label]
 
             elif c.type == 'boolean':
                 menuctrls = ttk.Frame(cframe)
@@ -149,9 +145,7 @@ class CameraCtrlsGui:
                 c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
                 ttk.Radiobutton(menuctrls, text='Off', variable=c.var, value=0).grid(row=0, column=0, sticky='NESW', ipadx=10)
                 ttk.Radiobutton(menuctrls, text='On', variable=c.var, value=1).grid(row=0, column=1, sticky='NESW', ipadx=10)
-                btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: c.var.set(c.default))
-                btn.grid(row=row, column=3, sticky='N')
-                c.gui_ctrls = menuctrls.winfo_children() + [btn]
+                c.gui_ctrls = menuctrls.winfo_children()
 
             elif c.type == 'menu':
                 c.var = StringVar(cframe, c.value)
@@ -164,40 +158,56 @@ class CameraCtrlsGui:
                         column += 1
                     c.gui_ctrls = menuctrls.winfo_children()
                 else:
-                    menulabels = [m.name for m in c.menu]
-                    cb = ttk.Combobox(cframe, state='readonly', exportselection=0, values=menulabels)
+                    menulabels = [m.text_id for m in c.menu]
+                    cb = ttk.Combobox(cframe, state='readonly', exportselection=0, values=menulabels, textvariable=c.var)
                     cb.grid(column=1, row=row, sticky='NESW')
-                    current = next((m for m in c.menu if m.text_id == c.value), None)
-                    if current:
-                        cb.set(current.name)
-                    cb.bind('<<ComboboxSelected>>', lambda e, c=c, cb=cb: c.var.set(c.menu[cb.current()].text_id))
                     c.gui_ctrls = [cb]
 
-                if c.default != None:
-                    btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: c.var.set(c.default))
-                    btn.grid(row=row, column=3, sticky='N')
-                    c.gui_ctrls += [btn]
+            if c.default != None:
+                btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
+                btn.grid(row=row, column=3, sticky='N')
+                c.gui_default_btn = btn
 
             row += 1
 
         self.update_ctrls_state()
+        self.update_default_btns()
 
     def update_ctrl(self, ctrl):
         self.camera.setup_ctrls({ctrl.text_id: ctrl.var.get()}),
         if ctrl.updater:
             self.camera.update_ctrls()
             self.update_ctrls_state()
+            self.update_default_btns()
+        else:
+            self.update_default_btn(ctrl)
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
             for gui_ctrl in c.gui_ctrls:
                 if hasattr(gui_ctrl, 'state'):
-                    state = 'disabled' if c.inactive else '!disabled'
-                    gui_ctrl.state([state])
+                    state = ['disabled'] if c.inactive else ['!disabled']
+                    gui_ctrl.state(state)
                 else:
                     #tk.Scale doesn't support the ttk's .state(), using .configure()
                     state = 'disabled' if c.inactive else 'normal'
                     gui_ctrl.configure(state=state)
+
+    def update_default_btns(self):
+        for c in self.camera.get_ctrls():
+            self.update_default_btn(c)
+
+    def update_default_btn(self, c):
+        if c.default != None:
+            if c.default == c.value:
+                c.gui_default_btn.configure(text='')
+                c.gui_default_btn.state(['disabled', '!focus'])
+            else:
+                c.gui_default_btn.configure(text='⟳')
+                if c.inactive:
+                    c.gui_default_btn.state(['disabled'])
+                else:
+                    c.gui_default_btn.state(['!disabled'])
 
     def start(self):
         self.window.mainloop()
