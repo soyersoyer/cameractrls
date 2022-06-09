@@ -371,7 +371,7 @@ class KiyoProCtrls:
             ),
             KiyoCtrl(
                 'kiyo_pro_fov',
-                'FOV',
+                'FoV',
                 [
                     KiyoMenu('wide', 'Wide', FOV_WIDE),
                     KiyoMenu('medium', 'Medium', FOV_MEDIUM, FOV_MEDIUM_PRE),
