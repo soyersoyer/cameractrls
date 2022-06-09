@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0] - 2022-06-09
+
+### Added
+- GTK GUI
+- Split controls to pages
+
 ## [0.1.2] - 2022-06-08
 
 ### Added

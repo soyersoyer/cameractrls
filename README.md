@@ -51,14 +51,48 @@ kiyo_pro_fov = None	( values: wide, medium, narrow )
 ```
 
 
-# cameractrlsgui
-GUI for the Camera controls
+# cameractrlsgtk
+GTK GUI for the Camera controls
 
 ![cameractrls launcher](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png)
 
-![cameractrls screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_tk.png)
+![cameractrls screen 1](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png)
 
-### GUI install
+![cameractrls screen 1](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png)
+
+### GTK GUI install
+
+Clone the repo
+```shell
+git clone https://github.com/soyersoyer/cameractrls.git
+```
+
+Add the desktop file to the launcher
+```shell
+cd cameractrls
+desktop-file-install --dir=$HOME/.local/share/applications \
+--set-icon="$PWD/images/kiyopro_240.png" \
+--set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
+--set-key=Path --set-value="$PWD" \
+cameractrls.desktop
+```
+
+Run from the launcher or from the shell
+```shell
+./cameractrlsgtk.py
+```
+
+# cameractrlstk
+TKinter GUI for the Camera controls
+
+If you like the old user interfaces.
+
+![cameractrls launcher](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png)
+
+![cameractrls tk screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_tk.png)
+
+
+### TK GUI install
 
 Install the tkinter GUI framework
 ```shell
@@ -75,12 +109,12 @@ Add the desktop file to the launcher
 cd cameractrls
 desktop-file-install --dir=$HOME/.local/share/applications \
 --set-icon="$PWD/images/kiyopro_240.png" \
---set-key=Exec --set-value="$PWD/cameractrlsgui.py" \
+--set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
 cameractrls.desktop
 ```
 
 Run from the launcher or from the shell
 ```shell
-./cameractrlsgui.py
+./cameractrlstk.py
 ```
