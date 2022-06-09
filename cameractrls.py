@@ -298,6 +298,17 @@ def find_idx(ctrls, pred):
             return i
     return None
 
+def pop_list_by_text_ids(ctrls, text_ids):
+    ret = []
+    for text_id in text_ids:
+        while True:
+            idx = find_idx(ctrls, lambda c: c.text_id.startswith(text_id))
+            if idx != None:
+                ret.append(ctrls.pop(idx))
+            else:
+                break
+    return ret
+
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None, menu = None):
         self.text_id = text_id
@@ -675,6 +686,15 @@ class V4L2Ctrls:
     def to_text_id(self, text):
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
 
+class CtrlPage:
+    def __init__(self, title, categories):
+        self.title = title
+        self.categories = categories
+
+class CtrlCategory:
+    def __init__(self, title, ctrls):
+        self.title = title
+        self.ctrls = ctrls
 
 class CameraCtrls:
     def __init__(self, device, fd):
@@ -722,6 +742,37 @@ class CameraCtrls:
         for c in self.ctrls:
             ctrls += c.get_ctrls()
         return ctrls
+
+    def get_ctrl_pages(self):
+        ctrls = self.get_ctrls()
+        pages = [
+            CtrlPage('Basic', [
+                CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
+                    ['exposure', 'auto_exposure', 'gain', 'backlight_compensation', 'kiyo_pro_hdr'])),
+                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness'])),
+                CtrlCategory('White Balance', pop_list_by_text_ids(ctrls, ['white_balance'])),
+            ]),
+            CtrlPage('Advanced', [
+                CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
+                CtrlCategory('Pan/Tilt/Zoom/FoV', pop_list_by_text_ids(ctrls, ['pan_absolute', 'tilt_absolute', 'zoom_absolute', 'kiyo_pro_fov'])),
+                CtrlCategory('Focus', pop_list_by_text_ids(ctrls, ['focus', 'kiyo_pro_af_mode'])),
+                CtrlCategory('ISO', pop_list_by_text_ids(ctrls, ['iso'])),
+                CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),
+                CtrlCategory('Rotate/Flip', pop_list_by_text_ids(ctrls, ['rotate', 'horizontal_flip', 'vertical_flip'])),
+            ]),
+            CtrlPage('Compression', [
+                CtrlCategory('H264', pop_list_by_text_ids(ctrls, ['h264_', 'video_bitrate', 'repeat_sequence_header'])),
+                CtrlCategory('JPEG', pop_list_by_text_ids(ctrls, ['compression_quality'])),
+            ]),
+        ]
+        pages[1].categories += CtrlCategory('Other', ctrls), #the rest
+        
+        # filter out the empty categories and pages
+        for page in pages:
+            page.categories = [cat for cat in page.categories if len(cat.ctrls)]
+        pages = [page for page in pages if len(page.categories)]
+
+        return pages
 
 
 def usage():

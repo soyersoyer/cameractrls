@@ -56,7 +56,7 @@ GUI for the Camera controls
 
 ![cameractrls launcher](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png)
 
-![cameractrls screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen.png)
+![cameractrls screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_tk.png)
 
 ### GUI install
 
