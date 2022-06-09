@@ -166,21 +166,18 @@ class CameraCtrlsGui:
             if c.default != None:
                 btn = ttk.Button(cframe, text='⟳', width=1, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
                 btn.grid(row=row, column=3, sticky='N')
+                c.gui_ctrls += [btn]
                 c.gui_default_btn = btn
 
             row += 1
 
         self.update_ctrls_state()
-        self.update_default_btns()
 
     def update_ctrl(self, ctrl):
         self.camera.setup_ctrls({ctrl.text_id: ctrl.var.get()}),
         if ctrl.updater:
             self.camera.update_ctrls()
-            self.update_ctrls_state()
-            self.update_default_btns()
-        else:
-            self.update_default_btn(ctrl)
+        self.update_ctrls_state()
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
@@ -192,9 +189,6 @@ class CameraCtrlsGui:
                     #tk.Scale doesn't support the ttk's .state(), using .configure()
                     state = 'disabled' if c.inactive else 'normal'
                     gui_ctrl.configure(state=state)
-
-    def update_default_btns(self):
-        for c in self.camera.get_ctrls():
             self.update_default_btn(c)
 
     def update_default_btn(self, c):
@@ -204,10 +198,6 @@ class CameraCtrlsGui:
                 c.gui_default_btn.state(['disabled', '!focus'])
             else:
                 c.gui_default_btn.configure(text='⟳')
-                if c.inactive:
-                    c.gui_default_btn.state(['disabled'])
-                else:
-                    c.gui_default_btn.state(['!disabled'])
 
     def start(self):
         self.window.mainloop()
