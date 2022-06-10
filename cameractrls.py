@@ -330,8 +330,8 @@ class BaseCtrlMenu:
         self.value = value
 
 class KiyoCtrl(BaseCtrl):
-    def __init__(self, text_id, name, menu):
-        super().__init__(text_id, name, 'menu', menu=menu)
+    def __init__(self, text_id, name, type, menu):
+        super().__init__(text_id, name, type, menu=menu)
 
 class KiyoMenu(BaseCtrlMenu):
     def __init__(self, text_id, name, value, before = None):
@@ -359,6 +359,7 @@ class KiyoProCtrls:
             KiyoCtrl(
                 'kiyo_pro_af_mode',
                 'AF Mode',
+                'menu',
                 [
                     KiyoMenu('passive', 'Passive', AF_PASSIVE),
                     KiyoMenu('responsive', 'Responsive', AF_RESPONSIVE),
@@ -367,6 +368,7 @@ class KiyoProCtrls:
             KiyoCtrl(
                 'kiyo_pro_hdr',
                 'HDR',
+                'menu',
                 [
                     KiyoMenu('off', 'Off', HDR_OFF),
                     KiyoMenu('on', 'On', HDR_ON),
@@ -375,6 +377,7 @@ class KiyoProCtrls:
             KiyoCtrl(
                 'kiyo_pro_hdr_mode',
                 'HDR Mode',
+                'menu',
                 [
                     KiyoMenu('bright', 'Bright', HDR_BRIGHT),
                     KiyoMenu('dark', 'Dark', HDR_DARK),
@@ -383,10 +386,19 @@ class KiyoProCtrls:
             KiyoCtrl(
                 'kiyo_pro_fov',
                 'FoV',
+                'menu',
                 [
                     KiyoMenu('wide', 'Wide', FOV_WIDE),
                     KiyoMenu('medium', 'Medium', FOV_MEDIUM, FOV_MEDIUM_PRE),
                     KiyoMenu('narrow', 'Narrow', FOV_NARROW, FOV_NARROW_PRE),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_save',
+                'Save settings to camera',
+                'button',
+                [
+                    KiyoMenu('save', 'Save', SAVE),
                 ]
             ),
         ]
@@ -410,7 +422,6 @@ class KiyoProCtrls:
 
             query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu.value))
 
-        query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(SAVE))
 
     def update_ctrls(self):
         return
@@ -708,15 +719,18 @@ class CameraCtrls:
     
     def print_ctrls(self):
         for c in self.get_ctrls():
-            print(f'{c.text_id} = ', end = '')
+            print(f'{c.text_id}', end = '')
             if c.type == 'menu':
-                print(f'{c.value}\t( ', end = '')
+                print(f' = {c.value}\t( ', end = '')
                 if c.default:
                     print(f'default: {c.default} ', end = '')
                 print('values:', end = ' ')
                 print(', '.join([m.text_id for m in c.menu]), end = ' )')
+            elif c.type == 'button':
+                print('\t\t( buttons: ', end = '')
+                print(', '.join([m.text_id for m in c.menu]), end = ' )')
             elif c.type in ['integer', 'boolean']:
-                print(f'{c.value}\t( default: {c.default} min: {c.min} max: {c.max}', end = '')
+                print(f' = {c.value}\t( default: {c.default} min: {c.min} max: {c.max}', end = '')
                 if c.step != 1:
                     print(f' step: {c.step}', end = '')
                 print(' )', end = '')

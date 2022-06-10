@@ -48,6 +48,7 @@ kiyo_pro_af_mode = None	( values: passive, responsive )
 kiyo_pro_hdr = None	( values: off, on )
 kiyo_pro_hdr_mode = None	( values: bright, dark )
 kiyo_pro_fov = None	( values: wide, medium, narrow )
+kiyo_pro_save		( buttons: save )
 ```
 
 

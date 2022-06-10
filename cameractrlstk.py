@@ -59,6 +59,7 @@ class CameraCtrlsGui:
 
         s = ttk.Style()
         s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
+        s.configure('Short.TButton', padding=[10,0,10,0])
 
         head = ttk.Frame(self.window)
         head.grid(row=1, sticky='E')
@@ -130,7 +131,7 @@ class CameraCtrlsGui:
 
             if c.type == 'integer':
                 c.var = IntVar(cframe, c.value)
-                c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
+                c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
                 # ttk.Scale doesn't support resolution, using tk.Scale
                 sc = Scale(cframe, from_=c.min, to=c.max, resolution=c.step, variable=c.var, showvalue=False, orient='horizontal')
                 sc.grid(row=row,column=1, sticky='NESW', ipadx=2)
@@ -142,14 +143,22 @@ class CameraCtrlsGui:
                 menuctrls = ttk.Frame(cframe)
                 menuctrls.grid(row=row, column=1, sticky='NESW')
                 c.var = IntVar(menuctrls, c.value)
-                c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
+                c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
                 ttk.Radiobutton(menuctrls, text='Off', variable=c.var, value=0).grid(row=0, column=0, sticky='NESW', ipadx=10)
                 ttk.Radiobutton(menuctrls, text='On', variable=c.var, value=1).grid(row=0, column=1, sticky='NESW', ipadx=10)
                 c.gui_ctrls = menuctrls.winfo_children()
 
+            elif c.type == 'button':
+                buttonctrls = ttk.Frame(cframe)
+                buttonctrls.grid(row=row, column=1, sticky='NESW')
+                for m in c.menu:
+                    ttk.Button(buttonctrls, text=m.name, style='Short.TButton', command=lambda c=c,m=m: self.update_ctrl(c, m.text_id)).grid(column=column, row=0, sticky='NESW', ipadx=10)
+                    column += 1
+                c.gui_ctrls = buttonctrls.winfo_children()
+
             elif c.type == 'menu':
                 c.var = StringVar(cframe, c.value)
-                c.var.trace_add('write', lambda v,a,b,ctrl=c: self.update_ctrl(ctrl))
+                c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
                 if len(c.menu) < 4:
                     menuctrls = ttk.Frame(cframe)
                     menuctrls.grid(row=row, column=1, sticky='NESW')
@@ -173,8 +182,8 @@ class CameraCtrlsGui:
 
         self.update_ctrls_state()
 
-    def update_ctrl(self, ctrl):
-        self.camera.setup_ctrls({ctrl.text_id: ctrl.var.get()}),
+    def update_ctrl(self, ctrl, value):
+        self.camera.setup_ctrls({ctrl.text_id: value}),
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()

@@ -246,6 +246,15 @@ class CameraCtrlsGui:
                         c.gui_ctrls =  [switch, refresh]
                         c.gui_default_btn = refresh
 
+                    elif c.type == 'button':
+                        c.gui_ctrls =  []
+                        for m in c.menu:
+                            b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER, margin_right=5)
+                            b.connect('clicked', lambda e,c=c: self.update_ctrl(c, m.text_id))
+                            ctrl_box.pack_end(b, False, False, 0)
+                            c.gui_ctrls += b
+                        c.gui_default_btn = None
+
                     elif c.type == 'menu':
                         if len(c.menu) < 4:
                             box = Gtk.ButtonBox(valign=Gtk.Align.CENTER)
@@ -301,7 +310,8 @@ class CameraCtrlsGui:
         for c in self.camera.get_ctrls():
             for gui_ctrl in c.gui_ctrls:
                 gui_ctrl.set_sensitive(not c.inactive)
-            c.gui_default_btn.set_opacity(0 if c.default == None or c.default == c.value else 1)
+            if c.gui_default_btn != None:
+                c.gui_default_btn.set_opacity(0 if c.default == None or c.default == c.value else 1)
 
     def start(self):
         self.window.show_all()
