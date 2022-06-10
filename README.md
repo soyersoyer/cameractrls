@@ -71,7 +71,7 @@ Add the desktop file to the launcher
 ```shell
 cd cameractrls
 desktop-file-install --dir=$HOME/.local/share/applications \
---set-icon="$PWD/images/kiyopro_240.png" \
+--set-icon="$PWD/images/icon_256.png" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
 cameractrls.desktop
@@ -108,7 +108,7 @@ Add the desktop file to the launcher
 ```shell
 cd cameractrls
 desktop-file-install --dir=$HOME/.local/share/applications \
---set-icon="$PWD/images/kiyopro_240.png" \
+--set-icon="$PWD/images/icon_256.png" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
 cameractrls.desktop

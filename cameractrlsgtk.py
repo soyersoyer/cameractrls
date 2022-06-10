@@ -59,7 +59,7 @@ class CameraCtrlsGui:
     def init_window(self):
         self.window = Gtk.Window(title='Cameractrls', type_hint=Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', Gtk.main_quit)
-        self.window.set_default_icon_from_file('images/kiyopro_240.png')
+        self.window.set_default_icon_from_file('images/icon_256.png')
 
         headerbar = Gtk.HeaderBar(title='Cameractrls', show_close_button=True)
         self.window.set_titlebar(headerbar)

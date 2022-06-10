@@ -54,7 +54,7 @@ class CameraCtrlsGui:
 
     def init_window(self):
         self.window = Tk(className='cameractrls')
-        self.kpsmallimg = PhotoImage(file='images/kiyopro_240.png')
+        self.kpsmallimg = PhotoImage(file='images/icon_256.png')
         self.window.wm_iconphoto(True, self.kpsmallimg)
 
         s = ttk.Style()

@@ -5,6 +5,6 @@ Name=cameractrls
 Comment=Camera controls for Linux
 Exec=$PWD/cameractrlsgtk.py
 Path=$PWD
-Icon=$PWD/images/kiyopro_240.png
+Icon=$PWD/images/icon_256.png
 Terminal=false
 Categories=Settings;
