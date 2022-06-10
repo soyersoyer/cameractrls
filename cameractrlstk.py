@@ -2,6 +2,7 @@
 
 import os, logging, sys, webbrowser
 from cameractrls import CameraCtrls, get_device_capabilities, V4L2_CAP_VIDEO_CAPTURE
+from cameractrls import version, ghurl
 
 try:
     from tkinter import Tk, ttk, PhotoImage, Scale, IntVar, StringVar
@@ -9,8 +10,6 @@ except Exception as e:
     logging.error(f'tkinter import failed: {e}, please install the python3-tk package')
     sys.exit(3)
 
-ghurl = 'https://github.com/soyersoyer/cameractrls'
-version = 'v0.1.2'
 
 v4ldirs = {
     '/dev/v4l/by-id/': '',

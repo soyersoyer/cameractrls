@@ -3,12 +3,11 @@
 import os, logging
 import gi
 from cameractrls import CameraCtrls, find_by_text_id, get_device_capabilities, V4L2_CAP_VIDEO_CAPTURE, find_idx
+from cameractrls import version, ghurl
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-ghurl = 'https://github.com/soyersoyer/cameractrls'
-version = 'v0.2.1'
 
 v4ldirs = {
     '/dev/v4l/by-id/': '',
@@ -104,7 +103,7 @@ class CameraCtrlsGui:
         about.set_authors(['Gergo Koteles <soyer@irl.hu>'])
         about.set_copyright('Copyright © 2022 Gergo Koteles')
         about.set_license_type(Gtk.License.MIT_X11)
-        about.set_website("https://github.com/soyersoyer/cameractrls/")
+        about.set_website(ghurl)
         about.set_website_label('GitHub')
         about.set_version(version)
         about.connect('response', lambda d, r: d.destroy())

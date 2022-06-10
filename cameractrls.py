@@ -3,6 +3,9 @@
 import ctypes, logging, os.path, getopt, sys
 from fcntl import ioctl
 
+ghurl = 'https://github.com/soyersoyer/cameractrls'
+version = 'v0.2.2'
+
 # ioctl
 
 _IOC_NRBITS = 8
