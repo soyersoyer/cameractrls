@@ -765,8 +765,8 @@ class CameraCtrls:
         pages = [
             CtrlPage('Basic', [
                 CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
-                    ['exposure', 'auto_exposure', 'gain', 'backlight_compensation', 'kiyo_pro_hdr'])),
-                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness'])),
+                    ['exposure', 'auto_exposure', 'backlight_compensation', 'gain', 'kiyo_pro_hdr'])),
+                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue'])),
                 CtrlCategory('White Balance', pop_list_by_text_ids(ctrls, ['white_balance'])),
             ]),
             CtrlPage('Advanced', [
