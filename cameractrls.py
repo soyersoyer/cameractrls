@@ -641,6 +641,8 @@ class V4L2Ctrls:
                 text_id = self.to_text_id(qctrl.name)
                 text = str(qctrl.name, 'utf-8')
                 ctrl_type = V4L2Ctrls.to_type.get(qctrl.type)
+                if ctrl_type == 'integer' and qctrl.minimum == 0 and qctrl.maximum == 1 and qctrl.step == 1:
+                    ctrl_type = 'boolean'
                 v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, int(ctrl.value),
                     qctrl.default, qctrl.minimum, qctrl.maximum, qctrl.step)
 
