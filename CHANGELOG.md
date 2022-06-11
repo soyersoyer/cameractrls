@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.3] - 2022-06-11
+
+### Added
+- Treat bool like integer V4l2 controls as bool
+
+### Fixed
+- String to bool converting in the cameractrls CLI
+
+### Changed
+- Added Hue to Basic.Image
+- Reorder Gain and Backligh Compensation in Basic.Exposure
+
 ## [0.2.2] - 2022-06-10
 
 ### Added
