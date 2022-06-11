@@ -312,6 +312,15 @@ def pop_list_by_text_ids(ctrls, text_ids):
                 break
     return ret
 
+def to_bool(val):
+    if type(val) == str:
+        val = val.lower()
+        if val in ('y', 'yes', 't', 'true', 'on', '1'):
+            return True
+        return False
+    return bool(val)
+
+
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None, menu = None):
         self.text_id = text_id
@@ -596,7 +605,7 @@ class V4L2Ctrls:
             if ctrl.type == 'integer':
                 intvalue = int(v)
             elif ctrl.type == 'boolean':
-                intvalue = int(bool(v))
+                intvalue = int(to_bool(v))
             elif ctrl.type == 'menu':
                 menu = find_by_text_id(ctrl.menu, v)
                 if menu == None:
