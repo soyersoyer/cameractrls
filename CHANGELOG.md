@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] - 2022-06-16
+
+### Added
+- Systemd setting saver, systemd path (inotify watcher) and a systemd service for restoring the controls
+
+### Changed
+- TK: move the reset button next to the label
+- GTK: place the settings savers in the footer
+- CLI: show pages and categories in the list of controls too
+
 ## [0.2.3] - 2022-06-11
 
 ### Added
