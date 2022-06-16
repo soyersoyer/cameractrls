@@ -6,6 +6,33 @@ from fcntl import ioctl
 ghurl = 'https://github.com/soyersoyer/cameractrls'
 version = 'v0.2.3'
 
+
+v4ldirs = {
+    '/dev/v4l/by-id/': '',
+    '/dev/v4l/by-path/': '',
+    '/dev/': 'video',
+}
+
+
+def get_devices(dirs):
+    devices = []
+    resolved_devices = []
+    for dir, prefix in dirs.items():
+        if not os.path.isdir(dir):
+            continue
+        for device in os.listdir(dir):
+            if not device.startswith(prefix):
+                continue
+            device = dir + device
+            resolved = device if not os.path.islink(device) else os.path.abspath(dir + os.readlink(device))
+            if resolved in resolved_devices:
+                continue
+            devices.append(device)
+            resolved_devices.append(resolved)
+    devices = [d for d in devices if get_device_capabilities(d) & V4L2_CAP_VIDEO_CAPTURE]
+    devices.sort()
+    return devices
+
 # ioctl
 
 _IOC_NRBITS = 8
@@ -806,17 +833,18 @@ class CameraCtrls:
 def usage():
     print(f'usage: {sys.argv[0]} [--help] [-d DEVICE] [--list] [-c CONTROLS]\n')
     print(f'optional arguments:')
-    print(f'  -h, --help    show this help message and exit')
-    print(f'  -d DEVICE     use DEVICE, default /dev/video0')
-    print(f'  -l, --list    list the controls and values')
-    print(f'  -c CONTROLS   set CONTROLS (eg.: hdr=on,fov=wide)')
+    print(f'  -h, --help         show this help message and exit')
+    print(f'  -d DEVICE          use DEVICE, default /dev/video0')
+    print(f'  -l, --list         list the controls and values')
+    print(f'  -L, --list-devices list capture devices')
+    print(f'  -c CONTROLS        set CONTROLS (eg.: hdr=on,fov=wide)')
     print()
     print(f'example:')
     print(f'  {sys.argv[0]} -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide')
 
 def main():
     try:
-        arguments, values = getopt.getopt(sys.argv[1:], 'hd:lc:', ['help', 'list'])
+        arguments, values = getopt.getopt(sys.argv[1:], 'hd:lLc:', ['help', 'list', 'list-devices'])
     except getopt.error as err:
         print(err)
         usage()
@@ -827,6 +855,7 @@ def main():
         sys.exit(0)
 
     list_controls = False
+    list_devices = False
     device = '/dev/video0'
     controls = ''
 
@@ -838,8 +867,15 @@ def main():
             device = current_value
         elif current_argument in ('-l', '--list'):
             list_controls = True
+        elif current_argument in ('-L', '--list-devices'):
+            list_devices = True
         elif current_argument in ('-c'):
             controls = current_value
+
+    if list_devices:
+        for d in get_devices(v4ldirs):
+            print(d)
+        sys.exit(0)
 
     try:
         fd = os.open(device, os.O_RDWR, 0)

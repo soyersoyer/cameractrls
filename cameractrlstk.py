@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os, logging, sys, webbrowser
-from cameractrls import CameraCtrls, get_device_capabilities, V4L2_CAP_VIDEO_CAPTURE
+from cameractrls import CameraCtrls, get_devices, v4ldirs
 from cameractrls import version, ghurl
 
 try:
@@ -9,31 +9,6 @@ try:
 except Exception as e:
     logging.error(f'tkinter import failed: {e}, please install the python3-tk package')
     sys.exit(3)
-
-
-v4ldirs = {
-    '/dev/v4l/by-id/': '',
-    '/dev/v4l/by-path/': '',
-    '/dev/': 'video',
-}
-
-def get_devices(dirs):
-    devices = []
-    resolved_devices = []
-    for dir, prefix in dirs.items():
-        if not os.path.isdir(dir):
-            continue
-        for device in os.listdir(dir):
-            if not device.startswith(prefix):
-                continue
-            device = dir + device
-            resolved = device if not os.path.islink(device) else os.path.abspath(dir + os.readlink(device))
-            if resolved in resolved_devices:
-                continue
-            devices.append(device)
-            resolved_devices.append(resolved)
-    devices = [d for d in devices if get_device_capabilities(d) & V4L2_CAP_VIDEO_CAPTURE]
-    return devices
 
 class CameraCtrlsGui:
     def __init__(self):
