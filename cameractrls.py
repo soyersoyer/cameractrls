@@ -843,27 +843,30 @@ class CameraCtrls:
         ]
     
     def print_ctrls(self):
-        for c in self.get_ctrls():
-            print(f'{c.text_id}', end = '')
-            if c.type == 'menu':
-                print(f' = {c.value}\t( ', end = '')
-                if c.default:
-                    print(f'default: {c.default} ', end = '')
-                print('values:', end = ' ')
-                print(', '.join([m.text_id for m in c.menu]), end = ' )')
-            elif c.type == 'button':
-                print('\t\t( buttons: ', end = '')
-                print(', '.join([m.text_id for m in c.menu]), end = ' )')
-            elif c.type in ['integer', 'boolean']:
-                print(f' = {c.value}\t( default: {c.default} min: {c.min} max: {c.max}', end = '')
-                if c.step != 1:
-                    print(f' step: {c.step}', end = '')
-                print(' )', end = '')
-            if c.updater:
-                print(' | updater', end = '')
-            if c.inactive:
-                print(' | inactive', end = '')
-            print()
+        for page in self.get_ctrl_pages():
+            for cat in page.categories:
+                print(f'{page.title} / {cat.title}')
+                for c in cat.ctrls:
+                    print(f' {c.text_id}', end = '')
+                    if c.type == 'menu':
+                        print(f' = {c.value}\t( ', end = '')
+                        if c.default:
+                            print(f'default: {c.default} ', end = '')
+                        print('values:', end = ' ')
+                        print(', '.join([m.text_id for m in c.menu]), end = ' )')
+                    elif c.type == 'button':
+                        print('\t\t( buttons: ', end = '')
+                        print(', '.join([m.text_id for m in c.menu]), end = ' )')
+                    elif c.type in ['integer', 'boolean']:
+                        print(f' = {c.value}\t( default: {c.default} min: {c.min} max: {c.max}', end = '')
+                        if c.step != 1:
+                            print(f' step: {c.step}', end = '')
+                        print(' )', end = '')
+                    if c.updater:
+                        print(' | updater', end = '')
+                    if c.inactive:
+                        print(' | inactive', end = '')
+                    print()
     
     def setup_ctrls(self, params):
         for c in self.ctrls:
