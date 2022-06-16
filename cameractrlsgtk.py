@@ -160,14 +160,23 @@ class CameraCtrlsGui:
 
         self.frame.attach(stack_box, 0, 1, 1, 1)
 
+        footer = Gtk.Box(margin=10, orientation=Gtk.Orientation.VERTICAL)
+        self.frame.attach(footer, 0, 2, 1, 1)
+
         for page in self.camera.get_ctrl_pages():
             page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            stack.add_titled(page_box, page.title.lower(), page.title)
+            if page.target == 'main':
+                stack.add_titled(page_box, page.title.lower(), page.title)
+            elif page.target == 'footer':
+                sep = Gtk.Separator(margin_bottom=10)
+                footer.add(sep)
+                footer.add(page_box)
 
             for cat in page.categories:
-                c_label = Gtk.Label(xalign=0, margin_bottom=10, margin_top=10)
-                c_label.set_markup(f'<b>{cat.title}</b>')
-                page_box.pack_start(c_label, False, False, 0)
+                if cat.show_title:
+                    c_label = Gtk.Label(xalign=0, margin_bottom=10, margin_top=10)
+                    c_label.set_markup(f'<b>{cat.title}</b>')
+                    page_box.pack_start(c_label, False, False, 0)
                 
                 ctrls_frame = Gtk.Frame()
                 page_box.pack_start(ctrls_frame, False, False, 0)

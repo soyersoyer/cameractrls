@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ctypes, logging, os.path, getopt, sys
+import ctypes, logging, os.path, getopt, sys, subprocess
 from fcntl import ioctl
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
@@ -434,7 +434,7 @@ class KiyoProCtrls:
             ),
             KiyoCtrl(
                 'kiyo_pro_save',
-                'Save settings to camera',
+                'Save settings to Kiyo Pro',
                 'button',
                 [
                     KiyoMenu('save', 'Save', SAVE),
@@ -738,15 +738,98 @@ class V4L2Ctrls:
     def to_text_id(self, text):
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
 
+class SystemdSaver:
+    def __init__(self, cam_ctrls):
+        self.cam_ctrls = cam_ctrls
+        self.ctrls = [
+            BaseCtrl('systemd_save', 'Save settings to Systemd', 'button',
+                menu = [ BaseCtrlMenu('save', 'Save', 'save') ]
+            )
+        ]
+    
+    def get_ctrls(self):
+        return self.ctrls
+    
+    def update_ctrls(self):
+        return
+    
+    def setup_ctrls(self, params):
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl == None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu == None:
+                logging.warning(f'SystemdSaver: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                continue
+            if menu.text_id == 'save':
+                self.create_systemd_service_and_path()
+
+    def create_systemd_service_and_path(self):
+        device = self.cam_ctrls.device
+        dev_id = os.path.basename(device)
+        controls = self.get_claimed_controls()
+        
+        service_file_str = self.get_service_file(sys.path[0], device, dev_id, controls)
+        path_file_str = self.get_path_file(device)
+
+        systemd_user_dir = os.path.expanduser('~/.config/systemd/user')
+        prefix = 'cameractrls'
+
+        service_file = f'{prefix}-{dev_id}.service'
+        path_file = f'{prefix}-{dev_id}.path'
+
+        with open(f'{systemd_user_dir}/{service_file}', 'w', encoding="utf-8") as f:
+            f.write(service_file_str)
+
+        with open(f'{systemd_user_dir}/{path_file}', 'w', encoding="utf-8") as f:
+            f.write(path_file_str)
+        
+        subprocess.run(["systemctl", "--user", "enable", "--now", service_file])
+        subprocess.run(["systemctl", "--user", "enable", "--now", path_file])
+
+    def get_claimed_controls(self):
+        ctrls = [
+            f'{c.text_id}={c.value}'
+            for c in self.cam_ctrls.get_ctrls()
+            if c.value != None and c.default != None and c.value != c.default
+        ]       
+        return ','.join(ctrls)
+
+    def get_service_file(self, script_path, device, dev_id, controls):
+        return f"""[Unit]
+Description=Restore {dev_id} controls
+
+[Service]
+Type=oneshot
+ExecStart={script_path}/cameractrls.py -d {device} -c {controls}
+
+[Install]
+WantedBy=graphical-session.target
+"""
+
+    def get_path_file(self, device):
+        return f"""[Unit]
+Description=Watch {device} and restore controls
+
+[Path]
+PathExists={device}
+
+[Install]
+WantedBy=paths.target
+"""
+
 class CtrlPage:
-    def __init__(self, title, categories):
+    def __init__(self, title, categories, target='main'):
         self.title = title
         self.categories = categories
+        self.target = target
 
 class CtrlCategory:
-    def __init__(self, title, ctrls):
+    def __init__(self, title, ctrls, show_title = True):
         self.title = title
         self.ctrls = ctrls
+        self.show_title = show_title
 
 class CameraCtrls:
     def __init__(self, device, fd):
@@ -756,6 +839,7 @@ class CameraCtrls:
             V4L2Ctrls(device, fd),
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
+            SystemdSaver(self),
         ]
     
     def print_ctrls(self):
@@ -819,6 +903,9 @@ class CameraCtrls:
                 CtrlCategory('H264', pop_list_by_text_ids(ctrls, ['h264_', 'video_bitrate', 'repeat_sequence_header'])),
                 CtrlCategory('JPEG', pop_list_by_text_ids(ctrls, ['compression_quality'])),
             ]),
+            CtrlPage('Settings', [
+                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save']), show_title=False),
+            ], target='footer')
         ]
         pages[1].categories += CtrlCategory('Other', ctrls), #the rest
         
