@@ -1,8 +1,11 @@
 # cameractrls
 Camera controls for Linux
 
-It's a standalone Python script to set the Camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (Led mode, led frequency) and a Kiyo Pro extension (HDR, HDR mode, FoV, AF mode).
-It is the continuation of the [kiyoproctrls](https://github.com/soyersoyer/kiyoproctrls) project.
+It's a standalone Python CLI and GUI (GTK, TK) to set the Camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (Led mode, led frequency), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Systemd extension (Save).
+
+# cameractrls.py
+
+The CLI.
 
 Clone the repo
 ```shell
