@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1] - 2022-06-17
+
+### Changed
+- TK: better ordering for the controls
+- GTK, TK: load the icon from an absolute path (script relative)
+
 ## [0.3.0] - 2022-06-16
 
 ### Added
