@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, logging
+import os, sys, logging
 import gi
 from cameractrls import CameraCtrls, find_by_text_id, get_devices, v4ldirs, find_idx
 from cameractrls import version, ghurl
@@ -30,7 +30,7 @@ class CameraCtrlsGui:
     def init_window(self):
         self.window = Gtk.Window(title='Cameractrls', type_hint=Gdk.WindowTypeHint.DIALOG)
         self.window.connect('destroy', Gtk.main_quit)
-        self.window.set_default_icon_from_file('images/icon_256.png')
+        self.window.set_default_icon_from_file(f'{sys.path[0]}/images/icon_256.png')
 
         headerbar = Gtk.HeaderBar(title='Cameractrls', show_close_button=True)
         self.window.set_titlebar(headerbar)
