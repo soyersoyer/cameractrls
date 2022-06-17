@@ -890,7 +890,7 @@ class CameraCtrls:
             CtrlPage('Basic', [
                 CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
                     ['exposure', 'auto_exposure', 'backlight_compensation', 'gain', 'kiyo_pro_hdr'])),
-                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue'])),
+                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
                 CtrlCategory('White Balance', pop_list_by_text_ids(ctrls, ['white_balance'])),
             ]),
             CtrlPage('Advanced', [
