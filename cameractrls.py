@@ -826,10 +826,9 @@ class CtrlPage:
         self.target = target
 
 class CtrlCategory:
-    def __init__(self, title, ctrls, show_title = True):
+    def __init__(self, title, ctrls):
         self.title = title
         self.ctrls = ctrls
-        self.show_title = show_title
 
 class CameraCtrls:
     def __init__(self, device, fd):
@@ -907,7 +906,7 @@ class CameraCtrls:
                 CtrlCategory('JPEG', pop_list_by_text_ids(ctrls, ['compression_quality'])),
             ]),
             CtrlPage('Settings', [
-                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save']), show_title=False),
+                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save'])),
             ], target='footer')
         ]
         pages[1].categories += CtrlCategory('Other', ctrls), #the rest

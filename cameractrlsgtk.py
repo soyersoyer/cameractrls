@@ -173,7 +173,7 @@ class CameraCtrlsGui:
                 footer.add(page_box)
 
             for cat in page.categories:
-                if cat.show_title:
+                if page.target != 'footer':
                     c_label = Gtk.Label(xalign=0, margin_bottom=10, margin_top=10)
                     c_label.set_markup(f'<b>{cat.title}</b>')
                     page_box.pack_start(c_label, False, False, 0)
