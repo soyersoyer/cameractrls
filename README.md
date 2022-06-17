@@ -49,7 +49,7 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add the desktop file to the launcher
 ```shell
 cd cameractrls
-desktop-file-install --dir=$HOME/.local/share/applications \
+desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-icon="$PWD/images/icon_256.png" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
@@ -86,7 +86,7 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add the desktop file to the launcher
 ```shell
 cd cameractrls
-desktop-file-install --dir=$HOME/.local/share/applications \
+desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-icon="$PWD/images/icon_256.png" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
