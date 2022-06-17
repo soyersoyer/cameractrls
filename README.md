@@ -29,40 +29,6 @@ example:
   ./cameractrls.py -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide
 ```
 
-```shell
-./cameractrls.py --list
-Basic / Exposure
- exposure_auto = aperture_priority_mode	( default: aperture_priority_mode values: manual_mode, aperture_priority_mode ) | updater
- exposure_absolute = 156	( default: 156 min: 3 max: 2047 ) | inactive
- exposure_auto_priority = 0	( default: 0 min: 0 max: 1 )
- backlight_compensation = 0	( default: 0 min: 0 max: 1 )
- gain = 0	( default: 0 min: 0 max: 255 )
- kiyo_pro_hdr = None	( values: off, on )
- kiyo_pro_hdr_mode = None	( values: bright, dark )
-Basic / Image
- brightness = 128	( default: 128 min: 0 max: 255 )
- contrast = 128	( default: 128 min: 0 max: 255 )
- saturation = 128	( default: 128 min: 0 max: 255 )
- sharpness = 128	( default: 128 min: 0 max: 255 )
-Basic / White Balance
- white_balance_temperature_auto = 1	( default: 1 min: 0 max: 1 ) | updater
- white_balance_temperature = 5000	( default: 5000 min: 2000 max: 7500 step: 10 ) | inactive
-Advanced / Power Line
- power_line_frequency = 50_hz	( default: 60_hz values: disabled, 50_hz, 60_hz )
-Advanced / Pan/Tilt/Zoom/FoV
- pan_absolute = 0	( default: 0 min: -36000 max: 36000 step: 3600 )
- tilt_absolute = 0	( default: 0 min: -36000 max: 36000 step: 3600 )
- zoom_absolute = 100	( default: 100 min: 100 max: 400 )
- kiyo_pro_fov = None	( values: wide, medium, narrow )
-Advanced / Focus
- focus_auto = 1	( default: 1 min: 0 max: 1 ) | updater
- focus_absolute = 0	( default: 0 min: 0 max: 600 ) | inactive
- kiyo_pro_af_mode = None	( values: passive, responsive )
-Settings / Save
- systemd_save		( buttons: save )
- kiyo_pro_save		( buttons: save )
-```
-
 
 # cameractrlsgtk
 GTK GUI for the Camera controls
