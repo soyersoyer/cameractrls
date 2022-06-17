@@ -98,12 +98,11 @@ class CameraCtrlsGui:
         cframe = ttk.Frame(self.frame)
         cframe.grid()
 
-        row = 0
-        for c in self.camera.get_ctrls():
+        flat_ctrls = [c for page in self.camera.get_ctrl_pages() for cat in page.categories for c in cat.ctrls]
+        for row, c in enumerate(flat_ctrls):
             labelframe = ttk.Frame(cframe)
-            labelframe.grid(column=0, row= row, sticky='NW')
+            labelframe.grid(column=0, row=row, sticky='NW')
             ttk.Label(labelframe, text=c.name).grid(column=0, row=0, sticky='NW', ipadx=2)
-            column = 1
 
             if c.type == 'integer':
                 c.var = IntVar(cframe, c.value)
@@ -127,9 +126,8 @@ class CameraCtrlsGui:
             elif c.type == 'button':
                 buttonctrls = ttk.Frame(cframe)
                 buttonctrls.grid(row=row, column=1, sticky='NESW')
-                for m in c.menu:
+                for column, m in enumerate(c.menu):
                     ttk.Button(buttonctrls, text=m.name, style='Short.TButton', command=lambda c=c,m=m: self.update_ctrl(c, m.text_id)).grid(column=column, row=0, sticky='NESW', ipadx=10)
-                    column += 1
                 c.gui_ctrls = buttonctrls.winfo_children()
 
             elif c.type == 'menu':
@@ -138,9 +136,8 @@ class CameraCtrlsGui:
                 if len(c.menu) < 4:
                     menuctrls = ttk.Frame(cframe)
                     menuctrls.grid(row=row, column=1, sticky='NESW')
-                    for m in c.menu:
+                    for column, m in enumerate(c.menu):
                         ttk.Radiobutton(menuctrls, text=m.name, variable=c.var, value=m.text_id).grid(column=column, row=0, sticky='NESW', ipadx=10)
-                        column += 1
                     c.gui_ctrls = menuctrls.winfo_children()
                 else:
                     menulabels = [m.text_id for m in c.menu]
@@ -153,8 +150,6 @@ class CameraCtrlsGui:
                 btn.grid(row=0, column=1, sticky='N')
                 c.gui_ctrls += [btn]
                 c.gui_default_btn = btn
-
-            row += 1
 
         self.update_ctrls_state()
 
