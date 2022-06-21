@@ -786,8 +786,8 @@ class SystemdSaver:
         ctrls = [
             f'{c.text_id}={c.value}'
             for c in self.cam_ctrls.get_ctrls()
-            if c.value != None and c.default != None and c.value != c.default
-        ]       
+            if not c.inactive and c.value != None and c.value != c.default
+        ]
         return ','.join(ctrls)
 
     def get_service_file(self, script_path, device, dev_id, controls):
