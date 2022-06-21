@@ -1153,20 +1153,31 @@ class V4L2FmtCtrls:
             BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, menu=[
                 BaseCtrlMenu(fmt, fmt, None) for fmt in fmts
             ]),
-            BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, menu=[
-                BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
-            ]),
-            # fps menu should be dropdown
-            BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, menu=[
-                BaseCtrlMenu(fps, fps, None) for fps in framerates
-            ]),
         ]
+        if len(resolutions) > 0:
+            self.ctrls.append(
+                BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, menu=[
+                    BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
+                ]),
+            )
+        if len(framerates) > 0:
+            self.ctrls.append(
+                BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, menu=[
+                    BaseCtrlMenu(fps, fps, None) for fps in framerates
+                ]), # fps menu should be dropdown
+            )
 
     def set_pixelformat(self, ctrl, pixelformat):
         fmt = v4l2_format()
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        try:
+            ioctl(self.fd, VIDIOC_G_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get fmt {e}')
+            return
+
         fmt.fmt.pix.pixelformat = str2pxf(pixelformat)
-        str2wh(self.ctrls[1].value, fmt.fmt.pix)
+
         try:
             ioctl(self.fd, VIDIOC_S_FMT, fmt)
         except Exception as e:
@@ -1182,8 +1193,14 @@ class V4L2FmtCtrls:
     def set_resolution(self, ctrl, resolution):
         fmt = v4l2_format()
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
-        fmt.fmt.pix.pixelformat = str2pxf(self.ctrls[0].value)
+        try:
+            ioctl(self.fd, VIDIOC_G_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get fmt {e}')
+            return
+
         str2wh(resolution, fmt.fmt.pix)
+
         try:
             ioctl(self.fd, VIDIOC_S_FMT, fmt)
         except Exception as e:
@@ -1203,6 +1220,7 @@ class V4L2FmtCtrls:
             ioctl(self.fd, VIDIOC_G_PARM, parm)
         except Exception as e:
             logging.warning(f'V4L2FmtCtrls: Can\'t get fps: {e}')
+            return 0
         
         return dn2str(parm.parm.capture.timeperframe)
 
@@ -1250,7 +1268,7 @@ class V4L2FmtCtrls:
             except:
                 break
             if frm.type != V4L2_FRMSIZE_TYPE_DISCRETE:
-                continue
+                break
             resolutions.append(wh2str(frm.discrete))
             frm.index += 1
         return resolutions
@@ -1267,7 +1285,7 @@ class V4L2FmtCtrls:
             except:
                 break
             if frmi.type != V4L2_FRMIVAL_TYPE_DISCRETE:
-                continue
+                break
             framerates.append(dn2str(frmi.discrete))
             frmi.index += 1
         return framerates
