@@ -97,3 +97,29 @@ Run from the launcher or from the shell
 ```shell
 ./cameractrlstk.py
 ```
+
+### Updating the cameractrls
+
+```shell
+cd cameractrls
+git pull
+```
+
+### Deleting the cameractrls
+
+Disable, stop and delete the systemd paths, service:
+```shell
+cd ~/.config/systemd/user
+systemctl --user disable --now cameractrls-*
+rm cameractrls-*
+```
+
+Remove the desktop shortcut
+```shell
+rm ~/.local/share/applications/cameractrls.desktop
+```
+
+Delete the cameractrls:
+```shell
+rm -rf cameractrls
+```
