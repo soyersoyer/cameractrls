@@ -63,8 +63,8 @@ class CameraCtrlsGui:
         self.zero_box.pack_start(zero_refresh, True, True, 5)
         self.zero_box.show_all()
 
-        self.device_box = Gtk.Box(halign=Gtk.Align.CENTER, hexpand=True)
-        self.device_cb = Gtk.ComboBoxText(margin_top=10)
+        self.device_box = Gtk.Box(halign=Gtk.Align.CENTER, hexpand=True, margin=10, margin_bottom=0)
+        self.device_cb = Gtk.ComboBoxText()
         self.device_cb.connect('changed', lambda e: self.gui_open_device(self.device_cb.get_active()))
         self.device_box.pack_start(self.device_cb, True, True, 0)
         self.device_box.show_all()
@@ -173,6 +173,9 @@ class CameraCtrlsGui:
         stack_sw = Gtk.StackSwitcher(stack=stack, hexpand=True, halign=Gtk.Align.CENTER)
         stack_box.pack_start(stack_sw, False, False, 0)
         stack_box.pack_start(stack, False, False, 0)
+
+        footer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_top=10)
+        stack_box.pack_start(footer, False, False, 0)
 
         self.frame.attach(stack_box, 0, 1, 1, 1)
         self.stack = stack
