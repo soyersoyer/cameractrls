@@ -35,9 +35,11 @@ GTK GUI for the Camera controls
 
 ![cameractrls launcher](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png)
 
-![cameractrls screen 1](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png)
+![cameractrls basic screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png)
 
-![cameractrls screen 1](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png)
+![cameractrls advanced screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png)
+
+![cameractrls capture screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_3.png)
 
 ### GTK GUI install
 
