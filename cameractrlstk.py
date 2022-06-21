@@ -133,7 +133,7 @@ class CameraCtrlsGui:
             elif c.type == 'menu':
                 c.var = StringVar(cframe, c.value)
                 c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
-                if len(c.menu) < 4:
+                if len(c.menu) < 4 and not c.menu_dd:
                     menuctrls = ttk.Frame(cframe)
                     menuctrls.grid(row=row, column=1, sticky='NESW')
                     for column, m in enumerate(c.menu):
@@ -158,6 +158,8 @@ class CameraCtrlsGui:
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()
+        if ctrl.reopener:
+            self.gui_open_device(self.device)
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():

@@ -121,6 +121,14 @@ class CameraCtrlsGui:
         self.open_device(self.devices[id])
         self.init_gui_device()
 
+    def reopen_device(self):
+        opened_page = self.stack.get_visible_child_name()
+        device = self.device
+        self.close_device()
+        self.open_device(device)
+        self.init_gui_device()
+        self.stack.set_visible_child_full(opened_page, Gtk.StackTransitionType.NONE)
+
     def open_device(self, device):
         logging.info(f'opening device: {device}')
         
@@ -236,7 +244,7 @@ class CameraCtrlsGui:
                         c.gui_default_btn = None
 
                     elif c.type == 'menu':
-                        if len(c.menu) < 4:
+                        if len(c.menu) < 4 and not c.menu_dd:
                             box = Gtk.ButtonBox(valign=Gtk.Align.CENTER)
                             box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
                             box.set_homogeneous(False)
@@ -285,6 +293,8 @@ class CameraCtrlsGui:
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()
+        if ctrl.reopener:
+            self.reopen_device()
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():

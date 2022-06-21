@@ -60,6 +60,9 @@ def _IOC_TYPECHECK(t):
 def _IOR(type_, nr, size):
     return _IOC(_IOC_READ, type_, nr, _IOC_TYPECHECK(size))
 
+def _IOW(type_, nr, size):
+    return _IOC(_IOC_WRITE, type_, nr, _IOC_TYPECHECK(size))
+
 def _IOWR(type_, nr, size):
     return _IOC(_IOC_READ | _IOC_WRITE, type_, nr, _IOC_TYPECHECK(size))
 
@@ -79,7 +82,370 @@ class v4l2_capability(ctypes.Structure):
         ('reserved', ctypes.c_uint32 * 3),
     ]
 
+# streaming
+VIDEO_MAX_PLANES = 8
+
+v4l2_buf_type = enum
+(V4L2_BUF_TYPE_VIDEO_CAPTURE) = list(range(1, 2))
+v4l2_memory = enum
+(V4L2_MEMORY_MMAP) = range(1, 2)
+v4l2_field = enum
+(V4L2_FIELD_ANY) = range(1)
+
+v4l2_colorspace = enum
+(
+    V4L2_COLORSPACE_DEFAULT,
+    V4L2_COLORSPACE_SMPTE170M,
+    V4L2_COLORSPACE_SMPTE240M,
+    V4L2_COLORSPACE_REC709,
+    V4L2_COLORSPACE_BT878,
+    V4L2_COLORSPACE_470_SYSTEM_M,
+    V4L2_COLORSPACE_470_SYSTEM_BG,
+    V4L2_COLORSPACE_JPEG,
+    V4L2_COLORSPACE_SRGB,
+    V4L2_COLORSPACE_OPRGB,
+    V4L2_COLORSPACE_BT2020,
+    V4L2_COLORSPACE_RAW,
+    V4L2_COLORSPACE_DCI_P3,
+) = range(13)
+
 V4L2_CAP_VIDEO_CAPTURE = 0x00000001
+V4L2_CAP_STREAMING = 0x04000000
+
+def v4l2_fourcc(a, b, c, d):
+    return ord(a) | (ord(b) << 8) | (ord(c) << 16) | (ord(d) << 24)
+
+V4L2_PIX_FMT_YUYV = v4l2_fourcc('Y', 'U', 'Y', 'V')
+V4L2_PIX_FMT_MJPEG = v4l2_fourcc('M', 'J', 'P', 'G')
+V4L2_PIX_FMT_JPEG = v4l2_fourcc('J', 'P', 'E', 'G')
+V4L2_PIX_FMT_NV12 = v4l2_fourcc('N', 'V', '1', '2')
+
+V4L2_BUF_TYPE_VIDEO_CAPTURE = 1
+V4L2_MEMORY_MMAP = 1
+
+class v4l2_fmtdesc(ctypes.Structure):
+    _fields_ = [
+        ('index', ctypes.c_uint32),
+        ('type', ctypes.c_int),
+        ('flags', ctypes.c_uint32),
+        ('description', ctypes.c_char * 32),
+        ('pixelformat', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 4),
+    ]
+
+class v4l2_requestbuffers(ctypes.Structure):
+    _fields_ = [
+        ('count', ctypes.c_uint32),
+        ('type', v4l2_buf_type),
+        ('memory', v4l2_memory),
+        ('reserved', ctypes.c_uint32 * 2),
+    ]
+
+class v4l2_plane(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('mem_offset', ctypes.c_uint32),
+            ('userptr', ctypes.c_ulong),
+            ('fd', ctypes.c_int32),
+        ]
+    
+    _fields_ = [
+        ('bytesused', ctypes.c_uint32),
+        ('length', ctypes.c_uint32),
+        ('m', _u),
+        ('data_offset', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 11),
+    ]
+
+class v4l2_pix_format(ctypes.Structure):
+    _fields_ = [
+        ('width', ctypes.c_uint32),
+        ('height', ctypes.c_uint32),
+        ('pixelformat', ctypes.c_uint32),
+        ('field', v4l2_field),
+        ('bytesperline', ctypes.c_uint32),
+        ('sizeimage', ctypes.c_uint32),
+        ('colorspace', v4l2_colorspace),
+        ('priv', ctypes.c_uint32),
+    ]
+
+class v4l2_plane_pix_format(ctypes.Structure):
+    _fields_ = [
+        ('sizeimage', ctypes.c_uint32),
+        ('bytesperline', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint16 * 6),
+    ]
+    _pack_ = True
+
+
+class v4l2_pix_format_mplane(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('ycbcr_enc', ctypes.c_uint8),
+            ('hsv_enc', ctypes.c_uint8),
+        ]
+
+    _fields_ = [
+        ('width', ctypes.c_uint32),
+        ('height', ctypes.c_uint32),
+        ('pixelformat', ctypes.c_uint32),
+        ('field', v4l2_field),
+        ('colorspace', v4l2_colorspace),
+        ('plane_fmt', v4l2_plane_pix_format * VIDEO_MAX_PLANES),
+        ('num_planes', ctypes.c_uint8),
+        ('flags', ctypes.c_uint8),
+        ('_u', _u),
+        ('quantization', ctypes.c_uint8),
+        ('xfer_func', ctypes.c_uint8),
+        ('reserved', ctypes.c_uint8 * 7),
+    ]
+
+    _anonymous_ = ('_u',)
+    _pack_ = True
+
+class v4l2_rect(ctypes.Structure):
+    _fields_ = [
+        ('left', ctypes.c_int32),
+        ('top', ctypes.c_int32),
+        ('width', ctypes.c_int32),
+        ('height', ctypes.c_int32),
+    ]
+
+class v4l2_clip(ctypes.Structure):
+    pass
+v4l2_clip._fields_ = [
+    ('c', v4l2_rect),
+    ('next', ctypes.POINTER(v4l2_clip)),
+]
+
+
+class v4l2_vbi_format(ctypes.Structure):
+    _fields_ = [
+        ('sampling_rate', ctypes.c_uint32),
+        ('offset', ctypes.c_uint32),
+        ('samples_per_line', ctypes.c_uint32),
+        ('sample_format', ctypes.c_uint32),
+        ('start', ctypes.c_int32 * 2),
+        ('count', ctypes.c_uint32 * 2),
+        ('flags', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 2),
+    ]
+
+class v4l2_sliced_vbi_format(ctypes.Structure):
+    _fields_ = [
+        ('service_set', ctypes.c_uint16),
+        ('service_lines', ctypes.c_uint16 * 2 * 24),
+        ('io_size', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 2),
+    ]
+
+
+class v4l2_window(ctypes.Structure):
+    _fields_ = [
+        ('w', v4l2_rect),
+        ('field', v4l2_field),
+        ('chromakey', ctypes.c_uint32),
+        ('clips', ctypes.POINTER(v4l2_clip)),
+        ('clipcount', ctypes.c_uint32),
+        ('bitmap', ctypes.c_void_p),
+        ('global_alpha', ctypes.c_uint8),
+    ]
+
+class v4l2_format(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('pix', v4l2_pix_format),
+            ('pix_mp', v4l2_pix_format_mplane),
+            ('win', v4l2_window),
+            ('vbi', v4l2_vbi_format),
+            ('sliced', v4l2_sliced_vbi_format),
+            ('raw_data', ctypes.c_char * 200),
+        ]
+
+    _fields_ = [
+        ('type', v4l2_buf_type),
+        ('fmt', _u),
+    ]
+
+class timeval(ctypes.Structure):
+    _fields_ = [
+        ('secs', ctypes.c_long),
+        ('usecs', ctypes.c_long),
+    ]
+
+class v4l2_timecode(ctypes.Structure):
+    _fields_ = [
+        ('type', ctypes.c_uint32),
+        ('flags', ctypes.c_uint32),
+        ('frames', ctypes.c_uint8),
+        ('seconds', ctypes.c_uint8),
+        ('minutes', ctypes.c_uint8),
+        ('hours', ctypes.c_uint8),
+        ('userbits', ctypes.c_uint8 * 4),
+    ]
+
+class v4l2_buffer(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('offset', ctypes.c_uint32),
+            ('userptr', ctypes.c_ulong),
+            ('planes', ctypes.POINTER(v4l2_plane)),
+            ('fd', ctypes.c_int32),
+        ]
+
+    _fields_ = [
+        ('index', ctypes.c_uint32),
+        ('type', v4l2_buf_type),
+        ('bytesused', ctypes.c_uint32),
+        ('flags', ctypes.c_uint32),
+        ('field', v4l2_field),
+        ('timestamp', timeval),
+        ('timecode', v4l2_timecode),
+        ('sequence', ctypes.c_uint32),
+        ('memory', v4l2_memory),
+        ('m', _u),
+        ('length', ctypes.c_uint32),
+        ('input', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32),
+    ]
+
+v4l2_frmsizetypes = enum
+(
+    V4L2_FRMSIZE_TYPE_DISCRETE,
+    V4L2_FRMSIZE_TYPE_CONTINUOUS,
+    V4L2_FRMSIZE_TYPE_STEPWISE,
+) = range(1, 4)
+
+
+class v4l2_frmsize_discrete(ctypes.Structure):
+    _fields_ = [
+        ('width', ctypes.c_uint32),
+        ('height', ctypes.c_uint32),
+    ]
+
+
+class v4l2_frmsize_stepwise(ctypes.Structure):
+    _fields_ = [
+        ('min_width', ctypes.c_uint32),
+        ('max_width', ctypes.c_uint32),
+        ('step_width', ctypes.c_uint32),
+        ('min_height', ctypes.c_uint32),
+        ('max_height', ctypes.c_uint32),
+        ('step_height', ctypes.c_uint32),
+    ]
+
+
+class v4l2_frmsizeenum(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('discrete', v4l2_frmsize_discrete),
+            ('stepwise', v4l2_frmsize_stepwise),
+        ]
+
+    _fields_ = [
+        ('index', ctypes.c_uint32),
+        ('pixel_format', ctypes.c_uint32),
+        ('type', ctypes.c_uint32),
+        ('_u', _u),
+        ('reserved', ctypes.c_uint32 * 2)
+    ]
+
+    _anonymous_ = ('_u',)
+
+class v4l2_fract(ctypes.Structure):
+    _fields_ = [
+        ('numerator', ctypes.c_uint32),
+        ('denominator', ctypes.c_uint32),
+    ]
+
+v4l2_frmivaltypes = enum
+(
+    V4L2_FRMIVAL_TYPE_DISCRETE,
+    V4L2_FRMIVAL_TYPE_CONTINUOUS,
+    V4L2_FRMIVAL_TYPE_STEPWISE,
+) = range(1, 4)
+
+
+class v4l2_frmival_stepwise(ctypes.Structure):
+    _fields_ = [
+        ('min', v4l2_fract),
+        ('max', v4l2_fract),
+        ('step', v4l2_fract),
+    ]
+
+
+class v4l2_frmivalenum(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('discrete', v4l2_fract),
+            ('stepwise', v4l2_frmival_stepwise),
+        ]
+
+    _fields_ = [
+        ('index', ctypes.c_uint32),
+        ('pixel_format', ctypes.c_uint32),
+        ('width', ctypes.c_uint32),
+        ('height', ctypes.c_uint32),
+        ('type', ctypes.c_uint32),
+        ('_u', _u),
+        ('reserved', ctypes.c_uint32 * 2),
+    ]
+
+    _anonymous_ = ('_u',)
+
+class v4l2_captureparm(ctypes.Structure):
+    _fields_ = [
+        ('capability', ctypes.c_uint32),
+        ('capturemode', ctypes.c_uint32),
+        ('timeperframe', v4l2_fract),
+        ('extendedmode', ctypes.c_uint32),
+        ('readbuffers', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 4),
+    ]
+
+
+V4L2_MODE_HIGHQUALITY = 0x0001
+V4L2_CAP_TIMEPERFRAME = 0x1000
+
+class v4l2_outputparm(ctypes.Structure):
+    _fields_ = [
+        ('capability', ctypes.c_uint32),
+        ('outputmode', ctypes.c_uint32),
+        ('timeperframe', v4l2_fract),
+        ('extendedmode', ctypes.c_uint32),
+        ('writebuffers', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 4),
+    ]
+
+class v4l2_streamparm(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('capture', v4l2_captureparm),
+            ('output', v4l2_outputparm),
+            ('raw_data', ctypes.c_char * 200),
+        ]
+
+    _fields_ = [
+        ('type', v4l2_buf_type),
+        ('parm', _u)
+    ]
+
+
+
+VIDIOC_ENUM_FMT = _IOWR('V', 2, v4l2_fmtdesc)
+VIDIOC_G_FMT = _IOWR('V', 4, v4l2_format)
+VIDIOC_S_FMT = _IOWR('V', 5, v4l2_format)
+
+VIDIOC_REQBUFS = _IOWR('V', 8, v4l2_requestbuffers)
+VIDIOC_QUERYBUF	= _IOWR('V', 9, v4l2_buffer)
+VIDIOC_QBUF = _IOWR('V', 15, v4l2_buffer)
+VIDIOC_DQBUF = _IOWR('V', 17, v4l2_buffer)
+VIDIOC_STREAMON = _IOW('V', 18, ctypes.c_int)
+VIDIOC_STREAMOFF = _IOW('V', 19, ctypes.c_int)
+VIDIOC_G_PARM = _IOWR('V', 21, v4l2_streamparm)
+VIDIOC_S_PARM = _IOWR('V', 22, v4l2_streamparm)
+VIDIOC_ENUM_FRAMESIZES = _IOWR('V', 74, v4l2_frmsizeenum)
+VIDIOC_ENUM_FRAMEINTERVALS = _IOWR('V', 75, v4l2_frmivalenum)
 
 # controls
 
@@ -349,7 +715,8 @@ def to_bool(val):
 
 
 class BaseCtrl:
-    def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None, menu = None):
+    def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
+                inactive = False, updater = False, reopener = False, menu_dd = False, menu = None):
         self.text_id = text_id
         self.name = name
         self.type = type
@@ -358,8 +725,10 @@ class BaseCtrl:
         self.min = min
         self.max = max
         self.step = step
-        self.updater = False
-        self.inactive = False
+        self.inactive = inactive
+        self.updater = updater
+        self.reopener = reopener
+        self.menu_dd = menu_dd
         self.menu = menu
 
 class BaseCtrlMenu:
@@ -732,6 +1101,196 @@ class V4L2Ctrls:
     def to_text_id(self, text):
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
 
+class V4L2FmtCtrls:
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.ctrls = []
+        self.get_format_ctrls()
+
+    def get_ctrls(self):
+        return self.ctrls
+    
+    def update_ctrls(self):
+        return
+
+    def setup_ctrls(self, params):
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl == None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu == None:
+                logging.warning(f'V4L2FmtCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                continue
+            if ctrl.text_id == 'pixelformat':
+                self.set_pixelformat(ctrl, v)
+            elif ctrl.text_id == 'resolution':
+                self.set_resolution(ctrl, v)
+            elif ctrl.text_id == 'fps':
+                self.set_fps(ctrl, v)
+
+    def get_format_ctrls(self):
+        fmt = v4l2_format()
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        try:
+            ioctl(self.fd, VIDIOC_G_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get fmt {e}')
+            return
+
+        pixelformat = pxf2str(fmt.fmt.pix.pixelformat)
+        resolution = wh2str(fmt.fmt.pix)
+
+        fps = self.get_fps()
+
+        fmts = self.get_fmts()
+        resolutions = self.get_resolutions(fmt.fmt.pix.pixelformat)
+        framerates = self.get_framerates(fmt.fmt.pix.pixelformat, fmt.fmt.pix.width, fmt.fmt.pix.height)
+
+        self.ctrls = [
+            # must reopen the fd, because changing these lock the device, and can't be open by another processes
+            BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, menu=[
+                BaseCtrlMenu(fmt, fmt, None) for fmt in fmts
+            ]),
+            BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, menu=[
+                BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
+            ]),
+            # fps menu should be dropdown
+            BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, menu=[
+                BaseCtrlMenu(fps, fps, None) for fps in framerates
+            ]),
+        ]
+
+    def set_pixelformat(self, ctrl, pixelformat):
+        fmt = v4l2_format()
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        fmt.fmt.pix.pixelformat = str2pxf(pixelformat)
+        str2wh(self.ctrls[1].value, fmt.fmt.pix)
+        try:
+            ioctl(self.fd, VIDIOC_S_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t set fmt {e}')
+            return
+
+        if pxf2str(fmt.fmt.pix.pixelformat) != pixelformat:
+            logging.warning(f'V4L2FmtCtrls: Can\'t set pixelformat to {pixelformat} using {pxf2str(fmt.fmt.pix.pixelformat)}')
+            return
+        
+        ctrl.value = pixelformat
+
+    def set_resolution(self, ctrl, resolution):
+        fmt = v4l2_format()
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        fmt.fmt.pix.pixelformat = str2pxf(self.ctrls[0].value)
+        str2wh(resolution, fmt.fmt.pix)
+        try:
+            ioctl(self.fd, VIDIOC_S_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t set fmt {e}')
+            return
+
+        if wh2str(fmt.fmt.pix) != resolution:
+            logging.warning(f'V4L2FmtCtrls: Can\'t set resolution to {resolution} using {wh2str(fmt.fmt.pix)}')
+            return
+
+        ctrl.value = resolution
+
+    def get_fps(self):
+        parm = v4l2_streamparm()
+        parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        try:
+            ioctl(self.fd, VIDIOC_G_PARM, parm)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get fps: {e}')
+        
+        return dn2str(parm.parm.capture.timeperframe)
+
+    def set_fps(self, ctrl, fps):
+        parm = v4l2_streamparm()
+        parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        parm.parm.capture.timeperframe.numerator = 1
+        parm.parm.capture.timeperframe.denominator = int(fps)
+        try:
+            ioctl(self.fd, VIDIOC_S_PARM, parm)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t set fps: {e}')
+            return
+        
+        tf = parm.parm.capture.timeperframe
+        if tf.denominator == 0 or tf.numerator == 0:
+            logging.warning(f'V4L2FmtCtrls: VIDIOC_S_PARM: Invalid frame rate {fps}')
+            return
+        if int(fps) != (tf.denominator / tf.numerator):
+            logging.warning(f'V4L2FmtCtrls: Can\'t set fps to {fps} using {tf.denominator / tf.numerator}')
+            return
+        
+        ctrl.value = fps
+
+    def get_fmts(self):
+        fmts = []
+        fmt = v4l2_fmtdesc()
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        while True:
+            try:
+                ioctl(self.fd, VIDIOC_ENUM_FMT, fmt)
+            except:
+                break
+            fmts.append(pxf2str(fmt.pixelformat))
+            fmt.index += 1
+        return fmts
+
+    def get_resolutions(self, pixelformat):
+        resolutions = []
+        frm = v4l2_frmsizeenum()
+        frm.pixel_format = pixelformat
+        while True:
+            try:
+                ioctl(self.fd, VIDIOC_ENUM_FRAMESIZES, frm)
+            except:
+                break
+            if frm.type != V4L2_FRMSIZE_TYPE_DISCRETE:
+                continue
+            resolutions.append(wh2str(frm.discrete))
+            frm.index += 1
+        return resolutions
+
+    def get_framerates(self, pixelformat, width, height):
+        framerates = []
+        frmi = v4l2_frmivalenum()
+        frmi.pixel_format = pixelformat
+        frmi.width = width
+        frmi.height = height
+        while True:
+            try:
+                ioctl(self.fd, VIDIOC_ENUM_FRAMEINTERVALS, frmi)
+            except:
+                break
+            if frmi.type != V4L2_FRMIVAL_TYPE_DISCRETE:
+                continue
+            framerates.append(dn2str(frmi.discrete))
+            frmi.index += 1
+        return framerates
+
+def str2pxf(str):
+    return ord(str[0]) | (ord(str[1]) << 8) | (ord(str[2]) << 16) | (ord(str[3]) << 24)
+
+def pxf2str(pxf):
+    return chr(pxf & 0xff) + chr(pxf >> 8 & 0xff) + chr(pxf >> 16 & 0xff) + chr(pxf >> 24 & 0xff)
+
+def wh2str(wh):
+    return f'{wh.width}x{wh.height}'
+
+def str2wh(str, wh):
+    split = str.split('x')
+    wh.width = int(split[0])
+    wh.height = int(split[1])
+
+def dn2str(dn):
+    return f'{dn.denominator//dn.numerator}'
+
+
+
 class SystemdSaver:
     def __init__(self, cam_ctrls):
         self.cam_ctrls = cam_ctrls
@@ -830,6 +1389,7 @@ class CameraCtrls:
         self.fd = fd
         self.ctrls = [
             V4L2Ctrls(device, fd),
+            V4L2FmtCtrls(device, fd),
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
             SystemdSaver(self),
@@ -898,6 +1458,9 @@ class CameraCtrls:
             CtrlPage('Compression', [
                 CtrlCategory('H264', pop_list_by_text_ids(ctrls, ['h264_', 'video_bitrate', 'repeat_sequence_header'])),
                 CtrlCategory('JPEG', pop_list_by_text_ids(ctrls, ['compression_quality'])),
+            ]),
+            CtrlPage('Capture', [
+                CtrlCategory('Capture', pop_list_by_text_ids(ctrls, ['pixelformat', 'resolution', 'fps'])),
             ]),
             CtrlPage('Settings', [
                 CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save'])),
