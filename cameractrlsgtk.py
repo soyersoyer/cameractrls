@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, logging
+import os, sys, logging, subprocess
 import gi
 from cameractrls import CameraCtrls, find_by_text_id, get_devices, v4ldirs, find_idx
 from cameractrls import version, ghurl
@@ -43,9 +43,15 @@ class CameraCtrlsGui:
         menu.pack_start(about_elem, True, True, 0)
         menu.show_all()
         popover.add(menu)
-
         hamburger.set_popover(popover)
+
+        self.open_cam_button = Gtk.Button()
+        camera_video_icon = Gtk.Image.new_from_icon_name('camera-video', Gtk.IconSize.MENU)
+        self.open_cam_button.add(camera_video_icon)
+        self.open_cam_button.connect('clicked', lambda e: self.open_camera_window())
+
         headerbar.pack_end(hamburger)
+        headerbar.pack_end(self.open_cam_button)
 
         self.grid = Gtk.Grid()
 
@@ -78,6 +84,9 @@ class CameraCtrlsGui:
         about.connect('response', lambda d, r: d.destroy())
         about.present()
 
+    def open_camera_window(self):
+        subprocess.Popen(['./cameraview.py', '-d', self.device])
+
     def refresh_devices(self):
         logging.info('refresh_devices')
         self.devices = get_devices(v4ldirs)
@@ -101,9 +110,11 @@ class CameraCtrlsGui:
         if len(self.devices) == 0 and self.device_box.get_parent() != None:
             self.grid.remove(self.device_box)
             self.grid.attach(self.zero_box, 0, 0, 1, 1)
+            self.open_cam_button.hide()
         elif len(self.devices) != 0 and self.zero_box.get_parent() != None:
             self.grid.remove(self.zero_box)
             self.grid.attach(self.device_box, 0, 0, 1, 1)
+            self.open_cam_button.show()
 
     def gui_open_device(self, id):        
         # if the selection is empty (after remove_all)
@@ -164,9 +175,7 @@ class CameraCtrlsGui:
         stack_box.pack_start(stack, False, False, 0)
 
         self.frame.attach(stack_box, 0, 1, 1, 1)
-
-        footer = Gtk.Box(margin=10, orientation=Gtk.Orientation.VERTICAL)
-        self.frame.attach(footer, 0, 2, 1, 1)
+        self.stack = stack
 
         for page in self.camera.get_ctrl_pages():
             page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, logging, sys, webbrowser
+import os, logging, sys, webbrowser, subprocess
 from cameractrls import CameraCtrls, get_devices, v4ldirs
 from cameractrls import version, ghurl
 
@@ -90,10 +90,16 @@ class CameraCtrlsGui:
             ttk.Button(self.frame, text='Refresh', command=self.refresh_devices).grid(sticky='NESW')
             return
 
-        self.devicescb = ttk.Combobox(self.frame, state='readonly', values=self.devices, postcommand=self.refresh_devices)
+        deviceframe = ttk.Frame(self.frame)
+        deviceframe.grid(sticky='NESW', pady=10)
+        deviceframe.grid_columnconfigure(0, weight = 1)
+        self.devicescb = ttk.Combobox(deviceframe, state='readonly', values=self.devices, postcommand=self.refresh_devices)
         self.devicescb.set(self.device)
-        self.devicescb.grid(sticky='NESW', pady=10)
+        self.devicescb.grid(sticky='NESW')
         self.devicescb.bind('<<ComboboxSelected>>', lambda e: self.gui_open_device(self.devicescb.get()))
+
+        open_button = ttk.Button(deviceframe, text='Show video', command=lambda: subprocess.Popen(['./cameraview.py', '-d', self.device]))
+        open_button.grid(row=0, column=1, sticky='NESW')
 
         cframe = ttk.Frame(self.frame)
         cframe.grid()
