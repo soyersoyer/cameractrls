@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.0] - 2022-06-22
+
+### Added
+- Ability to view the camera (only in YUYV or NV12 format yet)
+- Pixelformat, resolution, fps controls
+
+### Changed
+- LogitechCtrls: removed the (not) default values
+- SystemdSaver: don't save the inactive controls and save the controls without default values too.
+- Adding gamma to Basic.Image
+
 ## [0.3.1] - 2022-06-17
 
 ### Changed
