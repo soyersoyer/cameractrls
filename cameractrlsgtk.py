@@ -16,10 +16,7 @@ class CameraCtrlsGui:
         self.device = ''
         self.camera = None
 
-        self.cnt=0
-
         self.window = None
-        self.kpsmallimg = None
         self.grid = None
         self.frame = None
         self.device_cb = None
