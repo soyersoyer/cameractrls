@@ -531,17 +531,14 @@ class LogitechCtrls:
         ]
 
         for c in self.ctrls:
-            default_config = to_buf(bytes(c._len))
             minimum_config = to_buf(bytes(c._len))
             maximum_config = to_buf(bytes(c._len))
             current_config = to_buf(bytes(c._len))
 
-            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_DEF, default_config)
             query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_MIN, minimum_config)
             query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_MAX, maximum_config)
             query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_CUR, current_config)
-            
-            c.default = default_config[c._offset][0]
+
             c.min = minimum_config[c._offset][0]
             c.max = maximum_config[c._offset][0]
             c.value = current_config[c._offset][0]
@@ -550,9 +547,6 @@ class LogitechCtrls:
                 valmenu = find_by_value(c.menu, c.value)
                 if valmenu:
                     c.value = valmenu.text_id
-                defmenu = find_by_value(c.menu, c.default)
-                if defmenu:
-                    c.default = defmenu.text_id
 
 
     def setup_ctrls(self, params):
