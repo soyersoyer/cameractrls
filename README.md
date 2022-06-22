@@ -33,13 +33,13 @@ example:
 # cameractrlsgtk
 GTK GUI for the Camera controls
 
-![cameractrls launcher](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png)
+<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png" width="200">
 
-![cameractrls basic screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png)
-
-![cameractrls advanced screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png)
-
-![cameractrls capture screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_3.png)
+<div>
+<img alt="cameractrls basic screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png" width="380">
+<img alt="cameractrls advanced screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png" width="380">
+<img alt="cameractrls capture screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_3.png" width="380">
+</div>
 
 ### GTK GUI install
 
@@ -68,9 +68,9 @@ TKinter GUI for the Camera controls
 
 If you like the old user interfaces.
 
-![cameractrls launcher](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png)
+<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png" width="200">
 
-![cameractrls tk screen](https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_tk.png)
+<img alt="cameractrls tk screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_tk.png" width="400">
 
 
 ### TK GUI install
@@ -100,23 +100,23 @@ Run from the launcher or from the shell
 ./cameractrlstk.py
 ```
 
-### Updating the cameractrls
+# Updating the cameractrls
 
 ```shell
 cd cameractrls
 git pull
 ```
 
-### Deleting the cameractrls
+# Deleting the cameractrls
 
-Disable, stop and delete the systemd paths, service:
+Disable, stop and delete the systemd paths, services:
 ```shell
 cd ~/.config/systemd/user
 systemctl --user disable --now cameractrls-*
 rm cameractrls-*
 ```
 
-Remove the desktop shortcut
+Remove the launcher shortcut
 ```shell
 rm ~/.local/share/applications/cameractrls.desktop
 ```
