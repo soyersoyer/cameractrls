@@ -85,7 +85,7 @@ class CameraCtrlsGui:
         about.present()
 
     def open_camera_window(self):
-        subprocess.Popen(['./cameraview.py', '-d', self.device])
+        subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device])
 
     def refresh_devices(self):
         logging.info('refresh_devices')

@@ -98,7 +98,7 @@ class CameraCtrlsGui:
         self.devicescb.grid(sticky='NESW')
         self.devicescb.bind('<<ComboboxSelected>>', lambda e: self.gui_open_device(self.devicescb.get()))
 
-        open_button = ttk.Button(deviceframe, text='Show video', command=lambda: subprocess.Popen(['./cameraview.py', '-d', self.device]))
+        open_button = ttk.Button(deviceframe, text='Show video', command=lambda: subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device]))
         open_button.grid(row=0, column=1, sticky='NESW')
 
         cframe = ttk.Frame(self.frame)
