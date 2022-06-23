@@ -1353,6 +1353,8 @@ class SystemdSaver:
         service_file = f'{prefix}-{dev_id}.service'
         path_file = f'{prefix}-{dev_id}.path'
 
+        os.makedirs(systemd_user_dir, exist_ok=True)
+
         with open(f'{systemd_user_dir}/{service_file}', 'w', encoding="utf-8") as f:
             f.write(service_file_str)
 
