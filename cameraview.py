@@ -6,7 +6,7 @@ from fcntl import ioctl
 from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
 from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
 from cameractrls import V4L2_CAP_VIDEO_CAPTURE, V4L2_CAP_STREAMING, V4L2_MEMORY_MMAP, V4L2_BUF_TYPE_VIDEO_CAPTURE
-from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_MJPEG
+from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG
 
 sdl2lib = ctypes.util.find_library('SDL2-2.0')
 if sdl2lib == None:
@@ -269,10 +269,10 @@ def V4L2Format2SDL(format):
         return SDL_PIXELFORMAT_YUY2
     elif format == V4L2_PIX_FMT_NV12:
         return SDL_PIXELFORMAT_NV12
-    elif format == V4L2_PIX_FMT_MJPEG:
+    elif format in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
         return SDL_PIXELFORMAT_RGB24
-    logging.error(f'Invalid pixel format: Sorry, only YUYV and NV12 and MJPG are supported yet.')
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', b'Sorry, only YUYV and NV12 and MJPG are supported yet.', None)
+    logging.error(f'Invalid pixel format: Sorry, only YUYV, NV12, MJPG, JPEG are supported yet.')
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', b'Sorry, only YUYV, NV12, MJPG, JPEG are supported yet.', None)
     sys.exit(3)
 
 class SDLCameraWindow():
@@ -286,7 +286,7 @@ class SDLCameraWindow():
         self.tj = None
         self.tjbuffer = None
         
-        if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG:
+        if self.cam.pixelformat in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
             self.tj = tj_init_decompress()
 
             buf_size = width * height * 3
@@ -315,7 +315,7 @@ class SDLCameraWindow():
     def write_buf(self, buf):
         ptr = (ctypes.c_uint8 * buf.bytesused).from_buffer(buf.buffer)
         bytesperline = self.cam.bytesperline
-        if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG:
+        if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG or self.cam.pixelformat == V4L2_PIX_FMT_JPEG:
             bytesperline = self.cam.width * 3
             tj_decompress(self.tj, ptr, buf.bytesused, self.tjbuffer, self.cam.width, bytesperline, self.cam.height, TJPF_RGB, 0)
             ptr = self.tjbuffer
