@@ -1221,7 +1221,10 @@ class V4L2FmtCtrls:
         except Exception as e:
             logging.warning(f'V4L2FmtCtrls: Can\'t get fps: {e}')
             return 0
-        
+
+        if parm.parm.capture.timeperframe.numerator == 0:
+            return 0
+
         return dn2str(parm.parm.capture.timeperframe)
 
     def set_fps(self, ctrl, fps):
