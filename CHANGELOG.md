@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.3] - 2022-06-23
+
+### Fixed
+- Fixed systemd saving when systemd user directory doesn't exist
+- Fixed cameraview starting, when it's not in the current directory
+
 ## [0.4.2] - 2022-06-23
 
 ### Added
