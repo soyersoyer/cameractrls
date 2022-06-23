@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
 
-import os, sys, ctypes, logging, mmap, struct, getopt
+import os, sys, ctypes, ctypes.util, logging, mmap, struct, getopt
 from fcntl import ioctl
 
 from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
 from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
 from cameractrls import V4L2_CAP_VIDEO_CAPTURE, V4L2_CAP_STREAMING, V4L2_MEMORY_MMAP, V4L2_BUF_TYPE_VIDEO_CAPTURE
-from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12
+from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_MJPEG
 
+sdl2lib = ctypes.util.find_library('SDL2-2.0')
+if sdl2lib == None:
+    print('libSDL2 not found, please install the libsdl2-2.0 package!')
+    sys.exit(2)
+sdl2 = ctypes.CDLL(sdl2lib)
 
-sdl2 = ctypes.CDLL('libSDL2-2.0.so.0')
+turbojpeglib = ctypes.util.find_library('turbojpeg')
+if turbojpeglib == None:
+    print('libturbojpeg not found, please install the libturbojpeg package!')
+    sys.exit(2)
+turbojpeg = ctypes.CDLL(turbojpeglib)
 
 SDL_Init = sdl2.SDL_Init
 SDL_Init.restype = ctypes.c_int
@@ -94,6 +103,7 @@ def SDL_FOURCC(a, b, c, d):
     return (ord(a) << 0) | (ord(b) << 8) | (ord(c) << 16) | (ord(d) << 24)
 SDL_PIXELFORMAT_YUY2 = SDL_FOURCC('Y', 'U', 'Y', '2')
 SDL_PIXELFORMAT_NV12 = SDL_FOURCC('N', 'V', '1', '2')
+SDL_PIXELFORMAT_RGB24 = 386930691
 SDL_TEXTUREACCESS_STREAMING = 1
 
 SDL_Keycode = ctypes.c_int32
@@ -126,6 +136,30 @@ class SDL_Event(ctypes.Union):
         ('key', SDL_KeyboardEvent),
         ('padding', (ctypes.c_uint8 * _event_pad_size)),
     ]
+
+tj_init_decompress = turbojpeg.tjInitDecompress
+tj_init_decompress.restype = ctypes.c_void_p
+#tjhandle tjInitDecompress()
+
+tj_decompress = turbojpeg.tjDecompress2
+tj_decompress.argtypes = [ctypes.c_void_p,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_ulong,
+    ctypes.POINTER(ctypes.c_ubyte),
+    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.c_int]
+tj_decompress.restype = ctypes.c_int
+#int tjDecompress2(tjhandle handle,
+#                  const unsigned char *jpegBuf, unsigned long jpegSize,
+#                  unsigned char *dstBuf,
+#                  int width, int pitch, int height, int pixelFormat,
+#                  int flags);
+
+tj_destroy = turbojpeg.tjDestroy
+tj_destroy.argtypes = [ctypes.c_void_p]
+tj_destroy.restype = ctypes.c_int
+# int tjDestroy(tjhandle handle);
+
+TJPF_RGB = 0
 
 class V4L2Camera():
     def __init__(self, device):
@@ -193,8 +227,6 @@ class V4L2Camera():
 
             ioctl(self.fd, VIDIOC_QUERYBUF, buf)
 
-            #print(buf.m.offset, buf.length)
-
             if req.memory == V4L2_MEMORY_MMAP:
                 buf.buffer = mmap.mmap(self.fd, buf.length,
                     flags=mmap.MAP_SHARED | 0x08000, #MAP_POPULATE
@@ -237,8 +269,10 @@ def V4L2Format2SDL(format):
         return SDL_PIXELFORMAT_YUY2
     elif format == V4L2_PIX_FMT_NV12:
         return SDL_PIXELFORMAT_NV12
-    logging.error(f'Invalid pixel format: Sorry, only YUYV and NV12 are supported yet.')
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', b'Sorry, only YUYV and NV12 are supported yet.', None)
+    elif format == V4L2_PIX_FMT_MJPEG:
+        return SDL_PIXELFORMAT_RGB24
+    logging.error(f'Invalid pixel format: Sorry, only YUYV and NV12 and MJPG are supported yet.')
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', b'Sorry, only YUYV and NV12 and MJPG are supported yet.', None)
     sys.exit(3)
 
 class SDLCameraWindow():
@@ -249,6 +283,16 @@ class SDLCameraWindow():
         height = self.cam.height
 
         self.fullscreen = False
+        self.tj = None
+        self.tjbuffer = None
+        
+        if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG:
+            self.tj = tj_init_decompress()
+
+            buf_size = width * height * 3
+            buf = ctypes.create_string_buffer(b"", buf_size)
+            self.tjbuffer = (ctypes.c_uint8 * buf_size).from_buffer(buf)
+
 
         if SDL_Init(SDL_INIT_VIDEO) != 0:
             logging.error(f'SDL_Init failed: {SDL_GetError()}')
@@ -270,7 +314,13 @@ class SDLCameraWindow():
 
     def write_buf(self, buf):
         ptr = (ctypes.c_uint8 * buf.bytesused).from_buffer(buf.buffer)
-        SDL_UpdateTexture(self.texture, None, ptr, self.cam.bytesperline)
+        bytesperline = self.cam.bytesperline
+        if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG:
+            bytesperline = self.cam.width * 3
+            tj_decompress(self.tj, ptr, buf.bytesused, self.tjbuffer, self.cam.width, bytesperline, self.cam.height, TJPF_RGB, 0)
+            ptr = self.tjbuffer
+
+        SDL_UpdateTexture(self.texture, None, ptr, bytesperline)
         SDL_RenderClear(self.renderer)
         SDL_RenderCopy(self.renderer, self.texture, None, None)
         SDL_RenderPresent(self.renderer)
@@ -294,6 +344,7 @@ class SDLCameraWindow():
         self.cam.stop_capturing()
 
     def close(self):
+        tj_destroy(self.tj)
         SDL_DestroyWindow(self.window)
         SDL_Quit()
 
