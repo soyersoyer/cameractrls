@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.1] - 2022-06-23
+
+### Added
+- Added MJPG support for the cameraview
+
 ## [0.4.0] - 2022-06-22
 
 ### Added
