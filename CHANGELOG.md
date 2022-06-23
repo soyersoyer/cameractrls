@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2] - 2022-06-23
+
+### Added
+- Added JPEG support for the cameraview
+
+### Fixed
+- Handling cameras that return zero fps
+
 ## [0.4.1] - 2022-06-23
 
 ### Added
