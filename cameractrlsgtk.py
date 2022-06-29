@@ -45,8 +45,9 @@ class CameraCtrlsGui:
         popover.add(menu)
         hamburger.set_popover(popover)
 
-        self.open_cam_button = Gtk.Button()
+        self.open_cam_button = Gtk.Button(no_show_all=True)
         camera_video_icon = Gtk.Image.new_from_icon_name('camera-video', Gtk.IconSize.MENU)
+        camera_video_icon.show()
         self.open_cam_button.add(camera_video_icon)
         self.open_cam_button.connect('clicked', lambda e: self.open_camera_window())
 
@@ -139,7 +140,6 @@ class CameraCtrlsGui:
 
     def open_device(self, device):
         logging.info(f'opening device: {device}')
-        
         try:
             self.fd = os.open(device, os.O_RDWR, 0)
         except Exception as e:
@@ -156,18 +156,17 @@ class CameraCtrlsGui:
             self.camera = None
 
     def init_gui_device(self):
-        if self.frame:            
+        if self.frame:
             self.frame.destroy()
             # forget old size
             self.window.resize(1,1)
-        
+
         if self.device == '':
             return
 
         self.frame = Gtk.Grid(hexpand=True, halign=Gtk.Align.FILL)
         self.grid.attach(self.frame, 0, 1, 1, 1)
 
-        
         stack_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=10, vexpand=True, halign=Gtk.Align.CENTER)
         stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=500)
         stack_sw = Gtk.StackSwitcher(stack=stack, hexpand=True, halign=Gtk.Align.CENTER)
