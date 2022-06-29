@@ -1315,12 +1315,15 @@ def dn2str(dn):
 class SystemdSaver:
     def __init__(self, cam_ctrls):
         self.cam_ctrls = cam_ctrls
-        self.ctrls = [
+        self.ctrls = [] if not self.systemd_available() else [
             BaseCtrl('systemd_save', 'Save settings to Systemd', 'button',
                 menu = [ BaseCtrlMenu('save', 'Save', 'save') ]
             )
         ]
     
+    def systemd_available(self):
+        return os.path.exists('/bin/systemctl')
+
     def get_ctrls(self):
         return self.ctrls
     
