@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4] - 2022-06-29
+
+### Fixed
+- SystemdSaver: Don't show systemd save, if it is not available
+- GTK: show the open camera button properly
+- GTK: suppress warnings or silent exits while changing the capture settings
+
 ## [0.4.3] - 2022-06-23
 
 ### Fixed
