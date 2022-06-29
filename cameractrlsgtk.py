@@ -284,7 +284,16 @@ class CameraCtrlsGui:
                                 wb_cb.append_text(m.name)
                             if c.value:
                                 wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == c.value))
-                            wb_cb.connect('changed', lambda e,c=c: self.update_ctrl(c, c.menu[e.get_active()].text_id))
+                            wb_cb.connect('changed', lambda e,c=c: [
+                                self.update_ctrl(c, c.menu[e.get_active()].text_id),
+                                # XXX: Workaround: GTK emits a signal or calls something later on the ComboBox widget,
+                                # it can cause GTK assert warnings or a silent exit in some environments
+                                #
+                                # preserve_widget saves it to prevent to be destroyed by the GC
+                                # it can be fixed properly with updating only the underlying model
+                                # not to recreate everything in case the ctrl is a reopener
+                                self.preserve_widget(e),
+                                ])
                             refresh = Gtk.Button(label='⟳', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                             if c.default != None:
                                 refresh.connect('clicked', lambda e,c=c,wb_cb=wb_cb: wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == c.default)))
@@ -310,6 +319,9 @@ class CameraCtrlsGui:
                 gui_ctrl.set_sensitive(not c.inactive)
             if c.gui_default_btn != None:
                 c.gui_default_btn.set_opacity(0 if c.default == None or c.default == c.value else 1)
+
+    def preserve_widget(self, widget):
+        self.preserved_widget = widget
 
     def start(self):
         self.window.show_all()
