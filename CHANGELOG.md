@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.5] - 2022-06-30
+
+### Added
+- AppData for better flatpak integration
+
 ## [0.4.4] - 2022-06-29
 
 ### Fixed
