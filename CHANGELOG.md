@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.6] - 2022-07-01
+
+### Changed
+- Cameraview: use esc to exit
+- GTK, TK: close all windows at exit
+
 ## [0.4.5] - 2022-06-30
 
 ### Added
