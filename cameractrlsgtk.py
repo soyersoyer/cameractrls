@@ -21,6 +21,8 @@ class CameraCtrlsGui:
         self.frame = None
         self.device_cb = None
 
+        self.child_processes = []
+
         self.init_window()
         self.refresh_devices()
 
@@ -86,7 +88,8 @@ class CameraCtrlsGui:
         about.present()
 
     def open_camera_window(self):
-        subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device])
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device])
+        self.child_processes.append(p)
 
     def refresh_devices(self):
         logging.info('refresh_devices')
@@ -327,7 +330,12 @@ class CameraCtrlsGui:
         self.window.show_all()
         Gtk.main()
 
+    def kill_child_processes(self):
+        for proc in self.child_processes:
+            proc.kill()
+
 
 if __name__ == '__main__':
     gui = CameraCtrlsGui()
     gui.start()
+    gui.kill_child_processes()

@@ -23,6 +23,8 @@ class CameraCtrlsGui:
         self.frame = None
         self.devicescb = None
 
+        self.child_processes = []
+
         self.init_window()
         self.refresh_devices()
 
@@ -52,6 +54,10 @@ class CameraCtrlsGui:
             self.init_gui_device()
         if self.devicescb:
             self.devicescb['values'] = self.devices
+
+    def open_camera_window(self):
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device])
+        self.child_processes.append(p)
 
     def gui_open_device(self, device):
         self.close_device()
@@ -98,7 +104,7 @@ class CameraCtrlsGui:
         self.devicescb.grid(sticky='NESW')
         self.devicescb.bind('<<ComboboxSelected>>', lambda e: self.gui_open_device(self.devicescb.get()))
 
-        open_button = ttk.Button(deviceframe, text='Show video', command=lambda: subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device]))
+        open_button = ttk.Button(deviceframe, text='Show video', command=self.open_camera_window)
         open_button.grid(row=0, column=1, sticky='NESW')
 
         cframe = ttk.Frame(self.frame)
@@ -190,7 +196,12 @@ class CameraCtrlsGui:
     def start(self):
         self.window.mainloop()
 
+    def kill_child_processes(self):
+        for proc in self.child_processes:
+            proc.kill()
+
 
 if __name__ == '__main__':
     gui = CameraCtrlsGui()
     gui.start()
+    gui.kill_child_processes()
