@@ -91,6 +91,7 @@ SDL_QUIT = 0x100
 SDL_KEYDOWN = 0x300
 SDLK_f = ord('f')
 SDLK_q = ord('q')
+SDLK_ESCAPE = 27
 
 SDL_WINDOW_FULLSCREEN = 0x00000001
 SDL_WINDOW_SHOWN = 0x00000004
@@ -330,7 +331,7 @@ class SDLCameraWindow():
                 self.stop_capturing()
                 break
             if self.event.type == SDL_KEYDOWN and self.event.key.repeat == 0:
-                if self.event.key.keysym.sym == SDLK_q:
+                if self.event.key.keysym.sym == SDLK_q or self.event.key.keysym.sym == SDLK_ESCAPE:
                     self.stop_capturing()
                     break
                 if self.event.key.keysym.sym == SDLK_f:
