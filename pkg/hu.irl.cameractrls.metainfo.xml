@@ -29,10 +29,12 @@
     </screenshots>
     <releases>
         <release version="0.4.6" date="2022-07-01">
-            <ul>
-                <li>Cameraview: use esc to exit</li>
-                <li>GTK, TK: close all windows at exit</li>
-            </ul>
+            <description>
+                <ul>
+                    <li>Cameraview: use esc to exit</li>
+                    <li>GTK, TK: close all windows at exit</li>
+                </ul>
+            </description>
         </release>
         <release version="0.4.5" date="2022-06-30"/>
         <release version="0.4.4" date="2022-06-29"/>
