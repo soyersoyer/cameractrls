@@ -66,7 +66,7 @@ class CameraCtrlsGui:
         self.zero_box.pack_start(zero_refresh, True, True, 5)
         self.zero_box.show_all()
 
-        self.device_box = Gtk.Box(halign=Gtk.Align.CENTER, hexpand=True, margin=10, margin_bottom=0)
+        self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin=10, margin_bottom=0)
         self.device_cb = Gtk.ComboBoxText()
         self.device_cb.connect('changed', lambda e: self.gui_open_device(self.device_cb.get_active()))
         self.device_box.pack_start(self.device_cb, True, True, 0)
