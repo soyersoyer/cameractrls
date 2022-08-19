@@ -1581,8 +1581,8 @@ class CameraCtrls:
             CtrlPage('Crop', [
                 CtrlCategory('Crop', pop_list_by_text_ids(ctrls, ['kiyo_pro_fov', 'logitech_brio_fov', 'zoom_absolute', 'pan_absolute', 'tilt_absolute'])),
             ]),
-            CtrlPage('Image', [
-                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['white_balance', 'brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
+            CtrlPage('Color', [
+                CtrlCategory('Color', pop_list_by_text_ids(ctrls, ['white_balance', 'brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
             ]),
             CtrlPage('Exposure', [
                 CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
