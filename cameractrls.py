@@ -1578,16 +1578,20 @@ class CameraCtrls:
     def get_ctrl_pages(self):
         ctrls = self.get_ctrls()
         pages = [
-            CtrlPage('Basic', [
+            CtrlPage('Crop', [
+                CtrlCategory('Crop', pop_list_by_text_ids(ctrls, ['kiyo_pro_fov', 'logitech_brio_fov', 'zoom_absolute', 'pan_absolute', 'tilt_absolute'])),
+            ]),
+            CtrlPage('Image', [
+                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['white_balance', 'brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
+            ]),
+            CtrlPage('Exposure', [
                 CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
-                    ['exposure', 'auto_exposure', 'backlight_compensation', 'gain', 'kiyo_pro_hdr'])),
-                CtrlCategory('Image', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
-                CtrlCategory('White Balance', pop_list_by_text_ids(ctrls, ['white_balance'])),
+                    ['exposure', 'auto_exposure', 'backlight_compensation', 'gain'])),
+                CtrlCategory('HDR', pop_list_by_text_ids(ctrls, ['kiyo_pro_hdr'])),
             ]),
             CtrlPage('Advanced', [
-                CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
-                CtrlCategory('Pan/Tilt/Zoom/FoV', pop_list_by_text_ids(ctrls, ['pan_absolute', 'tilt_absolute', 'zoom_absolute', 'kiyo_pro_fov', 'logitech_brio_fov'])),
                 CtrlCategory('Focus', pop_list_by_text_ids(ctrls, ['focus', 'kiyo_pro_af_mode'])),
+                CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
                 CtrlCategory('ISO', pop_list_by_text_ids(ctrls, ['iso'])),
                 CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),
                 CtrlCategory('Rotate/Flip', pop_list_by_text_ids(ctrls, ['rotate', 'horizontal_flip', 'vertical_flip'])),
@@ -1603,7 +1607,7 @@ class CameraCtrls:
                 CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save'])),
             ], target='footer')
         ]
-        pages[1].categories += CtrlCategory('Other', ctrls), #the rest
+        pages[3].categories += CtrlCategory('Other', ctrls), #the rest
         
         # filter out the empty categories and pages
         for page in pages:
