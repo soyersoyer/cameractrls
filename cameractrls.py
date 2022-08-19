@@ -964,6 +964,116 @@ class LogitechCtrls:
     def get_ctrls(self):
         return self.ctrls
 
+# Logitech BRIO GUID 49e40215-f434-47fe-b158-0e885023e51b
+LOGITECH_BRIO_GUID = b'\x15\x02\xe4\x49\x34\xf4\xfe\x47\xb1\x58\x0e\x88\x50\x23\xe5\x1b'
+
+LOGITECH_BRIO_FOV_SEL = 0x05
+LOGITECH_BRIO_FOV_LEN = 1
+LOGITECH_BRIO_FOV_OFFSET = 0
+
+LOGITECH_BRIO_FOV_65 = 0x02
+LOGITECH_BRIO_FOV_78 = 0x01
+LOGITECH_BRIO_FOV_90 = 0x00
+
+
+class LogitechBRIOCtrls:
+    BRIO_USB_ID = '046d:085e'
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, LOGITECH_BRIO_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids == LogitechBRIOCtrls.BRIO_USB_ID
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            LogitechCtrl(
+                'logitech_brio_fov',
+                'FoV',
+                'menu',
+                LOGITECH_BRIO_FOV_SEL,
+                LOGITECH_BRIO_FOV_LEN,
+                LOGITECH_BRIO_FOV_OFFSET,
+                [
+                    BaseCtrlMenu('65', '65°', LOGITECH_BRIO_FOV_65),
+                    BaseCtrlMenu('78', '78°', LOGITECH_BRIO_FOV_78),
+                    BaseCtrlMenu('90', '90°', LOGITECH_BRIO_FOV_90),
+                ]
+            ),
+        ]
+
+        for c in self.ctrls:
+            minimum_config = to_buf(bytes(c._len))
+            maximum_config = to_buf(bytes(c._len))
+            current_config = to_buf(bytes(c._len))
+
+            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_MIN, minimum_config)
+            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_MAX, maximum_config)
+            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_CUR, current_config)
+
+            c.min = minimum_config[c._offset][0]
+            c.max = maximum_config[c._offset][0]
+            c.value = current_config[c._offset][0]
+
+            if c.type == 'menu':
+                valmenu = find_by_value(c.menu, c.value)
+                if valmenu:
+                    c.value = valmenu.text_id
+
+
+    def setup_ctrls(self, params):
+        if not self.supported():
+            return
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl == None:
+                continue
+            if ctrl.type == 'menu':
+                menu  = find_by_text_id(ctrl.menu, v)
+                if menu == None:
+                    logging.warning(f'LogitechBRIOCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                    continue
+                desired = menu.value
+            elif ctrl.type == 'integer':
+                desired = int(v)
+            else:
+                logging.warning(f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})')
+                continue
+
+            current_config = to_buf(bytes(ctrl._len))
+            query_xu_control(self.fd, self.unit_id, ctrl._selector, UVC_GET_CUR, current_config)
+            current_config[ctrl._offset] = desired
+            query_xu_control(self.fd, self.unit_id, ctrl._selector, UVC_SET_CUR, current_config)
+            query_xu_control(self.fd, self.unit_id, ctrl._selector, UVC_GET_CUR, current_config)
+            current = current_config[ctrl._offset][0]
+
+            if ctrl.type == 'menu':
+                desmenu = find_by_value(ctrl.menu, desired)
+                if desmenu:
+                    desired = desmenu.text_id
+                curmenu = find_by_value(ctrl.menu, current)
+                if curmenu:
+                    current = curmenu.text_id
+            if current != desired:
+                logging.warning(f'LogitechBRIOCtrls: failed to set {k} to {desired}, current value {current}\n')
+                continue
+
+            ctrl.value = desired
+
+    def update_ctrls(self):
+        return
+
+    def get_ctrls(self):
+        return self.ctrls
 
 class V4L2Ctrl(BaseCtrl):
     def __init__(self, id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
@@ -1418,6 +1528,7 @@ class CameraCtrls:
             V4L2FmtCtrls(device, fd),
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
+            LogitechBRIOCtrls(device, fd),
             SystemdSaver(self),
         ]
     
@@ -1475,7 +1586,7 @@ class CameraCtrls:
             ]),
             CtrlPage('Advanced', [
                 CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
-                CtrlCategory('Pan/Tilt/Zoom/FoV', pop_list_by_text_ids(ctrls, ['pan_absolute', 'tilt_absolute', 'zoom_absolute', 'kiyo_pro_fov'])),
+                CtrlCategory('Pan/Tilt/Zoom/FoV', pop_list_by_text_ids(ctrls, ['pan_absolute', 'tilt_absolute', 'zoom_absolute', 'kiyo_pro_fov', 'logitech_brio_fov'])),
                 CtrlCategory('Focus', pop_list_by_text_ids(ctrls, ['focus', 'kiyo_pro_af_mode'])),
                 CtrlCategory('ISO', pop_list_by_text_ids(ctrls, ['iso'])),
                 CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),
