@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.8] - 2022-08-19
+
+### Changed
+- Cameractrls, GTK: Crop, Image, Exposure pages for better navigation
+
+
 ## [0.4.7] - 2022-08-19
 
 ### Added

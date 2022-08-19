@@ -1,7 +1,7 @@
 # cameractrls
 Camera controls for Linux
 
-It's a standalone Python CLI and GUI (GTK, TK) and camera Viewer (SDL) to set the camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (Led mode, led frequency), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Systemd extension (Save and restore controls with Systemd path+service).
+It's a standalone Python CLI and GUI (GTK, TK) and camera Viewer (SDL) to set the camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (Led mode, led frequency, BRIO FoV), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Systemd extension (Save and restore controls with Systemd path+service).
 
 <a href='https://flathub.org/apps/details/hu.irl.cameractrls'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
 
@@ -38,9 +38,11 @@ GTK GUI for the Camera controls
 <img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png" width="200">
 
 <div>
-<img alt="cameractrls basic screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png" width="380">
-<img alt="cameractrls advanced screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png" width="380">
-<img alt="cameractrls capture screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_3.png" width="380">
+<img alt="cameractrls crop screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png" width="380">
+<img alt="cameractrls image screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png" width="380">
+<img alt="cameractrls exposure screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_3.png" width="380">
+<img alt="cameractrls advanced screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_4.png" width="380">
+<img alt="cameractrls capture screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_5.png" width="380">
 </div>
 
 ### GTK GUI install
