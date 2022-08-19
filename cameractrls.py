@@ -796,9 +796,9 @@ class KiyoProCtrls:
                 'FoV',
                 'menu',
                 [
-                    KiyoMenu('wide', 'Wide', FOV_WIDE),
-                    KiyoMenu('medium', 'Medium', FOV_MEDIUM, FOV_MEDIUM_PRE),
                     KiyoMenu('narrow', 'Narrow', FOV_NARROW, FOV_NARROW_PRE),
+                    KiyoMenu('medium', 'Medium', FOV_MEDIUM, FOV_MEDIUM_PRE),
+                    KiyoMenu('wide', 'Wide', FOV_WIDE),
                 ]
             ),
             KiyoCtrl(
