@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.7] - 2022-08-19
+
+### Added
+- Cameractrls: add Logitech BRIO FoV control
+
 ## [0.4.6] - 2022-07-01
 
 ### Changed
