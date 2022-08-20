@@ -212,6 +212,12 @@ class CameraCtrlsGui:
                     ctrl_row.add(ctrl_box)
 
                     label = Gtk.Label(label=c.name, xalign=0, margin_right=5)
+                    tooltip_markup = f'<b>{c.text_id}</b>'
+                    if c.kernel_id:
+                        tooltip_markup += f'  <b>({c.kernel_id})</b>'
+                    if c.tooltip:
+                        tooltip_markup += f'\n\n{c.tooltip}'
+                    label.set_tooltip_markup(tooltip_markup)
                     ctrl_box.pack_start(label, False, False, 0)
 
                     if c.type == 'integer':

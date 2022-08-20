@@ -471,14 +471,75 @@ V4L2_CTRL_CLASS_USER = 0x00980000
 V4L2_CTRL_CLASS_CAMERA = 0x009a0000
 
 V4L2_CID_BASE = V4L2_CTRL_CLASS_USER | 0x900
+V4L2_CID_BRIGHTNESS = V4L2_CID_BASE + 0
+V4L2_CID_CONTRAST = V4L2_CID_BASE + 1
+V4L2_CID_SATURATION = V4L2_CID_BASE + 2
+V4L2_CID_HUE = V4L2_CID_BASE + 3
 V4L2_CID_AUTO_WHITE_BALANCE	= V4L2_CID_BASE + 12
+V4L2_CID_DO_WHITE_BALANCE = V4L2_CID_BASE + 13
+V4L2_CID_RED_BALANCE = V4L2_CID_BASE + 14
+V4L2_CID_BLUE_BALANCE = V4L2_CID_BASE + 15
+V4L2_CID_GAMMA = V4L2_CID_BASE + 16
+V4L2_CID_EXPOSURE = V4L2_CID_BASE + 17
+V4L2_CID_AUTOGAIN = V4L2_CID_BASE + 18
+V4L2_CID_GAIN = V4L2_CID_BASE + 19
+V4L2_CID_HFLIP = V4L2_CID_BASE + 20
+V4L2_CID_VFLIP = V4L2_CID_BASE + 21
+V4L2_CID_POWER_LINE_FREQUENCY = V4L2_CID_BASE + 24
+V4L2_CID_HUE_AUTO = V4L2_CID_BASE + 25
 V4L2_CID_WHITE_BALANCE_TEMPERATURE = V4L2_CID_BASE + 26
+V4L2_CID_SHARPNESS = V4L2_CID_BASE + 27
+V4L2_CID_BACKLIGHT_COMPENSATION = V4L2_CID_BASE + 28
+V4L2_CID_CHROMA_AGC = V4L2_CID_BASE + 29
+V4L2_CID_COLOR_KILLER = V4L2_CID_BASE + 30
+V4L2_CID_COLORFX = V4L2_CID_BASE + 31
+V4L2_CID_AUTOBRIGHTNESS = V4L2_CID_BASE + 32
+V4L2_CID_BAND_STOP_FILTER = V4L2_CID_BASE + 33
+V4L2_CID_ROTATE = V4L2_CID_BASE + 34
+V4L2_CID_BG_COLOR = V4L2_CID_BASE + 35
+V4L2_CID_CHROMA_GAIN = V4L2_CID_BASE + 36
+V4L2_CID_ILLUMINATORS_1 = V4L2_CID_BASE + 37
+V4L2_CID_ILLUMINATORS_2 = V4L2_CID_BASE + 38
+V4L2_CID_ALPHA_COMPONENT = V4L2_CID_BASE + 41
+V4L2_CID_COLORFX_CBCR = V4L2_CID_BASE + 42
+V4L2_CID_COLORFX_RGB = V4L2_CID_BASE + 43
 
 V4L2_CID_CAMERA_CLASS_BASE = V4L2_CTRL_CLASS_CAMERA | 0x900
 V4L2_CID_EXPOSURE_AUTO = V4L2_CID_CAMERA_CLASS_BASE + 1
-V4L2_CID_FOCUS_AUTO	= V4L2_CID_CAMERA_CLASS_BASE + 12
+V4L2_CID_EXPOSURE_ABSOLUTE = V4L2_CID_CAMERA_CLASS_BASE + 2
+V4L2_CID_EXPOSURE_AUTO_PRIORITY = V4L2_CID_CAMERA_CLASS_BASE + 3
+V4L2_CID_PAN_RELATIVE = V4L2_CID_CAMERA_CLASS_BASE + 4
+V4L2_CID_TILT_RELATIVE = V4L2_CID_CAMERA_CLASS_BASE + 5
+V4L2_CID_PAN_RESET = V4L2_CID_CAMERA_CLASS_BASE + 6
+V4L2_CID_TILT_RESET = V4L2_CID_CAMERA_CLASS_BASE + 7
+V4L2_CID_PAN_ABSOLUTE = V4L2_CID_CAMERA_CLASS_BASE + 8
+V4L2_CID_TILT_ABSOLUTE = V4L2_CID_CAMERA_CLASS_BASE + 9
 V4L2_CID_FOCUS_ABSOLUTE = V4L2_CID_CAMERA_CLASS_BASE + 10
+V4L2_CID_FOCUS_RELATIVE = V4L2_CID_CAMERA_CLASS_BASE + 11
+V4L2_CID_FOCUS_AUTO	= V4L2_CID_CAMERA_CLASS_BASE + 12
+V4L2_CID_ZOOM_ABSOLUTE = V4L2_CID_CAMERA_CLASS_BASE + 13
+V4L2_CID_ZOOM_RELATIVE = V4L2_CID_CAMERA_CLASS_BASE + 14
+V4L2_CID_ZOOM_CONTINUOUS = V4L2_CID_CAMERA_CLASS_BASE + 15
+V4L2_CID_PRIVACY = V4L2_CID_CAMERA_CLASS_BASE + 16
+V4L2_CID_IRIS_ABSOLUTE = V4L2_CID_CAMERA_CLASS_BASE + 17
+V4L2_CID_IRIS_RELATIVE = V4L2_CID_CAMERA_CLASS_BASE + 18
+V4L2_CID_AUTO_EXPOSURE_BIAS = V4L2_CID_CAMERA_CLASS_BASE + 19
+V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE = V4L2_CID_CAMERA_CLASS_BASE + 20
+V4L2_CID_WIDE_DYNAMIC_RANGE	= V4L2_CID_CAMERA_CLASS_BASE + 21
+V4L2_CID_IMAGE_STABILIZATION = V4L2_CID_CAMERA_CLASS_BASE + 22
+V4L2_CID_ISO_SENSITIVITY = V4L2_CID_CAMERA_CLASS_BASE + 23
 V4L2_CID_ISO_SENSITIVITY_AUTO = V4L2_CID_CAMERA_CLASS_BASE + 24
+V4L2_CID_EXPOSURE_METERING = V4L2_CID_CAMERA_CLASS_BASE + 25
+V4L2_CID_SCENE_MODE = V4L2_CID_CAMERA_CLASS_BASE + 26
+V4L2_CID_3A_LOCK = V4L2_CID_CAMERA_CLASS_BASE + 27
+V4L2_CID_AUTO_FOCUS_START = V4L2_CID_CAMERA_CLASS_BASE + 28
+V4L2_CID_AUTO_FOCUS_STOP = V4L2_CID_CAMERA_CLASS_BASE + 29
+V4L2_CID_AUTO_FOCUS_STATUS = V4L2_CID_CAMERA_CLASS_BASE + 30
+V4L2_CID_AUTO_FOCUS_RANGE = V4L2_CID_CAMERA_CLASS_BASE + 31
+V4L2_CID_PAN_SPEED = V4L2_CID_CAMERA_CLASS_BASE + 32
+V4L2_CID_TILT_SPEED = V4L2_CID_CAMERA_CLASS_BASE + 33
+V4L2_CID_CAMERA_ORIENTATION = V4L2_CID_CAMERA_CLASS_BASE + 34
+V4L2_CID_CAMERA_SENSOR_ROTATION = V4L2_CID_CAMERA_CLASS_BASE + 35
 
 V4L2_CTRL_UPDATERS = [
     V4L2_CID_EXPOSURE_AUTO,
@@ -490,6 +551,76 @@ V4L2_CTRL_UPDATERS = [
 V4L2_CTRL_REORDERS = {
     V4L2_CID_FOCUS_AUTO: V4L2_CID_FOCUS_ABSOLUTE,
     V4L2_CID_AUTO_WHITE_BALANCE: V4L2_CID_WHITE_BALANCE_TEMPERATURE,
+}
+
+V4L2_CTRL_INFO = {
+    V4L2_CID_BRIGHTNESS: ('V4L2_CID_BRIGHTNESS', 'Picture brightness, or more precisely, the black level.'),
+    V4L2_CID_CONTRAST: ('V4L2_CID_CONTRAST', 'Picture contrast or luma gain.'),
+    V4L2_CID_SATURATION: ('V4L2_CID_SATURATION', 'Picture color saturation or chroma gain.'),
+    V4L2_CID_HUE: ('V4L2_CID_HUE', 'Hue or color balance.'),
+    V4L2_CID_AUTO_WHITE_BALANCE: ('V4L2_CID_AUTO_WHITE_BALANCE', 'Automatic white balance.'),
+    V4L2_CID_DO_WHITE_BALANCE: ('V4L2_CID_DO_WHITE_BALANCE', 'This is an action control. When set (the value is ignored), the device will do a white balance and then hold the current setting. Contrast this with the boolean V4L2_CID_AUTO_WHITE_BALANCE, which, when activated, keeps adjusting the white balance.'),
+    V4L2_CID_RED_BALANCE: ('V4L2_CID_RED_BALANCE', 'Red chroma balance.'),
+    V4L2_CID_BLUE_BALANCE: ('V4L2_CID_BLUE_BALANCE', 'Blue chroma balance.'),
+    V4L2_CID_GAMMA: ('V4L2_CID_GAMMA', 'Gamma adjust.'),
+    V4L2_CID_EXPOSURE: ('V4L2_CID_EXPOSURE', 'Exposure.'),
+    V4L2_CID_AUTOGAIN: ('V4L2_CID_AUTOGAIN', 'Automatic gain/exposure control.'),
+    V4L2_CID_GAIN: ('V4L2_CID_GAIN', 'Gain control.'),
+    V4L2_CID_HFLIP: ('V4L2_CID_HFLIP', 'Mirror the picture horizontally.'),
+    V4L2_CID_VFLIP: ('V4L2_CID_VFLIP', 'Mirror the picture vertically.'),
+    V4L2_CID_POWER_LINE_FREQUENCY: ('V4L2_CID_POWER_LINE_FREQUENCY', 'Enables a power line frequency filter to avoid flicker.'),
+    V4L2_CID_HUE_AUTO: ('V4L2_CID_HUE_AUTO', 'Enables automatic hue control by the device. The effect of setting V4L2_CID_HUE while automatic hue control is enabled is undefined, drivers should ignore such request.'),
+    V4L2_CID_WHITE_BALANCE_TEMPERATURE: ('V4L2_CID_WHITE_BALANCE_TEMPERATURE', 'This control specifies the white balance settings as a color temperature in Kelvin. A driver should have a minimum of 2800 (incandescent) to 6500 (daylight).'),
+    V4L2_CID_SHARPNESS: ('V4L2_CID_SHARPNESS', 'Adjusts the sharpness filters in a camera. The minimum value disables the filters, higher values give a sharper picture.'),
+    V4L2_CID_BACKLIGHT_COMPENSATION: ('V4L2_CID_BACKLIGHT_COMPENSATION', 'Adjusts the backlight compensation in a camera. The minimum value disables backlight compensation.'),
+    V4L2_CID_CHROMA_AGC: ('V4L2_CID_CHROMA_AGC', 'Chroma automatic gain control.'),
+    V4L2_CID_CHROMA_GAIN: ('V4L2_CID_CHROMA_GAIN', 'Adjusts the Chroma gain control (for use when chroma AGC is disabled).'),
+    V4L2_CID_COLOR_KILLER: ('V4L2_CID_COLOR_KILLER', 'Enable the color killer (i. e. force a black & white image in case of a weak video signal).'),
+    V4L2_CID_COLORFX: ('V4L2_CID_COLORFX', 'Selects a color effect.'),
+    V4L2_CID_AUTOBRIGHTNESS: ('V4L2_CID_AUTOBRIGHTNESS', 'Enable Automatic Brightness.'),
+    V4L2_CID_BAND_STOP_FILTER: ('V4L2_CID_BAND_STOP_FILTER', 'Switch the band-stop filter of a camera sensor on or off, or specify its strength. Such band-stop filters can be used, for example, to filter out the fluorescent light component.'),
+    V4L2_CID_ROTATE: ('V4L2_CID_ROTATE', 'Rotates the image by specified angle. Common angles are 90, 270 and 180. Rotating the image to 90 and 270 will reverse the height and width of the display window. It is necessary to set the new height and width of the picture using the VIDIOC_S_FMT ioctl according to the rotation angle selected'),
+    V4L2_CID_BG_COLOR: ('V4L2_CID_BG_COLOR', 'Sets the background color on the current output device. Background color needs to be specified in the RGB24 format. The supplied 32 bit value is interpreted as bits 0-7 Red color information, bits 8-15 Green color information, bits 16-23 Blue color information and bits 24-31 must be zero.'),
+    V4L2_CID_ILLUMINATORS_1: ('V4L2_CID_ILLUMINATORS_1', 'Switch on or off the illuminator 1 of the device (usually a microscope).'),
+    V4L2_CID_ILLUMINATORS_2: ('V4L2_CID_ILLUMINATORS_2', 'Switch on or off the illuminator 2 of the device (usually a microscope).'),
+    V4L2_CID_ALPHA_COMPONENT: ('V4L2_CID_ALPHA_COMPONENT', 'Sets the alpha color component. When a capture device (or capture queue of a mem-to-mem device) produces a frame format that includes an alpha component (e.g. packed RGB image formats) and the alpha value is not defined by the device or the mem-to-mem input data this control lets you select the alpha component value of all pixels. When an output device (or output queue of a mem-to-mem device) consumes a frame format that doesn’t include an alpha component and the device supports alpha channel processing this control lets you set the alpha component value of all pixels for further processing in the device.'),
+    V4L2_CID_COLORFX_CBCR: ('V4L2_CID_COLORFX_CBCR', 'Determines the Cb and Cr coefficients for V4L2_COLORFX_SET_CBCR color effect. Bits [7:0] of the supplied 32 bit value are interpreted as Cr component, bits [15:8] as Cb component and bits [31:16] must be zero.'),
+    V4L2_CID_COLORFX_RGB: ('V4L2_CID_COLORFX_RGB', 'Determines the Red, Green, and Blue coefficients for V4L2_COLORFX_SET_RGB color effect. Bits [7:0] of the supplied 32 bit value are interpreted as Blue component, bits [15:8] as Green component, bits [23:16] as Red component, and bits [31:24] must be zero.'),
+    V4L2_CID_EXPOSURE_AUTO: ('V4L2_CID_EXPOSURE_AUTO', 'Enables automatic adjustments of the exposure time and/or iris aperture. The effect of manual changes of the exposure time or iris aperture while these features are enabled is undefined, drivers should ignore such requests. Possible values are: AUTO: Automatic exposure time, automatic iris aperture. MANUAL: Manual exposure time, manual iris. SHUTTER_PRIORITY: Manual exposure time, auto iris. APERTURE_PRIORITY: Auto exposure time, manual iris.'),
+    V4L2_CID_EXPOSURE_ABSOLUTE: ('V4L2_CID_EXPOSURE_ABSOLUTE', 'Determines the exposure time of the camera sensor. The exposure time is limited by the frame interval. Drivers should interpret the values as 100 µs units, where the value 1 stands for 1/10000th of a second, 10000 for 1 second and 100000 for 10 seconds.'),
+    V4L2_CID_EXPOSURE_AUTO_PRIORITY: ('V4L2_CID_EXPOSURE_AUTO_PRIORITY', 'When V4L2_CID_EXPOSURE_AUTO is set to AUTO or APERTURE_PRIORITY, this control determines if the device may dynamically vary the frame rate. By default this feature is disabled (0) and the frame rate must remain constant.'),
+    V4L2_CID_PAN_RELATIVE: ('V4L2_CID_PAN_RELATIVE', 'This control turns the camera horizontally by the specified amount. The unit is undefined. A positive value moves the camera to the right (clockwise when viewed from above), a negative value to the left. A value of zero does not cause motion. This is a write-only control.'),
+    V4L2_CID_TILT_RELATIVE: ('V4L2_CID_TILT_RELATIVE', 'This control turns the camera vertically by the specified amount. The unit is undefined. A positive value moves the camera up, a negative value down. A value of zero does not cause motion. This is a write-only control.'),
+    V4L2_CID_PAN_RESET: ('V4L2_CID_PAN_RESET', 'When this control is set, the camera moves horizontally to the default position.'),
+    V4L2_CID_TILT_RESET: ('V4L2_CID_TILT_RESET', 'When this control is set, the camera moves vertically to the default position.'),
+    V4L2_CID_PAN_ABSOLUTE: ('V4L2_CID_PAN_ABSOLUTE', 'This control turns the camera horizontally to the specified position. Positive values move the camera to the right (clockwise when viewed from above), negative values to the left. Drivers should interpret the values as arc seconds, with valid values between -180 * 3600 and +180 * 3600 inclusive.'),
+    V4L2_CID_TILT_ABSOLUTE: ('V4L2_CID_TILT_ABSOLUTE', 'This control turns the camera vertically to the specified position. Positive values move the camera up, negative values down. Drivers should interpret the values as arc seconds, with valid values between -180 * 3600 and +180 * 3600 inclusive.'),
+    V4L2_CID_FOCUS_ABSOLUTE: ('V4L2_CID_FOCUS_ABSOLUTE', 'This control sets the focal point of the camera to the specified position. The unit is undefined. Positive values set the focus closer to the camera, negative values towards infinity.'),
+    V4L2_CID_FOCUS_RELATIVE: ('V4L2_CID_FOCUS_RELATIVE', 'This control moves the focal point of the camera by the specified amount. The unit is undefined. Positive values move the focus closer to the camera, negative values towards infinity. This is a write-only control.'),
+    V4L2_CID_FOCUS_AUTO: ('V4L2_CID_FOCUS_AUTO', 'Enables continuous automatic focus adjustments. The effect of manual focus adjustments while this feature is enabled is undefined, drivers should ignore such requests.'),
+    V4L2_CID_ZOOM_ABSOLUTE: ('V4L2_CID_ZOOM_ABSOLUTE', 'Specify the objective lens focal length as an absolute value. The zoom unit is driver-specific and its value should be a positive integer.'),
+    V4L2_CID_ZOOM_RELATIVE: ('V4L2_CID_ZOOM_RELATIVE', 'Specify the objective lens focal length relatively to the current value. Positive values move the zoom lens group towards the telephoto direction, negative values towards the wide-angle direction. The zoom unit is driver-specific. This is a write-only control.'),
+    V4L2_CID_ZOOM_CONTINUOUS: ('V4L2_CID_ZOOM_CONTINUOUS', 'Move the objective lens group at the specified speed until it reaches physical device limits or until an explicit request to stop the movement. A positive value moves the zoom lens group towards the telephoto direction. A value of zero stops the zoom lens group movement. A negative value moves the zoom lens group towards the wide-angle direction. The zoom speed unit is driver-specific.'),
+    V4L2_CID_PRIVACY: ('V4L2_CID_PRIVACY', 'Prevent video from being acquired by the camera. When this control is set to TRUE (1), no image can be captured by the camera. Common means to enforce privacy are mechanical obturation of the sensor and firmware image processing, but the device is not restricted to these methods. Devices that implement the privacy control must support read access and may support write access.'),
+    V4L2_CID_IRIS_ABSOLUTE: ('V4L2_CID_IRIS_ABSOLUTE', 'This control sets the camera’s aperture to the specified value. The unit is undefined. Larger values open the iris wider, smaller values close it.'),
+    V4L2_CID_IRIS_RELATIVE: ('V4L2_CID_IRIS_RELATIVE', 'This control modifies the camera’s aperture by the specified amount. The unit is undefined. Positive values open the iris one step further, negative values close it one step further. This is a write-only control.'),
+    V4L2_CID_AUTO_EXPOSURE_BIAS: ('V4L2_CID_AUTO_EXPOSURE_BIAS', 'Determines the automatic exposure compensation, it is effective only when V4L2_CID_EXPOSURE_AUTO control is set to AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY. It is expressed in terms of EV, drivers should interpret the values as 0.001 EV units, where the value 1000 stands for +1 EV. Increasing the exposure compensation value is equivalent to decreasing the exposure value (EV) and will increase the amount of light at the image sensor. The camera performs the exposure compensation by adjusting absolute exposure time and/or aperture.'),
+    V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE: ('V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE', 'Sets white balance to automatic, manual or a preset. The presets determine color temperature of the light as a hint to the camera for white balance adjustments resulting in most accurate color representation. The following white balance presets are listed in order of increasing color temperature.'),
+    V4L2_CID_WIDE_DYNAMIC_RANGE: ('V4L2_CID_WIDE_DYNAMIC_RANGE', 'Enables or disables the camera’s wide dynamic range feature. This feature allows to obtain clear images in situations where intensity of the illumination varies significantly throughout the scene, i.e. there are simultaneously very dark and very bright areas. It is most commonly realized in cameras by combining two subsequent frames with different exposure times.'),
+    V4L2_CID_IMAGE_STABILIZATION: ('V4L2_CID_IMAGE_STABILIZATION', 'Enables or disables image stabilization.'),
+    V4L2_CID_ISO_SENSITIVITY: ('V4L2_CID_ISO_SENSITIVITY', 'Determines ISO equivalent of an image sensor indicating the sensor’s sensitivity to light. The numbers are expressed in arithmetic scale, as per ISO 12232:2006 standard, where doubling the sensor sensitivity is represented by doubling the numerical ISO value. Applications should interpret the values as standard ISO values multiplied by 1000, e.g. control value 800 stands for ISO 0.8. Drivers will usually support only a subset of standard ISO values. The effect of setting this control while the V4L2_CID_ISO_SENSITIVITY_AUTO control is set to a value other than V4L2_CID_ISO_SENSITIVITY_MANUAL is undefined, drivers should ignore such requests.'),
+    V4L2_CID_ISO_SENSITIVITY_AUTO: ('V4L2_CID_ISO_SENSITIVITY_AUTO', 'Enables or disables automatic ISO sensitivity adjustments.'),
+    V4L2_CID_EXPOSURE_METERING: ('V4L2_CID_EXPOSURE_METERING', 'Determines how the camera measures the amount of light available for the frame exposure. Possible values are:'),
+    V4L2_CID_SCENE_MODE: ('V4L2_CID_SCENE_MODE', 'This control allows to select scene programs as the camera automatic modes optimized for common shooting scenes. Within these modes the camera determines best exposure, aperture, focusing, light metering, white balance and equivalent sensitivity. The controls of those parameters are influenced by the scene mode control. An exact behavior in each mode is subject to the camera specification. When the scene mode feature is not used, this control should be set to V4L2_SCENE_MODE_NONE to make sure the other possibly related controls are accessible.'),
+    V4L2_CID_3A_LOCK: ('V4L2_CID_3A_LOCK', 'This control locks or unlocks the automatic focus, exposure and white balance. The automatic adjustments can be paused independently by setting the corresponding lock bit to 1. The camera then retains the settings until the lock bit is cleared. The following lock bits are defined: When a given algorithm is not enabled, drivers should ignore requests to lock it and should return no error. An example might be an application setting bit V4L2_LOCK_WHITE_BALANCE when the V4L2_CID_AUTO_WHITE_BALANCE control is set to FALSE. The value of this control may be changed by exposure, white balance or focus controls'),
+    V4L2_CID_AUTO_FOCUS_START: ('V4L2_CID_AUTO_FOCUS_START', 'Starts single auto focus process. The effect of setting this control when V4L2_CID_FOCUS_AUTO is set to TRUE (1) is undefined, drivers should ignore such requests.'),
+    V4L2_CID_AUTO_FOCUS_STOP: ('V4L2_CID_AUTO_FOCUS_STOP', 'Aborts automatic focusing started with V4L2_CID_AUTO_FOCUS_START control. It is effective only when the continuous autofocus is disabled, that is when V4L2_CID_FOCUS_AUTO control is set to FALSE (0)'),
+    V4L2_CID_AUTO_FOCUS_STATUS: ('V4L2_CID_AUTO_FOCUS_STATUS', 'The automatic focus status. This is a read-only control.'),
+    V4L2_CID_AUTO_FOCUS_RANGE: ('V4L2_CID_AUTO_FOCUS_RANGE', 'Determines auto focus distance range for which lens may be adjusted.'),
+    V4L2_CID_PAN_SPEED: ('V4L2_CID_PAN_SPEED', 'This control turns the camera horizontally at the specific speed. The unit is undefined. A positive value moves the camera to the right (clockwise when viewed from above), a negative value to the left. A value of zero stops the motion if one is in progress and has no effect otherwise.'),
+    V4L2_CID_TILT_SPEED: ('V4L2_CID_TILT_SPEED', 'This control turns the camera vertically at the specified speed. The unit is undefined. A positive value moves the camera up, a negative value down. A value of zero stops the motion if one is in progress and has no effect otherwise.'),
+    V4L2_CID_CAMERA_ORIENTATION: ('V4L2_CID_CAMERA_ORIENTATION', 'his read-only control describes the camera orientation by reporting its mounting position on the device where the camera is installed. The control value is constant and not modifiable by software. This control is particularly meaningful for devices which have a well defined orientation, such as phones, laptops and portable devices since the control is expressed as a position relative to the device’s intended usage orientation. For example, a camera installed on the user-facing side of a phone, a tablet or a laptop device is said to be have V4L2_CAMERA_ORIENTATION_FRONT orientation, while a camera installed on the opposite side of the front one is said to be have V4L2_CAMERA_ORIENTATION_BACK orientation. Camera sensors not directly attached to the device, or attached in a way that allows them to move freely, such as webcams and digital cameras, are said to have the V4L2_CAMERA_ORIENTATION_EXTERNAL orientation.'),
+    V4L2_CID_CAMERA_SENSOR_ROTATION: ('V4L2_CID_CAMERA_SENSOR_ROTATION', 'This read-only control describes the rotation correction in degrees in the counter-clockwise direction to be applied to the captured images once captured to memory to compensate for the camera sensor mounting rotation.'),
 }
 
 class v4l2_control(ctypes.Structure):
@@ -716,8 +847,9 @@ def to_bool(val):
 
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
-                inactive = False, updater = False, reopener = False, menu_dd = False, menu = None):
+                inactive = False, updater = False, reopener = False, menu_dd = False, menu = None, tooltip = None, kernel_id = None):
         self.text_id = text_id
+        self.kernel_id = kernel_id
         self.name = name
         self.type = type
         self.value = value
@@ -730,6 +862,7 @@ class BaseCtrl:
         self.reopener = reopener
         self.menu_dd = menu_dd
         self.menu = menu
+        self.tooltip = tooltip
 
 class BaseCtrlMenu:
     def __init__(self, text_id, name, value):
@@ -738,8 +871,8 @@ class BaseCtrlMenu:
         self.value = value
 
 class KiyoCtrl(BaseCtrl):
-    def __init__(self, text_id, name, type, menu):
-        super().__init__(text_id, name, type, menu=menu)
+    def __init__(self, text_id, name, type, tooltip, menu, ):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
 
 class KiyoMenu(BaseCtrlMenu):
     def __init__(self, text_id, name, value, before = None):
@@ -768,6 +901,7 @@ class KiyoProCtrls:
                 'kiyo_pro_af_mode',
                 'AF Mode',
                 'menu',
+                'Kiyo Pro Auto Focus mode',
                 [
                     KiyoMenu('passive', 'Passive', AF_PASSIVE),
                     KiyoMenu('responsive', 'Responsive', AF_RESPONSIVE),
@@ -777,6 +911,7 @@ class KiyoProCtrls:
                 'kiyo_pro_hdr',
                 'HDR',
                 'menu',
+                'Kiyo Pro High Dynamic Range',
                 [
                     KiyoMenu('off', 'Off', HDR_OFF),
                     KiyoMenu('on', 'On', HDR_ON),
@@ -786,6 +921,7 @@ class KiyoProCtrls:
                 'kiyo_pro_hdr_mode',
                 'HDR Mode',
                 'menu',
+                'Kiyo Pro High Dynamic Range mode',
                 [
                     KiyoMenu('bright', 'Bright', HDR_BRIGHT),
                     KiyoMenu('dark', 'Dark', HDR_DARK),
@@ -795,6 +931,7 @@ class KiyoProCtrls:
                 'kiyo_pro_fov',
                 'FoV',
                 'menu',
+                'Kiyo Pro Field of View',
                 [
                     KiyoMenu('narrow', 'Narrow', FOV_NARROW, FOV_NARROW_PRE),
                     KiyoMenu('medium', 'Medium', FOV_MEDIUM, FOV_MEDIUM_PRE),
@@ -805,6 +942,7 @@ class KiyoProCtrls:
                 'kiyo_pro_save',
                 'Save settings to Kiyo Pro',
                 'button',
+                'Save the settings into he Kiyo Pro\'s NVRAM',
                 [
                     KiyoMenu('save', 'Save', SAVE),
                 ]
@@ -852,8 +990,8 @@ LOGITECH_PERIPHERAL_LED1_MODE_AUTO =  0x03
 LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET = 3
 
 class LogitechCtrl(BaseCtrl):
-    def __init__(self, text_id, name, type, selector, len, offset, menu = None):
-        super().__init__(text_id, name, type, menu=menu)
+    def __init__(self, text_id, name, type, tooltip, selector, len, offset, menu = None):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
         self._selector = selector
         self._len = len
         self._offset = offset
@@ -879,6 +1017,7 @@ class LogitechCtrls:
                 'logitech_led1_mode',
                 'LED1 Mode',
                 'menu',
+                'Logitech LED mode',
                 LOGITECH_PERIPHERAL_LED1_SEL,
                 LOGITECH_PERIPHERAL_LED1_LEN,
                 LOGITECH_PERIPHERAL_LED1_MODE_OFFSET,
@@ -893,6 +1032,7 @@ class LogitechCtrls:
                 'logitech_led1_frequency',
                 'LED1 Frequency',
                 'integer',
+                'Logitech LED frequency',
                 LOGITECH_PERIPHERAL_LED1_SEL,
                 LOGITECH_PERIPHERAL_LED1_LEN,
                 LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET,
@@ -999,6 +1139,7 @@ class LogitechBRIOCtrls:
                 'logitech_brio_fov',
                 'FoV',
                 'menu',
+                'Logitech BRIO Field of View',
                 LOGITECH_BRIO_FOV_SEL,
                 LOGITECH_BRIO_FOV_LEN,
                 LOGITECH_BRIO_FOV_OFFSET,
@@ -1159,6 +1300,10 @@ class V4L2Ctrls:
                 # v4l2ctrl.updater = bool(qctrl.flags & V4L2_CTRL_FLAG_UPDATE)
                 v4l2ctrl.updater = qctrl.id in V4L2_CTRL_UPDATERS
                 v4l2ctrl.inactive = bool(qctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
+                ctrl_info = V4L2_CTRL_INFO.get(qctrl.id)
+                if ctrl_info != None:
+                    v4l2ctrl.kernel_id = ctrl_info[0]
+                    v4l2ctrl.tooltip = ctrl_info[1]
 
                 if qctrl.type in [V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
                     v4l2ctrl.menu = []
@@ -1260,19 +1405,19 @@ class V4L2FmtCtrls:
 
         self.ctrls = [
             # must reopen the fd, because changing these lock the device, and can't be open by another processes
-            BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, menu=[
+            BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, tooltip='Output pixel format', menu=[
                 BaseCtrlMenu(fmt, fmt, None) for fmt in fmts
             ]),
         ]
         if len(resolutions) > 0:
             self.ctrls.append(
-                BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, menu=[
+                BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, tooltip='Resolution in pixels', menu=[
                     BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
                 ]),
             )
         if len(framerates) > 0:
             self.ctrls.append(
-                BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, menu=[
+                BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True,  tooltip='Frame per second', menu=[
                     BaseCtrlMenu(fps, fps, None) for fps in framerates
                 ]), # fps menu should be dropdown
             )
@@ -1427,7 +1572,7 @@ class SystemdSaver:
         self.cam_ctrls = cam_ctrls
         self.ctrls = [] if not self.systemd_available() else [
             BaseCtrl('systemd_save', 'Save settings to Systemd', 'button',
-                menu = [ BaseCtrlMenu('save', 'Save', 'save') ]
+                menu = [ BaseCtrlMenu('save', 'Save', 'save') ], tooltip = 'Save settings into a systemd path triggered user service',
             )
         ]
     
