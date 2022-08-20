@@ -1723,21 +1723,21 @@ class CameraCtrls:
     def get_ctrl_pages(self):
         ctrls = self.get_ctrls()
         pages = [
-            CtrlPage('Crop', [
+            CtrlPage('Basic', [
                 CtrlCategory('Crop', pop_list_by_text_ids(ctrls, ['kiyo_pro_fov', 'logitech_brio_fov', 'zoom_absolute', 'pan_absolute', 'tilt_absolute'])),
+                CtrlCategory('Focus', pop_list_by_text_ids(ctrls, ['focus', 'kiyo_pro_af_mode'])),
+            ]),
+            CtrlPage('Exposure', [
+                CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
+                    ['exposure', 'auto_exposure', 'gain'])),
+                CtrlCategory('ISO', pop_list_by_text_ids(ctrls, ['iso'])),
+                CtrlCategory('Dynamic Range', pop_list_by_text_ids(ctrls, ['backlight_compensation', 'kiyo_pro_hdr'])),
             ]),
             CtrlPage('Color', [
                 CtrlCategory('Color', pop_list_by_text_ids(ctrls, ['white_balance', 'brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
             ]),
-            CtrlPage('Exposure', [
-                CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
-                    ['exposure', 'auto_exposure', 'backlight_compensation', 'gain'])),
-                CtrlCategory('HDR', pop_list_by_text_ids(ctrls, ['kiyo_pro_hdr'])),
-            ]),
             CtrlPage('Advanced', [
-                CtrlCategory('Focus', pop_list_by_text_ids(ctrls, ['focus', 'kiyo_pro_af_mode'])),
                 CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
-                CtrlCategory('ISO', pop_list_by_text_ids(ctrls, ['iso'])),
                 CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),
                 CtrlCategory('Rotate/Flip', pop_list_by_text_ids(ctrls, ['rotate', 'horizontal_flip', 'vertical_flip'])),
             ]),
