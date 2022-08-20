@@ -47,6 +47,11 @@ GTK GUI for the Camera controls
 
 ### GTK GUI install
 
+Install the dependencies
+```shell
+sudo apt install libsdl2-2.0-0 libturbojpeg
+```
+
 Clone the repo
 ```shell
 git clone https://github.com/soyersoyer/cameractrls.git
@@ -79,9 +84,9 @@ If you like the old user interfaces.
 
 ### TK GUI install
 
-Install the tkinter GUI framework
+Install the dependencies
 ```shell
-sudo apt install python3-tk
+sudo apt install python3-tk libsdl2-2.0-0 libturbojpeg
 ```
 
 Clone the repo
