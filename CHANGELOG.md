@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.9] - 2022-08-20
+
+### Added
+- Control tooltips
+
+### Changed
+- Reordered pages
+
 ## [0.4.8] - 2022-08-19
 
 ### Changed
