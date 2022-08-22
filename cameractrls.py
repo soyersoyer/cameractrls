@@ -1296,9 +1296,9 @@ class V4L2Ctrls:
                 v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, int(ctrl.value),
                     qctrl.default, qctrl.minimum, qctrl.maximum, qctrl.step)
 
-                # doesn't work, uvc driver bug?
+                # doesn't work with some contols, uvc driver bug?
                 # v4l2ctrl.updater = bool(qctrl.flags & V4L2_CTRL_FLAG_UPDATE)
-                v4l2ctrl.updater = qctrl.id in V4L2_CTRL_UPDATERS
+                v4l2ctrl.updater = bool(qctrl.flags & V4L2_CTRL_FLAG_UPDATE) or qctrl.id in V4L2_CTRL_UPDATERS
                 v4l2ctrl.inactive = bool(qctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
                 ctrl_info = V4L2_CTRL_INFO.get(qctrl.id)
                 if ctrl_info != None:
