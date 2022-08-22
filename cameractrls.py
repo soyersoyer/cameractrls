@@ -1734,7 +1734,8 @@ class CameraCtrls:
                 CtrlCategory('Dynamic Range', pop_list_by_text_ids(ctrls, ['backlight_compensation', 'kiyo_pro_hdr'])),
             ]),
             CtrlPage('Color', [
-                CtrlCategory('Color', pop_list_by_text_ids(ctrls, ['white_balance', 'brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
+                CtrlCategory('Balance', pop_list_by_text_ids(ctrls, ['white_balance', 'do_white_balance', 'red_balance', 'blue_balance'])),
+                CtrlCategory('Color', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
             ]),
             CtrlPage('Advanced', [
                 CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
