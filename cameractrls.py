@@ -469,6 +469,7 @@ V4L2_CTRL_FLAG_NEXT_COMPOUND = 0x40000000
 
 V4L2_CTRL_CLASS_USER = 0x00980000
 V4L2_CTRL_CLASS_CAMERA = 0x009a0000
+V4L2_CTRL_CLASS_JPEG = 0x009d0000
 
 V4L2_CID_BASE = V4L2_CTRL_CLASS_USER | 0x900
 V4L2_CID_BRIGHTNESS = V4L2_CID_BASE + 0
@@ -541,6 +542,12 @@ V4L2_CID_TILT_SPEED = V4L2_CID_CAMERA_CLASS_BASE + 33
 V4L2_CID_CAMERA_ORIENTATION = V4L2_CID_CAMERA_CLASS_BASE + 34
 V4L2_CID_CAMERA_SENSOR_ROTATION = V4L2_CID_CAMERA_CLASS_BASE + 35
 
+V4L2_CID_JPEG_CLASS_BASE = V4L2_CTRL_CLASS_JPEG | 0x900
+V4L2_CID_JPEG_CHROMA_SUBSAMPLING = V4L2_CID_JPEG_CLASS_BASE + 1
+V4L2_CID_JPEG_RESTART_INTERVAL = V4L2_CID_JPEG_CLASS_BASE + 2
+V4L2_CID_JPEG_COMPRESSION_QUALITY = V4L2_CID_JPEG_CLASS_BASE + 3
+V4L2_CID_JPEG_ACTIVE_MARKER	 = V4L2_CID_JPEG_CLASS_BASE + 4
+
 V4L2_CTRL_UPDATERS = [
     V4L2_CID_EXPOSURE_AUTO,
     V4L2_CID_FOCUS_AUTO,
@@ -586,6 +593,7 @@ V4L2_CTRL_INFO = {
     V4L2_CID_ALPHA_COMPONENT: ('V4L2_CID_ALPHA_COMPONENT', 'Sets the alpha color component. When a capture device (or capture queue of a mem-to-mem device) produces a frame format that includes an alpha component (e.g. packed RGB image formats) and the alpha value is not defined by the device or the mem-to-mem input data this control lets you select the alpha component value of all pixels. When an output device (or output queue of a mem-to-mem device) consumes a frame format that doesn’t include an alpha component and the device supports alpha channel processing this control lets you set the alpha component value of all pixels for further processing in the device.'),
     V4L2_CID_COLORFX_CBCR: ('V4L2_CID_COLORFX_CBCR', 'Determines the Cb and Cr coefficients for V4L2_COLORFX_SET_CBCR color effect. Bits [7:0] of the supplied 32 bit value are interpreted as Cr component, bits [15:8] as Cb component and bits [31:16] must be zero.'),
     V4L2_CID_COLORFX_RGB: ('V4L2_CID_COLORFX_RGB', 'Determines the Red, Green, and Blue coefficients for V4L2_COLORFX_SET_RGB color effect. Bits [7:0] of the supplied 32 bit value are interpreted as Blue component, bits [15:8] as Green component, bits [23:16] as Red component, and bits [31:24] must be zero.'),
+
     V4L2_CID_EXPOSURE_AUTO: ('V4L2_CID_EXPOSURE_AUTO', 'Enables automatic adjustments of the exposure time and/or iris aperture. The effect of manual changes of the exposure time or iris aperture while these features are enabled is undefined, drivers should ignore such requests. Possible values are: AUTO: Automatic exposure time, automatic iris aperture. MANUAL: Manual exposure time, manual iris. SHUTTER_PRIORITY: Manual exposure time, auto iris. APERTURE_PRIORITY: Auto exposure time, manual iris.'),
     V4L2_CID_EXPOSURE_ABSOLUTE: ('V4L2_CID_EXPOSURE_ABSOLUTE', 'Determines the exposure time of the camera sensor. The exposure time is limited by the frame interval. Drivers should interpret the values as 100 µs units, where the value 1 stands for 1/10000th of a second, 10000 for 1 second and 100000 for 10 seconds.'),
     V4L2_CID_EXPOSURE_AUTO_PRIORITY: ('V4L2_CID_EXPOSURE_AUTO_PRIORITY', 'When V4L2_CID_EXPOSURE_AUTO is set to AUTO or APERTURE_PRIORITY, this control determines if the device may dynamically vary the frame rate. By default this feature is disabled (0) and the frame rate must remain constant.'),
@@ -621,6 +629,11 @@ V4L2_CTRL_INFO = {
     V4L2_CID_TILT_SPEED: ('V4L2_CID_TILT_SPEED', 'This control turns the camera vertically at the specified speed. The unit is undefined. A positive value moves the camera up, a negative value down. A value of zero stops the motion if one is in progress and has no effect otherwise.'),
     V4L2_CID_CAMERA_ORIENTATION: ('V4L2_CID_CAMERA_ORIENTATION', 'his read-only control describes the camera orientation by reporting its mounting position on the device where the camera is installed. The control value is constant and not modifiable by software. This control is particularly meaningful for devices which have a well defined orientation, such as phones, laptops and portable devices since the control is expressed as a position relative to the device’s intended usage orientation. For example, a camera installed on the user-facing side of a phone, a tablet or a laptop device is said to be have V4L2_CAMERA_ORIENTATION_FRONT orientation, while a camera installed on the opposite side of the front one is said to be have V4L2_CAMERA_ORIENTATION_BACK orientation. Camera sensors not directly attached to the device, or attached in a way that allows them to move freely, such as webcams and digital cameras, are said to have the V4L2_CAMERA_ORIENTATION_EXTERNAL orientation.'),
     V4L2_CID_CAMERA_SENSOR_ROTATION: ('V4L2_CID_CAMERA_SENSOR_ROTATION', 'This read-only control describes the rotation correction in degrees in the counter-clockwise direction to be applied to the captured images once captured to memory to compensate for the camera sensor mounting rotation.'),
+
+    V4L2_CID_JPEG_CHROMA_SUBSAMPLING: ('V4L2_CID_JPEG_CHROMA_SUBSAMPLING', 'The chroma subsampling factors describe how each component of an input image is sampled, in respect to maximum sample rate in each spatial dimension. See ITU-T.81, clause A.1.1. for more details. The V4L2_CID_JPEG_CHROMA_SUBSAMPLING control determines how Cb and Cr components are downsampled after coverting an input image from RGB to Y’CbCr color space.'),
+    V4L2_CID_JPEG_RESTART_INTERVAL: ('V4L2_CID_JPEG_RESTART_INTERVAL', 'The restart interval determines an interval of inserting RSTm markers (m = 0..7). The purpose of these markers is to additionally reinitialize the encoder process, in order to process blocks of an image independently. For the lossy compression processes the restart interval unit is MCU (Minimum Coded Unit) and its value is contained in DRI (Define Restart Interval) marker. If V4L2_CID_JPEG_RESTART_INTERVAL control is set to 0, DRI and RSTm markers will not be inserted.'),
+    V4L2_CID_JPEG_COMPRESSION_QUALITY: ('V4L2_CID_JPEG_COMPRESSION_QUALITY', 'Determines trade-off between image quality and size. It provides simpler method for applications to control image quality, without a need for direct reconfiguration of luminance and chrominance quantization tables. In cases where a driver uses quantization tables configured directly by an application, using interfaces defined elsewhere, V4L2_CID_JPEG_COMPRESSION_QUALITY control should be set by driver to 0. \nThe value range of this control is driver-specific. Only positive, non-zero values are meaningful. The recommended range is 1 - 100, where larger values correspond to better image quality.'),
+    V4L2_CID_JPEG_ACTIVE_MARKER: ('V4L2_CID_JPEG_ACTIVE_MARKER', 'Specify which JPEG markers are included in compressed stream. This control is valid only for encoders.'),
 }
 
 class v4l2_control(ctypes.Structure):
@@ -830,6 +843,17 @@ def pop_list_by_text_ids(ctrls, text_ids):
     for text_id in text_ids:
         while True:
             idx = find_idx(ctrls, lambda c: c.text_id.startswith(text_id))
+            if idx != None:
+                ret.append(ctrls.pop(idx))
+            else:
+                break
+    return ret
+
+def pop_list_by_base_ids(ctrls, base_ids):
+    ret = []
+    for base_id in base_ids:
+        while True:
+            idx = find_idx(ctrls, lambda c: hasattr(c, '_id') and c._id & base_id == base_id)
             if idx != None:
                 ret.append(ctrls.pop(idx))
             else:
@@ -1739,12 +1763,12 @@ class CameraCtrls:
             ]),
             CtrlPage('Advanced', [
                 CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
-                CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),
+                CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),                
                 CtrlCategory('Rotate/Flip', pop_list_by_text_ids(ctrls, ['rotate', 'horizontal_flip', 'vertical_flip'])),
             ]),
             CtrlPage('Compression', [
                 CtrlCategory('H264', pop_list_by_text_ids(ctrls, ['h264_', 'video_bitrate', 'repeat_sequence_header'])),
-                CtrlCategory('JPEG', pop_list_by_text_ids(ctrls, ['compression_quality'])),
+                CtrlCategory('JPEG', pop_list_by_base_ids(ctrls, [V4L2_CID_JPEG_CLASS_BASE])),
             ]),
             CtrlPage('Capture', [
                 CtrlCategory('Capture', pop_list_by_text_ids(ctrls, ['pixelformat', 'resolution', 'fps'])),
