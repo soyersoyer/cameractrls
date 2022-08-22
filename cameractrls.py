@@ -1760,13 +1760,11 @@ class CameraCtrls:
             CtrlPage('Color', [
                 CtrlCategory('Balance', pop_list_by_text_ids(ctrls, ['white_balance', 'do_white_balance', 'red_balance', 'blue_balance'])),
                 CtrlCategory('Color', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
+                CtrlCategory('Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),                
             ]),
             CtrlPage('Advanced', [
                 CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
-                CtrlCategory('Color Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),                
                 CtrlCategory('Rotate/Flip', pop_list_by_text_ids(ctrls, ['rotate', 'horizontal_flip', 'vertical_flip'])),
-            ]),
-            CtrlPage('Compression', [
                 CtrlCategory('H264', pop_list_by_text_ids(ctrls, ['h264_', 'video_bitrate', 'repeat_sequence_header'])),
                 CtrlCategory('JPEG', pop_list_by_base_ids(ctrls, [V4L2_CID_JPEG_CLASS_BASE])),
             ]),
