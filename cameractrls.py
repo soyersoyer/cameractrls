@@ -467,7 +467,9 @@ V4L2_CTRL_FLAG_INACTIVE = 0x0010
 V4L2_CTRL_FLAG_NEXT_CTRL = 0x80000000
 V4L2_CTRL_FLAG_NEXT_COMPOUND = 0x40000000
 
+V4L2_CTRL_CLASS_MASK = 0x00ff0000
 V4L2_CTRL_CLASS_USER = 0x00980000
+V4L2_CTRL_CLASS_CODEC = 0x00990000
 V4L2_CTRL_CLASS_CAMERA = 0x009a0000
 V4L2_CTRL_CLASS_JPEG = 0x009d0000
 
@@ -504,6 +506,8 @@ V4L2_CID_ILLUMINATORS_2 = V4L2_CID_BASE + 38
 V4L2_CID_ALPHA_COMPONENT = V4L2_CID_BASE + 41
 V4L2_CID_COLORFX_CBCR = V4L2_CID_BASE + 42
 V4L2_CID_COLORFX_RGB = V4L2_CID_BASE + 43
+
+V4L2_CID_CODEC_BASE	= V4L2_CTRL_CLASS_CODEC | 0x900
 
 V4L2_CID_CAMERA_CLASS_BASE = V4L2_CTRL_CLASS_CAMERA | 0x900
 V4L2_CID_EXPOSURE_AUTO = V4L2_CID_CAMERA_CLASS_BASE + 1
@@ -849,11 +853,21 @@ def pop_list_by_text_ids(ctrls, text_ids):
                 break
     return ret
 
-def pop_list_by_base_ids(ctrls, base_ids):
+def pop_list_by_base_id(ctrls, base_id):
     ret = []
-    for base_id in base_ids:
+    while True:
+        idx = find_idx(ctrls, lambda c: hasattr(c, '_id') and c._id & V4L2_CTRL_CLASS_MASK == base_id & V4L2_CTRL_CLASS_MASK)
+        if idx != None:
+            ret.append(ctrls.pop(idx))
+        else:
+            break
+    return ret
+
+def pop_list_by_ids(ctrls, ids):
+    ret = []
+    for id in ids:
         while True:
-            idx = find_idx(ctrls, lambda c: hasattr(c, '_id') and c._id & base_id == base_id)
+            idx = find_idx(ctrls, lambda c: hasattr(c, '_id') and c._id == id)
             if idx != None:
                 ret.append(ctrls.pop(idx))
             else:
@@ -1748,25 +1762,95 @@ class CameraCtrls:
         ctrls = self.get_ctrls()
         pages = [
             CtrlPage('Basic', [
-                CtrlCategory('Crop', pop_list_by_text_ids(ctrls, ['kiyo_pro_fov', 'logitech_brio_fov', 'zoom_absolute', 'pan_absolute', 'tilt_absolute'])),
-                CtrlCategory('Focus', pop_list_by_text_ids(ctrls, ['focus', 'kiyo_pro_af_mode'])),
+                CtrlCategory('Crop',
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_fov', 'logitech_brio_fov']) +
+                    pop_list_by_ids(ctrls, [
+                        V4L2_CID_ZOOM_ABSOLUTE,
+                        V4L2_CID_ZOOM_CONTINUOUS,
+                        V4L2_CID_ZOOM_ABSOLUTE,
+                        V4L2_CID_ZOOM_RELATIVE,
+                        V4L2_CID_PAN_ABSOLUTE,
+                        V4L2_CID_PAN_RELATIVE,
+                        V4L2_CID_PAN_RESET,
+                        V4L2_CID_PAN_SPEED,
+                        V4L2_CID_TILT_ABSOLUTE,
+                        V4L2_CID_TILT_RELATIVE,
+                        V4L2_CID_TILT_RESET,
+                        V4L2_CID_TILT_SPEED,
+                        V4L2_CID_PRIVACY,
+                    ])
+                ),
+                CtrlCategory('Focus',
+                    pop_list_by_ids(ctrls, [
+                        V4L2_CID_FOCUS_AUTO,
+                        V4L2_CID_FOCUS_RELATIVE,
+                        V4L2_CID_FOCUS_ABSOLUTE,
+                        V4L2_CID_AUTO_FOCUS_START,
+                        V4L2_CID_AUTO_FOCUS_STOP,
+                        V4L2_CID_AUTO_FOCUS_RANGE,
+                        V4L2_CID_AUTO_FOCUS_STATUS,
+                    ]) +
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode'])
+                ),
             ]),
             CtrlPage('Exposure', [
-                CtrlCategory('Exposure', pop_list_by_text_ids(ctrls,
-                    ['exposure', 'auto_exposure', 'gain'])),
-                CtrlCategory('ISO', pop_list_by_text_ids(ctrls, ['iso'])),
-                CtrlCategory('Dynamic Range', pop_list_by_text_ids(ctrls, ['backlight_compensation', 'kiyo_pro_hdr'])),
+                CtrlCategory('Exposure', pop_list_by_ids(ctrls, [
+                    V4L2_CID_EXPOSURE_AUTO,
+                    V4L2_CID_EXPOSURE_AUTO_PRIORITY,
+                    V4L2_CID_AUTOGAIN,
+                    V4L2_CID_EXPOSURE,
+                    V4L2_CID_EXPOSURE_METERING,
+                    V4L2_CID_EXPOSURE_ABSOLUTE,
+                    V4L2_CID_AUTO_EXPOSURE_BIAS,
+                    V4L2_CID_GAIN,
+                    V4L2_CID_CHROMA_AGC,
+                    V4L2_CID_CHROMA_GAIN,
+                    V4L2_CID_IRIS_ABSOLUTE,
+                    V4L2_CID_IRIS_RELATIVE,
+                    V4L2_CID_IMAGE_STABILIZATION,
+                    V4L2_CID_SCENE_MODE,
+                    V4L2_CID_3A_LOCK,
+                    V4L2_CID_CAMERA_ORIENTATION,
+                    V4L2_CID_CAMERA_SENSOR_ROTATION,
+                ])),
+                CtrlCategory('ISO', pop_list_by_ids(ctrls, [V4L2_CID_ISO_SENSITIVITY, V4L2_CID_ISO_SENSITIVITY_AUTO])),
+                CtrlCategory('Dynamic Range',
+                    pop_list_by_ids(ctrls, [
+                        V4L2_CID_BACKLIGHT_COMPENSATION,
+                        V4L2_CID_WIDE_DYNAMIC_RANGE,
+                    ]) +
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_hdr'])
+                ),
             ]),
             CtrlPage('Color', [
-                CtrlCategory('Balance', pop_list_by_text_ids(ctrls, ['white_balance', 'do_white_balance', 'red_balance', 'blue_balance'])),
-                CtrlCategory('Color', pop_list_by_text_ids(ctrls, ['brightness', 'contrast', 'saturation', 'sharpness', 'hue', 'gamma'])),
-                CtrlCategory('Effects', pop_list_by_text_ids(ctrls, ['color_effects'])),                
+                CtrlCategory('Balance', pop_list_by_ids(ctrls, [
+                    V4L2_CID_AUTO_WHITE_BALANCE, 
+                    V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE,
+                    V4L2_CID_WHITE_BALANCE_TEMPERATURE,
+                    V4L2_CID_DO_WHITE_BALANCE,
+                    V4L2_CID_RED_BALANCE,
+                    V4L2_CID_BLUE_BALANCE,
+                ])),
+                CtrlCategory('Color', pop_list_by_ids(ctrls, [
+                    V4L2_CID_AUTOBRIGHTNESS,
+                    V4L2_CID_BRIGHTNESS,
+                    V4L2_CID_CONTRAST,
+                    V4L2_CID_SATURATION,
+                    V4L2_CID_SHARPNESS,
+                    V4L2_CID_HUE_AUTO,
+                    V4L2_CID_HUE, 
+                    V4L2_CID_GAMMA,
+                    V4L2_CID_COLOR_KILLER,
+                    V4L2_CID_BAND_STOP_FILTER,
+                    V4L2_CID_BG_COLOR,
+                ])),
+                CtrlCategory('Effects', pop_list_by_ids(ctrls, [V4L2_CID_COLORFX, V4L2_CID_COLORFX_CBCR, V4L2_CID_COLORFX_RGB])),
             ]),
             CtrlPage('Advanced', [
-                CtrlCategory('Power Line', pop_list_by_text_ids(ctrls, ['power_line_frequency'])),
-                CtrlCategory('Rotate/Flip', pop_list_by_text_ids(ctrls, ['rotate', 'horizontal_flip', 'vertical_flip'])),
-                CtrlCategory('H264', pop_list_by_text_ids(ctrls, ['h264_', 'video_bitrate', 'repeat_sequence_header'])),
-                CtrlCategory('JPEG', pop_list_by_base_ids(ctrls, [V4L2_CID_JPEG_CLASS_BASE])),
+                CtrlCategory('Power Line', pop_list_by_ids(ctrls, [V4L2_CID_POWER_LINE_FREQUENCY])),
+                CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
+                CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
+                CtrlCategory('JPEG', pop_list_by_base_id(ctrls, V4L2_CID_JPEG_CLASS_BASE)),
             ]),
             CtrlPage('Capture', [
                 CtrlCategory('Capture', pop_list_by_text_ids(ctrls, ['pixelformat', 'resolution', 'fps'])),
