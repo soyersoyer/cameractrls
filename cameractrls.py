@@ -559,11 +559,6 @@ V4L2_CTRL_UPDATERS = [
     V4L2_CID_ISO_SENSITIVITY_AUTO,
 ]
 
-V4L2_CTRL_REORDERS = {
-    V4L2_CID_FOCUS_AUTO: V4L2_CID_FOCUS_ABSOLUTE,
-    V4L2_CID_AUTO_WHITE_BALANCE: V4L2_CID_WHITE_BALANCE_TEMPERATURE,
-}
-
 V4L2_CTRL_INFO = {
     V4L2_CID_BRIGHTNESS: ('V4L2_CID_BRIGHTNESS', 'Picture brightness, or more precisely, the black level.'),
     V4L2_CID_CONTRAST: ('V4L2_CID_CONTRAST', 'Picture contrast or luma gain.'),
@@ -1366,15 +1361,6 @@ class V4L2Ctrls:
                         
                 ctrls.append(v4l2ctrl)
             qctrl = v4l2_queryctrl(qctrl.id | next_flag)
-
-
-
-        # move the controls in the 'auto' control groups near each other
-        for k, v in V4L2_CTRL_REORDERS.items():
-            what = find_idx(ctrls, lambda c: c._id == k)
-            where = find_idx(ctrls, lambda c: c._id == v)
-            if what and where:
-                ctrls.insert(where - 1 if what < where else where, ctrls.pop(what))
 
         self.ctrls = ctrls
 
