@@ -6,7 +6,7 @@ from fcntl import ioctl
 from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
 from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
 from cameractrls import V4L2_CAP_VIDEO_CAPTURE, V4L2_CAP_STREAMING, V4L2_MEMORY_MMAP, V4L2_BUF_TYPE_VIDEO_CAPTURE
-from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG
+from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_YU12, V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG
 
 sdl2lib = ctypes.util.find_library('SDL2-2.0')
 if sdl2lib == None:
@@ -104,6 +104,7 @@ def SDL_FOURCC(a, b, c, d):
     return (ord(a) << 0) | (ord(b) << 8) | (ord(c) << 16) | (ord(d) << 24)
 SDL_PIXELFORMAT_YUY2 = SDL_FOURCC('Y', 'U', 'Y', '2')
 SDL_PIXELFORMAT_NV12 = SDL_FOURCC('N', 'V', '1', '2')
+SDL_PIXELFORMAT_IYUV = SDL_FOURCC('I', 'Y', 'U', 'V')
 SDL_PIXELFORMAT_RGB24 = 386930691
 SDL_TEXTUREACCESS_STREAMING = 1
 
@@ -270,10 +271,12 @@ def V4L2Format2SDL(format):
         return SDL_PIXELFORMAT_YUY2
     elif format == V4L2_PIX_FMT_NV12:
         return SDL_PIXELFORMAT_NV12
+    elif format == V4L2_PIX_FMT_YU12:
+        return SDL_PIXELFORMAT_IYUV
     elif format in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
         return SDL_PIXELFORMAT_RGB24
-    logging.error(f'Invalid pixel format: Sorry, only YUYV, NV12, MJPG, JPEG are supported yet.')
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', b'Sorry, only YUYV, NV12, MJPG, JPEG are supported yet.', None)
+    logging.error(f'Invalid pixel format: Sorry, only YUYV, NV12, YU12, MJPG, JPEG are supported yet.')
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', b'Sorry, only YUYV, NV12, YU12, MJPG, JPEG are supported yet.', None)
     sys.exit(3)
 
 class SDLCameraWindow():

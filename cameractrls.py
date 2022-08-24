@@ -119,6 +119,7 @@ V4L2_PIX_FMT_YUYV = v4l2_fourcc('Y', 'U', 'Y', 'V')
 V4L2_PIX_FMT_MJPEG = v4l2_fourcc('M', 'J', 'P', 'G')
 V4L2_PIX_FMT_JPEG = v4l2_fourcc('J', 'P', 'E', 'G')
 V4L2_PIX_FMT_NV12 = v4l2_fourcc('N', 'V', '1', '2')
+V4L2_PIX_FMT_YU12 = v4l2_fourcc('Y', 'U', '1', '2')
 
 V4L2_BUF_TYPE_VIDEO_CAPTURE = 1
 V4L2_MEMORY_MMAP = 1
