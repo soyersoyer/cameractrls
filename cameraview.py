@@ -40,6 +40,11 @@ SDL_CreateRenderer.restype = ctypes.c_void_p
 SDL_CreateRenderer.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_uint32]
 # SDL_Renderer * SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags);
 
+SDL_RenderSetLogicalSize = sdl2.SDL_RenderSetLogicalSize
+SDL_RenderSetLogicalSize.restype = ctypes.c_int
+SDL_RenderSetLogicalSize.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+# int SDL_RenderSetLogicalSize(SDL_Renderer * renderer, int w, int h);
+
 SDL_CreateTexture = sdl2.SDL_CreateTexture
 SDL_CreateTexture.restype = ctypes.c_void_p
 SDL_CreateTexture.argtypes = [ctypes.c_void_p, ctypes.c_uint32, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -310,6 +315,8 @@ class SDLCameraWindow():
         if self.renderer == None:
             logging.error(f'SDL_CreateRenderer failed: {SDL_GetError()}')
             sys.exit(1)
+        if SDL_RenderSetLogicalSize(self.renderer, width, height) != 0:
+            logging.warning(f'SDL_RenderSetlogicalSize failed: {SDL_GetError()}')
         self.texture = SDL_CreateTexture(self.renderer, V4L2Format2SDL(self.cam.pixelformat), SDL_TEXTUREACCESS_STREAMING, width, height)
         if self.texture == None:
             logging.error(f'SDL_CreateTexture failed: {SDL_GetError()}')
