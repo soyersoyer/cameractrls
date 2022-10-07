@@ -4,7 +4,7 @@ import os, sys, ctypes, ctypes.util, logging, mmap, struct, getopt
 from fcntl import ioctl
 
 from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
-from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
+from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_S_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
 from cameractrls import V4L2_CAP_VIDEO_CAPTURE, V4L2_CAP_STREAMING, V4L2_MEMORY_MMAP, V4L2_BUF_TYPE_VIDEO_CAPTURE
 from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_YU12, V4L2_PIX_FMT_GREY, V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG
 
@@ -193,6 +193,12 @@ class V4L2Camera():
 
         ioctl(self.fd, VIDIOC_QUERYCAP, cap)
         ioctl(self.fd, VIDIOC_G_FMT, fmt)
+
+        # some camera need an S_FMT to work
+        try:
+            ioctl(self.fd, VIDIOC_S_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t set fmt {e}')
 
         if not (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE):
             logging.error(f'{self.device} is not a video capture device')
