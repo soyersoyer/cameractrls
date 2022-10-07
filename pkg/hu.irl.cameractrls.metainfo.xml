@@ -34,6 +34,20 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.4.10" date="2022-10-07">
+            <description>
+                <ul>
+                    <li>Color Balance category</li>
+                    <li>Tooltips for JPEG controls</li>
+                    <li>Support cameras with YU12 format</li>
+                    <li>Support IR cameras with GREY format</li>
+                    <li>Advanced/Color Effects moved to Color/Effects</li>
+                    <li>Basic/Crop/Privacy moved to Advanced/Privacy</li>
+                    <li>Merge Compression page into Advanced page</li>
+                    <li>Retain aspect ratio in the cameraview's fullscreen mode</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.4.9" date="2022-08-20">
             <description>
                 <ul>

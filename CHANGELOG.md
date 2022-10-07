@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.10] - 2022-10-07
+
+### Added
+ - Color Balance category
+ - Tooltips for JPEG controls
+ - Support cameras with YU12 format
+ - Support IR cameras with GREY format
+
+### Changed
+ - Advanced/Color Effects moved to Color/Effects
+ - Basic/Crop/Privacy moved to Advanced/Privacy
+ - Merge Compression page into Advanced page
+
+### Fixed
+ - Retain aspect ratio in the cameraview's fullscreen mode
+
 ## [0.4.9] - 2022-08-20
 
 ### Added
