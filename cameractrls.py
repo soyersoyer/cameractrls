@@ -150,7 +150,7 @@ class v4l2_plane(ctypes.Structure):
             ('userptr', ctypes.c_ulong),
             ('fd', ctypes.c_int32),
         ]
-    
+
     _fields_ = [
         ('bytesused', ctypes.c_uint32),
         ('length', ctypes.c_uint32),
@@ -1297,7 +1297,7 @@ class V4L2Ctrls:
                 if new_ctrl.value != intvalue:
                     logging.warning(f'V4L2Ctrls: Can\'t set {k} to {v} using {new_ctrl.value} instead of {intvalue}')
                     continue
-                
+
                 if ctrl.type == 'menu':
                     ctrl.value = v
                 else:
@@ -1360,7 +1360,7 @@ class V4L2Ctrls:
                             v4l2ctrl.value = menu_text_id
                         if v4l2ctrl.default == qmenu.index:
                             v4l2ctrl.default = menu_text_id
-                        
+
                 ctrls.append(v4l2ctrl)
             qctrl = v4l2_queryctrl(qctrl.id | next_flag)
 
@@ -1378,7 +1378,7 @@ class V4L2Ctrls:
 
     def get_ctrls(self):
         return self.ctrls
-    
+
     def to_text_id(self, text):
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
 
@@ -1391,7 +1391,7 @@ class V4L2FmtCtrls:
 
     def get_ctrls(self):
         return self.ctrls
-    
+
     def update_ctrls(self):
         return
 
@@ -1468,7 +1468,7 @@ class V4L2FmtCtrls:
         if pxf2str(fmt.fmt.pix.pixelformat) != pixelformat:
             logging.warning(f'V4L2FmtCtrls: Can\'t set pixelformat to {pixelformat} using {pxf2str(fmt.fmt.pix.pixelformat)}')
             return
-        
+
         ctrl.value = pixelformat
 
     def set_resolution(self, ctrl, resolution):
@@ -1518,7 +1518,7 @@ class V4L2FmtCtrls:
         except Exception as e:
             logging.warning(f'V4L2FmtCtrls: Can\'t set fps: {e}')
             return
-        
+
         tf = parm.parm.capture.timeperframe
         if tf.denominator == 0 or tf.numerator == 0:
             logging.warning(f'V4L2FmtCtrls: VIDIOC_S_PARM: Invalid frame rate {fps}')
@@ -1526,7 +1526,7 @@ class V4L2FmtCtrls:
         if int(fps) != (tf.denominator / tf.numerator):
             logging.warning(f'V4L2FmtCtrls: Can\'t set fps to {fps} using {tf.denominator / tf.numerator}')
             return
-        
+
         ctrl.value = fps
 
     def get_fmts(self):
@@ -1601,16 +1601,16 @@ class SystemdSaver:
                 menu = [ BaseCtrlMenu('save', 'Save', 'save') ], tooltip = 'Save settings into a systemd path triggered user service',
             )
         ]
-    
+
     def systemd_available(self):
         return os.path.exists('/bin/systemctl')
 
     def get_ctrls(self):
         return self.ctrls
-    
+
     def update_ctrls(self):
         return
-    
+
     def setup_ctrls(self, params):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
@@ -1627,7 +1627,7 @@ class SystemdSaver:
         device = self.cam_ctrls.device
         dev_id = os.path.basename(device)
         controls = self.get_claimed_controls()
-        
+
         service_file_str = self.get_service_file(sys.path[0], device, dev_id, controls)
         path_file_str = self.get_path_file(device)
 
@@ -1644,7 +1644,7 @@ class SystemdSaver:
 
         with open(f'{systemd_user_dir}/{path_file}', 'w', encoding="utf-8") as f:
             f.write(path_file_str)
-        
+
         subprocess.run(["systemctl", "--user", "enable", "--now", service_file])
         subprocess.run(["systemctl", "--user", "enable", "--now", path_file])
 
@@ -1702,7 +1702,7 @@ class CameraCtrls:
             LogitechBRIOCtrls(device, fd),
             SystemdSaver(self),
         ]
-    
+
     def print_ctrls(self):
         for page in self.get_ctrl_pages():
             for cat in page.categories:
@@ -1728,7 +1728,7 @@ class CameraCtrls:
                     if c.inactive:
                         print(' | inactive', end = '')
                     print()
-    
+
     def setup_ctrls(self, params):
         for c in self.ctrls:
             c.setup_ctrls(params)
@@ -1765,7 +1765,6 @@ class CameraCtrls:
                         V4L2_CID_TILT_RELATIVE,
                         V4L2_CID_TILT_RESET,
                         V4L2_CID_TILT_SPEED,
-                        V4L2_CID_PRIVACY,
                     ])
                 ),
                 CtrlCategory('Focus',
@@ -1812,7 +1811,7 @@ class CameraCtrls:
             ]),
             CtrlPage('Color', [
                 CtrlCategory('Balance', pop_list_by_ids(ctrls, [
-                    V4L2_CID_AUTO_WHITE_BALANCE, 
+                    V4L2_CID_AUTO_WHITE_BALANCE,
                     V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE,
                     V4L2_CID_WHITE_BALANCE_TEMPERATURE,
                     V4L2_CID_DO_WHITE_BALANCE,
@@ -1826,7 +1825,7 @@ class CameraCtrls:
                     V4L2_CID_SATURATION,
                     V4L2_CID_SHARPNESS,
                     V4L2_CID_HUE_AUTO,
-                    V4L2_CID_HUE, 
+                    V4L2_CID_HUE,
                     V4L2_CID_GAMMA,
                     V4L2_CID_COLOR_KILLER,
                     V4L2_CID_BAND_STOP_FILTER,
@@ -1836,6 +1835,7 @@ class CameraCtrls:
             ]),
             CtrlPage('Advanced', [
                 CtrlCategory('Power Line', pop_list_by_ids(ctrls, [V4L2_CID_POWER_LINE_FREQUENCY])),
+                CtrlCategory('Privacy', pop_list_by_ids(ctrls, [V4L2_CID_PRIVACY])),
                 CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
                 CtrlCategory('JPEG', pop_list_by_base_id(ctrls, V4L2_CID_JPEG_CLASS_BASE)),
@@ -1848,7 +1848,7 @@ class CameraCtrls:
             ], target='footer')
         ]
         pages[3].categories += CtrlCategory('Other', ctrls), #the rest
-        
+
         # filter out the empty categories and pages
         for page in pages:
             page.categories = [cat for cat in page.categories if len(cat.ctrls)]
