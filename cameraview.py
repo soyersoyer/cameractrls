@@ -94,6 +94,8 @@ SDL_ShowSimpleMessageBox.argtypes = [ctypes.c_uint32, ctypes.c_char_p, ctypes.c_
 SDL_INIT_VIDEO = 0x00000020
 SDL_QUIT = 0x100
 SDL_KEYDOWN = 0x300
+SDL_MOUSEBUTTONUP = 0x402
+SDL_BUTTON_LEFT = 1
 SDLK_f = ord('f')
 SDLK_q = ord('q')
 SDLK_ESCAPE = 27
@@ -137,10 +139,25 @@ class SDL_KeyboardEvent(ctypes.Structure):
         ('keysym', SDL_Keysym),
     ]
 
+class SDL_MouseButtonEvent(ctypes.Structure):
+    _fields_ = [
+        ('type', ctypes.c_uint32),
+        ('timestamp', ctypes.c_uint32),
+        ('windowID', ctypes.c_uint32),
+        ('which', ctypes.c_uint32),
+        ('button', ctypes.c_uint8),
+        ('state', ctypes.c_uint8),
+        ('clicks', ctypes.c_uint8),
+        ('padding1', ctypes.c_uint8),
+        ('x', ctypes.c_int32),
+        ('y', ctypes.c_int32),
+    ]
+
 class SDL_Event(ctypes.Union):
     _fields_ = [
         ('type', ctypes.c_uint32),
         ('key', SDL_KeyboardEvent),
+        ('button', SDL_MouseButtonEvent),
         ('padding', (ctypes.c_uint8 * _event_pad_size)),
     ]
 
@@ -356,13 +373,20 @@ class SDLCameraWindow():
             if self.event.type == SDL_QUIT:
                 self.stop_capturing()
                 break
-            if self.event.type == SDL_KEYDOWN and self.event.key.repeat == 0:
+            elif self.event.type == SDL_KEYDOWN and self.event.key.repeat == 0:
                 if self.event.key.keysym.sym == SDLK_q or self.event.key.keysym.sym == SDLK_ESCAPE:
                     self.stop_capturing()
                     break
                 if self.event.key.keysym.sym == SDLK_f:
-                    self.fullscreen = not self.fullscreen
-                    SDL_SetWindowFullscreen(self.window, SDL_WINDOW_FULLSCREEN_DESKTOP if self.fullscreen else 0)
+                    self.toggle_fullscreen()
+            elif self.event.type == SDL_MOUSEBUTTONUP and \
+                self.event.button.button == SDL_BUTTON_LEFT and \
+                self.event.button.clicks == 2:
+                    self.toggle_fullscreen()
+
+    def toggle_fullscreen(self):
+        self.fullscreen = not self.fullscreen
+        SDL_SetWindowFullscreen(self.window, SDL_WINDOW_FULLSCREEN_DESKTOP if self.fullscreen else 0)
 
     def start_capturing(self):
         self.cam.start_capturing()
