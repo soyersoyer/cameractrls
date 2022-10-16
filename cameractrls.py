@@ -1021,12 +1021,41 @@ LOGITECH_PERIPHERAL_LED1_MODE_OFF =   0x00
 LOGITECH_PERIPHERAL_LED1_MODE_ON =    0x01
 LOGITECH_PERIPHERAL_LED1_MODE_BLINK = 0x02
 LOGITECH_PERIPHERAL_LED1_MODE_AUTO =  0x03
+LOGITECH_PERIPHERAL_LED1_MODE_DESC = 'Off. The LED is never illuminated, whether or not the device is streaming video.\nOn. The LED is always illuminated, whether or not the device is streaming video.\nBlinking. The LED blinks, whether or not the device is streaming video.\nAuto. The LED is in control of the device. Typically this means that means that is is illuminated when streaming video and off when not streaming video.'
 
 LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET = 3
+LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC = 'The frequency value only influences the \'Blinking\' mode.\nIt is expressed in units of 0.05 Hz and sets the blink frequency f.\nThe blink interval T = 1/f is defined as the time between two adjoining rising edges (or two adjoining falling edges).'
+
+
+# Logitech user hw control v1 GUID 63610682-5070-49ab-b8cc-b3855e8d221f
+LOGITECH_USER_HW_CONTROL_V1_GUID = b'\x82\x06\x61\x63\x70\x50\xab\x49\xb8\xcc\xb3\x85\x5e\x8d\x22\x1f'
+
+LOGITECH_HW_CONTROL_LED1_SEL = 0x01
+LOGITECH_HW_CONTROL_LED1_LEN = 3
+
+LOGITECH_HW_CONTROL_LED1_MODE_OFFSET = 0
+LOGITECH_HW_CONTROL_LED1_MODE_OFF =   0x00
+LOGITECH_HW_CONTROL_LED1_MODE_ON =    0x01
+LOGITECH_HW_CONTROL_LED1_MODE_BLINK = 0x02
+LOGITECH_HW_CONTROL_LED1_MODE_AUTO =  0x03
+
+LOGITECH_HW_CONTROL_LED1_FREQUENCY_OFFSET = 2
+
+# Logitech motor control v1 GUID 63610682-5070-49ab-b8cc-b3855e8d2256
+LOGITECH_MOTOR_CONTROL_V1_GUID = b'\x82\x06\x61\x63\x70\x50\xab\x49\xb8\xcc\xb3\x85\x5e\x8d\x22\x56'
+
+LOGITECH_MOTOR_CONTROL_FOCUS_DEV_MATCH = ['046d:0809', '046d:0990', '046d:0991', '046d:0994']
+LOGITECH_MOTOR_CONTROL_FOCUS_SEL = 0x03
+LOGITECH_MOTOR_CONTROL_FOCUS_LEN = 6
+
+LOGITECH_MOTOR_CONTROL_FOCUS_OFFSET = 0
+LOGITECH_MOTOR_CONTROL_FOCUS_DESC = 'Allows the control of focus motor movements for camera models that support mechanical focus. Bits 0 to 7 allow selection of the desired lens position. There are no physical units, instead, the focus range is spread over 256 logical units with 0 representing infinity focus and 255 being macro focus.'
+
 
 class LogitechCtrl(BaseCtrl):
-    def __init__(self, text_id, name, type, tooltip, selector, len, offset, menu = None):
+    def __init__(self, text_id, name, type, tooltip, unit_id, selector, len, offset, menu = None):
         super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
+        self._unit_id = unit_id
         self._selector = selector
         self._len = len
         self._offset = offset
@@ -1035,53 +1064,100 @@ class LogitechCtrls:
     def __init__(self, device, fd):
         self.device = device
         self.fd = fd
-        self.unit_id = find_unit_id_in_sysfs(device, LOGITECH_PERIPHERAL_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.ctrls = []
 
         self.get_device_controls()
 
     def supported(self):
-        return self.unit_id != 0
+        return len(self.ctrls) != 0
 
     def get_device_controls(self):
-        if not self.supported():
-            self.ctrls = []
-            return
+        peripheral_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_PERIPHERAL_GUID)
+        if peripheral_unit_id != 0:
+            self.ctrls.extend([
+                LogitechCtrl(
+                    'logitech_led1_mode',
+                    'LED1 Mode',
+                    'menu',
+                    LOGITECH_PERIPHERAL_LED1_MODE_DESC,
+                    peripheral_unit_id,
+                    LOGITECH_PERIPHERAL_LED1_SEL,
+                    LOGITECH_PERIPHERAL_LED1_LEN,
+                    LOGITECH_PERIPHERAL_LED1_MODE_OFFSET,
+                    [
+                        BaseCtrlMenu('off', 'Off', LOGITECH_PERIPHERAL_LED1_MODE_OFF),
+                        BaseCtrlMenu('on', 'On', LOGITECH_PERIPHERAL_LED1_MODE_ON),
+                        BaseCtrlMenu('blink', 'Blink', LOGITECH_PERIPHERAL_LED1_MODE_BLINK),
+                        BaseCtrlMenu('auto', 'Auto', LOGITECH_PERIPHERAL_LED1_MODE_AUTO),
+                    ]
+                ),
+                LogitechCtrl(
+                    'logitech_led1_frequency',
+                    'LED1 Frequency',
+                    'integer',
+                    LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC,
+                    peripheral_unit_id,
+                    LOGITECH_PERIPHERAL_LED1_SEL,
+                    LOGITECH_PERIPHERAL_LED1_LEN,
+                    LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET,
+                ),
+            ])
 
-        self.ctrls = [
-            LogitechCtrl(
-                'logitech_led1_mode',
-                'LED1 Mode',
-                'menu',
-                'Logitech LED mode',
-                LOGITECH_PERIPHERAL_LED1_SEL,
-                LOGITECH_PERIPHERAL_LED1_LEN,
-                LOGITECH_PERIPHERAL_LED1_MODE_OFFSET,
-                [
-                    BaseCtrlMenu('off', 'Off', LOGITECH_PERIPHERAL_LED1_MODE_OFF),
-                    BaseCtrlMenu('on', 'On', LOGITECH_PERIPHERAL_LED1_MODE_ON),
-                    BaseCtrlMenu('blink', 'Blink', LOGITECH_PERIPHERAL_LED1_MODE_BLINK),
-                    BaseCtrlMenu('auto', 'Auto', LOGITECH_PERIPHERAL_LED1_MODE_AUTO),
-                ]
-            ),
-            LogitechCtrl(
-                'logitech_led1_frequency',
-                'LED1 Frequency',
-                'integer',
-                'Logitech LED frequency',
-                LOGITECH_PERIPHERAL_LED1_SEL,
-                LOGITECH_PERIPHERAL_LED1_LEN,
-                LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET,
-            ),
-        ]
+        user_hw_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_USER_HW_CONTROL_V1_GUID)
+        if user_hw_unit_id != 0:
+            self.ctrls.extend([
+                LogitechCtrl(
+                    'logitech_led1_mode',
+                    'LED1 Mode',
+                    'menu',
+                    LOGITECH_PERIPHERAL_LED1_MODE_DESC,
+                    user_hw_unit_id,
+                    LOGITECH_HW_CONTROL_LED1_SEL,
+                    LOGITECH_HW_CONTROL_LED1_LEN,
+                    LOGITECH_HW_CONTROL_LED1_MODE_OFFSET,
+                    [
+                        BaseCtrlMenu('off', 'Off', LOGITECH_HW_CONTROL_LED1_MODE_OFF),
+                        BaseCtrlMenu('on', 'On', LOGITECH_HW_CONTROL_LED1_MODE_ON),
+                        BaseCtrlMenu('blink', 'Blink', LOGITECH_HW_CONTROL_LED1_MODE_BLINK),
+                        BaseCtrlMenu('auto', 'Auto', LOGITECH_HW_CONTROL_LED1_MODE_AUTO),
+                    ]
+                ),
+                LogitechCtrl(
+                    'logitech_led1_frequency',
+                    'LED1 Frequency',
+                    'integer',
+                    LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC,
+                    user_hw_unit_id,
+                    LOGITECH_HW_CONTROL_LED1_SEL,
+                    LOGITECH_HW_CONTROL_LED1_LEN,
+                    LOGITECH_HW_CONTROL_LED1_FREQUENCY_OFFSET,
+                ),
+            ])
+
+        motor_control_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_MOTOR_CONTROL_V1_GUID)
+        if motor_control_unit_id != 0 and self.usb_ids in LOGITECH_MOTOR_CONTROL_FOCUS_DEV_MATCH:
+            self.ctrls.extend([
+                LogitechCtrl(
+                    'logitech_motor_focus',
+                    'Focus (Absolute)',
+                    'integer',
+                    LOGITECH_MOTOR_CONTROL_FOCUS_DESC,
+                    motor_control_unit_id,
+                    LOGITECH_MOTOR_CONTROL_FOCUS_SEL,
+                    LOGITECH_MOTOR_CONTROL_FOCUS_LEN,
+                    LOGITECH_MOTOR_CONTROL_FOCUS_OFFSET,
+                ),
+            ])
 
         for c in self.ctrls:
             minimum_config = to_buf(bytes(c._len))
             maximum_config = to_buf(bytes(c._len))
             current_config = to_buf(bytes(c._len))
 
-            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_MIN, minimum_config)
-            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_MAX, maximum_config)
-            query_xu_control(self.fd, self.unit_id, c._selector, UVC_GET_CUR, current_config)
+            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_MIN, minimum_config)
+            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_MAX, maximum_config)
+            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_CUR, current_config)
 
             c.min = minimum_config[c._offset][0]
             c.max = maximum_config[c._offset][0]
@@ -1114,10 +1190,10 @@ class LogitechCtrls:
                 continue
 
             current_config = to_buf(bytes(ctrl._len))
-            query_xu_control(self.fd, self.unit_id, ctrl._selector, UVC_GET_CUR, current_config)
+            query_xu_control(self.fd, ctrl._unit_id, ctrl._selector, UVC_GET_CUR, current_config)
             current_config[ctrl._offset] = desired
-            query_xu_control(self.fd, self.unit_id, ctrl._selector, UVC_SET_CUR, current_config)
-            query_xu_control(self.fd, self.unit_id, ctrl._selector, UVC_GET_CUR, current_config)
+            query_xu_control(self.fd, ctrl._unit_id, ctrl._selector, UVC_SET_CUR, current_config)
+            query_xu_control(self.fd, ctrl._unit_id, ctrl._selector, UVC_GET_CUR, current_config)
             current = current_config[ctrl._offset][0]
 
             if ctrl.type == 'menu':
@@ -1777,7 +1853,7 @@ class CameraCtrls:
                         V4L2_CID_AUTO_FOCUS_RANGE,
                         V4L2_CID_AUTO_FOCUS_STATUS,
                     ]) +
-                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode'])
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode', 'logitech_motor_focus'])
                 ),
             ]),
             CtrlPage('Exposure', [
