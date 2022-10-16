@@ -114,7 +114,10 @@ class CameraCtrlsGui:
         for row, c in enumerate(flat_ctrls):
             labelframe = ttk.Frame(cframe)
             labelframe.grid(column=0, row=row, sticky='NW')
-            ttk.Label(labelframe, text=c.name).grid(column=0, row=0, sticky='NW', ipadx=2)
+            ctrllabel = ttk.Label(labelframe, text=c.name)
+            ctrllabel.grid(column=0, row=0, sticky='NW', ipadx=2)
+
+            c.gui_ctrls = [ctrllabel]
 
             if c.type == 'integer':
                 c.var = IntVar(cframe, c.value)
@@ -124,7 +127,7 @@ class CameraCtrlsGui:
                 sc.grid(row=row,column=1, sticky='NESW', ipadx=2)
                 label = ttk.Label(cframe, textvariable=c.var, justify='right')
                 label.grid(row=row, column=2, sticky='NE', ipadx=4)
-                c.gui_ctrls = [sc, label]
+                c.gui_ctrls += [sc, label]
 
             elif c.type == 'boolean':
                 menuctrls = ttk.Frame(cframe)
@@ -133,14 +136,14 @@ class CameraCtrlsGui:
                 c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
                 ttk.Radiobutton(menuctrls, text='Off', variable=c.var, value=0).grid(row=0, column=0, sticky='NESW', ipadx=10)
                 ttk.Radiobutton(menuctrls, text='On', variable=c.var, value=1).grid(row=0, column=1, sticky='NESW', ipadx=10)
-                c.gui_ctrls = menuctrls.winfo_children()
+                c.gui_ctrls += menuctrls.winfo_children()
 
             elif c.type == 'button':
                 buttonctrls = ttk.Frame(cframe)
                 buttonctrls.grid(row=row, column=1, sticky='NESW')
                 for column, m in enumerate(c.menu):
                     ttk.Button(buttonctrls, text=m.name, style='Short.TButton', command=lambda c=c,m=m: self.update_ctrl(c, m.text_id)).grid(column=column, row=0, sticky='NESW', ipadx=10)
-                c.gui_ctrls = buttonctrls.winfo_children()
+                c.gui_ctrls += buttonctrls.winfo_children()
 
             elif c.type == 'menu':
                 c.var = StringVar(cframe, c.value)
@@ -150,12 +153,12 @@ class CameraCtrlsGui:
                     menuctrls.grid(row=row, column=1, sticky='NESW')
                     for column, m in enumerate(c.menu):
                         ttk.Radiobutton(menuctrls, text=m.name, variable=c.var, value=m.text_id).grid(column=column, row=0, sticky='NESW', ipadx=10)
-                    c.gui_ctrls = menuctrls.winfo_children()
+                    c.gui_ctrls += menuctrls.winfo_children()
                 else:
                     menulabels = [m.text_id for m in c.menu]
                     cb = ttk.Combobox(cframe, state='readonly', exportselection=0, values=menulabels, textvariable=c.var)
                     cb.grid(column=1, row=row, sticky='NESW')
-                    c.gui_ctrls = [cb]
+                    c.gui_ctrls += [cb]
 
             if c.default != None:
                 btn = ttk.Button(labelframe, text='⟳', width=2, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))

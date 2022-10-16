@@ -220,6 +220,8 @@ class CameraCtrlsGui:
                     label.set_tooltip_markup(tooltip_markup)
                     ctrl_box.pack_start(label, False, False, 0)
 
+                    c.gui_ctrls = [label]
+
                     if c.type == 'integer':
                         adjustment = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value)
                         adjustment.connect('value-changed', lambda a,c=c: self.update_ctrl(c, a.get_value()))
@@ -237,7 +239,7 @@ class CameraCtrlsGui:
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(scale, False, False, 0)
-                        c.gui_ctrls =  [scale, refresh]
+                        c.gui_ctrls += [scale, refresh]
                         c.gui_default_btn = refresh
 
                     elif c.type == 'boolean':
@@ -248,11 +250,10 @@ class CameraCtrlsGui:
                             refresh.connect('clicked', lambda e,switch=switch,c=c: switch.set_active(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(switch, False, False, 0)
-                        c.gui_ctrls =  [switch, refresh]
+                        c.gui_ctrls += [switch, refresh]
                         c.gui_default_btn = refresh
 
                     elif c.type == 'button':
-                        c.gui_ctrls =  []
                         for m in c.menu:
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER, margin_right=5)
                             b.connect('clicked', lambda e,c=c: self.update_ctrl(c, m.text_id))
@@ -285,7 +286,7 @@ class CameraCtrlsGui:
                                 refresh.connect('clicked', lambda e,c=c: find_by_text_id(c.menu, c.default).gui_rb.set_active(True))
                             ctrl_box.pack_start(refresh, False, False, 0)
                             ctrl_box.pack_end(box, False, False, 0)
-                            c.gui_ctrls = [m.gui_rb for m in c.menu] + [refresh]
+                            c.gui_ctrls += [m.gui_rb for m in c.menu] + [refresh]
                             c.gui_default_btn = refresh
                         else:
                             wb_cb = Gtk.ComboBoxText(valign=Gtk.Align.CENTER)
@@ -308,7 +309,7 @@ class CameraCtrlsGui:
                                 refresh.connect('clicked', lambda e,c=c,wb_cb=wb_cb: wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == c.default)))
                             ctrl_box.pack_start(refresh, False, False, 0)
                             ctrl_box.pack_end(wb_cb, False, False, 0)
-                            c.gui_ctrls =  [wb_cb, refresh]
+                            c.gui_ctrls += [wb_cb, refresh]
                             c.gui_default_btn = refresh
 
         self.update_ctrls_state()
