@@ -124,6 +124,8 @@ class CameraCtrlsGui:
                 c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
                 # ttk.Scale doesn't support resolution, using tk.Scale
                 sc = Scale(cframe, from_=c.min, to=c.max, resolution=c.step, variable=c.var, showvalue=False, orient='horizontal')
+                if c.zeroer:
+                    sc.bind('<ButtonRelease-1>', lambda e, c=c: c.var.set(0))
                 sc.grid(row=row,column=1, sticky='NESW', ipadx=2)
                 label = ttk.Label(cframe, textvariable=c.var, justify='right')
                 label.grid(row=row, column=2, sticky='NE', ipadx=4)

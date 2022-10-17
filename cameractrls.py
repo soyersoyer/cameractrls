@@ -561,6 +561,12 @@ V4L2_CTRL_UPDATERS = [
     V4L2_CID_ISO_SENSITIVITY_AUTO,
 ]
 
+# controls value should be zero after releasing mouse button
+V4L2_CTRL_ZEROERS = [
+    V4L2_CID_PAN_SPEED,
+    V4L2_CID_TILT_SPEED,
+]
+
 V4L2_CTRL_INFO = {
     V4L2_CID_BRIGHTNESS: ('V4L2_CID_BRIGHTNESS', 'Picture brightness, or more precisely, the black level.'),
     V4L2_CID_CONTRAST: ('V4L2_CID_CONTRAST', 'Picture contrast or luma gain.'),
@@ -882,7 +888,8 @@ def to_bool(val):
 
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
-                inactive = False, updater = False, reopener = False, menu_dd = False, menu = None, tooltip = None, kernel_id = None):
+                inactive = False, updater = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
+                zeroer = False, kernel_id = None):
         self.text_id = text_id
         self.kernel_id = kernel_id
         self.name = name
@@ -898,6 +905,7 @@ class BaseCtrl:
         self.menu_dd = menu_dd
         self.menu = menu
         self.tooltip = tooltip
+        self.zeroer = zeroer
 
 class BaseCtrlMenu:
     def __init__(self, text_id, name, value):
@@ -1415,6 +1423,9 @@ class V4L2Ctrls:
                 if ctrl_info != None:
                     v4l2ctrl.kernel_id = ctrl_info[0]
                     v4l2ctrl.tooltip = ctrl_info[1]
+
+                if qctrl.id in V4L2_CTRL_ZEROERS:
+                    v4l2ctrl.zeroer = True
 
                 if qctrl.type in [V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
                     v4l2ctrl.menu = []
