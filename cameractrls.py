@@ -740,6 +740,24 @@ LOAD =          b'\x00\x00\x00\x00\x00\x00\x00\x00'
 def to_buf(b):
     return ctypes.create_string_buffer(b)
 
+def try_xu_control(fd, unit_id, selector):
+    length = ctypes.c_uint16(0)
+
+    xu_ctrl_query = uvc_xu_control_query()
+    xu_ctrl_query.unit = unit_id
+    xu_ctrl_query.selector = selector
+    xu_ctrl_query.query = UVC_GET_LEN
+    xu_ctrl_query.size = 2 # sizeof(length)
+    xu_ctrl_query.data = ctypes.cast(ctypes.pointer(length), ctypes.c_void_p)
+
+    try:
+       ioctl(fd, UVCIOC_CTRL_QUERY, xu_ctrl_query)
+    except Exception as e:
+        logging.info(f'try_xu_control: UVCIOC_CTRL_QUERY (GET_LEN) - Fd: {fd} - Error: {e}')
+        return False
+
+    return True
+
 def get_length_xu_control(fd, unit_id, selector):
     length = ctypes.c_uint16(0)
 
@@ -1021,6 +1039,29 @@ class KiyoProCtrls:
 # Logitech peripheral GUID ffe52d21-8030-4e2c-82d9-f587d00540bd
 LOGITECH_PERIPHERAL_GUID = b'\x21\x2d\xe5\xff\x30\x80\x2c\x4e\x82\xd9\xf5\x87\xd0\x05\x40\xbd'
 
+LOGITECH_PERIPHERAL_PANTILT_REL_SEL = 0x01
+LOGITECH_PERIPHERAL_PANTILT_REL_LEN = 4
+
+LOGITECH_PERIPHERAL_PANTILT_REL_OFFSET = 0
+LOGITECH_PERIPHERAL_PANTILT_REL_LEFT1 =  b'\x00\x01\x00\x00'
+LOGITECH_PERIPHERAL_PANTILT_REL_LEFT8 =  b'\x00\x08\x00\x00'
+LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT1 = b'\xff\xfe\x00\x00'
+LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT8 = b'\xff\xf7\x00\x00'
+LOGITECH_PERIPHERAL_PANTILT_REL_DOWN1 =  b'\x00\x00\x00\x01'
+LOGITECH_PERIPHERAL_PANTILT_REL_DOWN3 =  b'\x00\x00\x00\x03'
+LOGITECH_PERIPHERAL_PANTILT_REL_UP1 =    b'\x00\x00\xff\xfe'
+LOGITECH_PERIPHERAL_PANTILT_REL_UP3 =    b'\x00\x00\xff\xfc'
+
+
+LOGITECH_PERIPHERAL_PANTILT_RESET_SEL = 0x02
+LOGITECH_PERIPHERAL_PANTILT_RESET_LEN = 1
+
+LOGITECH_PERIPHERAL_PANTILT_RESET_OFFSET = 0
+LOGITECH_PERIPHERAL_PANTILT_RESET_PAN = b'\x01'
+LOGITECH_PERIPHERAL_PANTILT_RESET_TILT = b'\x02'
+LOGITECH_PERIPHERAL_PANTILT_RESET_BOTH = b'\x03'
+
+
 LOGITECH_PERIPHERAL_LED1_SEL = 0x09
 LOGITECH_PERIPHERAL_LED1_LEN = 5
 
@@ -1083,34 +1124,88 @@ class LogitechCtrls:
     def get_device_controls(self):
         peripheral_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_PERIPHERAL_GUID)
         if peripheral_unit_id != 0:
-            self.ctrls.extend([
-                LogitechCtrl(
-                    'logitech_led1_mode',
-                    'LED1 Mode',
-                    'menu',
-                    LOGITECH_PERIPHERAL_LED1_MODE_DESC,
-                    peripheral_unit_id,
-                    LOGITECH_PERIPHERAL_LED1_SEL,
-                    LOGITECH_PERIPHERAL_LED1_LEN,
-                    LOGITECH_PERIPHERAL_LED1_MODE_OFFSET,
-                    [
-                        BaseCtrlMenu('off', 'Off', LOGITECH_PERIPHERAL_LED1_MODE_OFF),
-                        BaseCtrlMenu('on', 'On', LOGITECH_PERIPHERAL_LED1_MODE_ON),
-                        BaseCtrlMenu('blink', 'Blink', LOGITECH_PERIPHERAL_LED1_MODE_BLINK),
-                        BaseCtrlMenu('auto', 'Auto', LOGITECH_PERIPHERAL_LED1_MODE_AUTO),
-                    ]
-                ),
-                LogitechCtrl(
-                    'logitech_led1_frequency',
-                    'LED1 Frequency',
-                    'integer',
-                    LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC,
-                    peripheral_unit_id,
-                    LOGITECH_PERIPHERAL_LED1_SEL,
-                    LOGITECH_PERIPHERAL_LED1_LEN,
-                    LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET,
-                ),
-            ])
+            if try_xu_control(self.fd, peripheral_unit_id, LOGITECH_PERIPHERAL_LED1_SEL):
+                self.ctrls.extend([
+                    LogitechCtrl(
+                        'logitech_led1_mode',
+                        'LED1 Mode',
+                        'menu',
+                        LOGITECH_PERIPHERAL_LED1_MODE_DESC,
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_LED1_SEL,
+                        LOGITECH_PERIPHERAL_LED1_LEN,
+                        LOGITECH_PERIPHERAL_LED1_MODE_OFFSET,
+                        [
+                            BaseCtrlMenu('off', 'Off', LOGITECH_PERIPHERAL_LED1_MODE_OFF),
+                            BaseCtrlMenu('on', 'On', LOGITECH_PERIPHERAL_LED1_MODE_ON),
+                            BaseCtrlMenu('blink', 'Blink', LOGITECH_PERIPHERAL_LED1_MODE_BLINK),
+                            BaseCtrlMenu('auto', 'Auto', LOGITECH_PERIPHERAL_LED1_MODE_AUTO),
+                        ]
+                    ),
+                    LogitechCtrl(
+                        'logitech_led1_frequency',
+                        'LED1 Frequency',
+                        'integer',
+                        LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC,
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_LED1_SEL,
+                        LOGITECH_PERIPHERAL_LED1_LEN,
+                        LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET,
+                    ),
+                ])
+            if try_xu_control(self.fd, peripheral_unit_id, LOGITECH_PERIPHERAL_PANTILT_REL_SEL):
+                self.ctrls.extend([
+                    LogitechCtrl(
+                        'logitech_pan_relative',
+                        'Pan, Relative',
+                        'button',
+                        'Pan, Relative',
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_PANTILT_REL_SEL,
+                        LOGITECH_PERIPHERAL_PANTILT_REL_LEN,
+                        LOGITECH_PERIPHERAL_PANTILT_REL_OFFSET,
+                        [
+                            BaseCtrlMenu('-8', '↞', LOGITECH_PERIPHERAL_PANTILT_REL_LEFT8),
+                            BaseCtrlMenu('-1', '←', LOGITECH_PERIPHERAL_PANTILT_REL_LEFT1),
+                            BaseCtrlMenu('1', '→', LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT1),
+                            BaseCtrlMenu('8', '↠', LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT8),
+                        ],
+                    ),
+                    LogitechCtrl(
+                        'logitech_tilt_relative',
+                        'Tilt, Relative',
+                        'button',
+                        'Tilt, Relative',
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_PANTILT_REL_SEL,
+                        LOGITECH_PERIPHERAL_PANTILT_REL_LEN,
+                        LOGITECH_PERIPHERAL_PANTILT_REL_OFFSET,
+                        [
+                            BaseCtrlMenu('-3', '↡', LOGITECH_PERIPHERAL_PANTILT_REL_DOWN3),
+                            BaseCtrlMenu('-1', '↓', LOGITECH_PERIPHERAL_PANTILT_REL_DOWN1),
+                            BaseCtrlMenu('1', '↑', LOGITECH_PERIPHERAL_PANTILT_REL_UP1),
+                            BaseCtrlMenu('3', '↟', LOGITECH_PERIPHERAL_PANTILT_REL_UP3),
+                        ],
+                    ),
+                ])
+            if try_xu_control(self.fd, peripheral_unit_id, LOGITECH_PERIPHERAL_PANTILT_RESET_SEL):
+                self.ctrls.extend([
+                    LogitechCtrl(
+                        'logitech_pantilt_reset',
+                        'Pan/Tilt, Reset',
+                        'button',
+                        'Pan/Tilt, Reset',
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_PANTILT_RESET_SEL,
+                        LOGITECH_PERIPHERAL_PANTILT_RESET_LEN,
+                        LOGITECH_PERIPHERAL_PANTILT_RESET_OFFSET,
+                        [
+                            BaseCtrlMenu('pan', 'Pan', LOGITECH_PERIPHERAL_PANTILT_RESET_PAN),
+                            BaseCtrlMenu('tilt', 'Tilt', LOGITECH_PERIPHERAL_PANTILT_RESET_TILT),
+                            BaseCtrlMenu('both', 'Both', LOGITECH_PERIPHERAL_PANTILT_RESET_BOTH),
+                        ],
+                    ),
+                ])
 
         user_hw_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_USER_HW_CONTROL_V1_GUID)
         if user_hw_unit_id != 0:
@@ -1160,15 +1255,18 @@ class LogitechCtrls:
 
         for c in self.ctrls:
             minimum_config = to_buf(bytes(c._len))
-            maximum_config = to_buf(bytes(c._len))
-            current_config = to_buf(bytes(c._len))
-
             query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_MIN, minimum_config)
-            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_MAX, maximum_config)
-            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_CUR, current_config)
-
             c.min = minimum_config[c._offset][0]
+
+            maximum_config = to_buf(bytes(c._len))
+            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_MAX, maximum_config)
             c.max = maximum_config[c._offset][0]
+
+            if c.type == 'button':
+                continue
+
+            current_config = to_buf(bytes(c._len))
+            query_xu_control(self.fd, c._unit_id, c._selector, UVC_GET_CUR, current_config)
             c.value = current_config[c._offset][0]
 
             if c.type == 'menu':
@@ -1185,7 +1283,7 @@ class LogitechCtrls:
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl == None:
                 continue
-            if ctrl.type == 'menu':
+            if ctrl.type == 'menu' or ctrl.type == 'button':
                 menu  = find_by_text_id(ctrl.menu, v)
                 if menu == None:
                     logging.warning(f'LogitechCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
@@ -1195,6 +1293,10 @@ class LogitechCtrls:
                 desired = int(v)
             else:
                 logging.warning(f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})')
+                continue
+
+            if ctrl.type == 'button':
+                query_xu_control(self.fd, ctrl._unit_id, ctrl._selector, UVC_SET_CUR, to_buf(desired))
                 continue
 
             current_config = to_buf(bytes(ctrl._len))
@@ -1852,7 +1954,8 @@ class CameraCtrls:
                         V4L2_CID_TILT_RELATIVE,
                         V4L2_CID_TILT_RESET,
                         V4L2_CID_TILT_SPEED,
-                    ])
+                    ]) +
+                    pop_list_by_text_ids(ctrls, ['logitech_pan_', 'logitech_tilt_', 'logitech_pantilt']),
                 ),
                 CtrlCategory('Focus',
                     pop_list_by_ids(ctrls, [
