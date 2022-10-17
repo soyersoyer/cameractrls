@@ -256,10 +256,13 @@ class CameraCtrlsGui:
                         c.gui_default_btn = refresh
 
                     elif c.type == 'button':
+                        box = Gtk.ButtonBox(valign=Gtk.Align.CENTER)
+                        box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
+                        ctrl_box.pack_end(box, False, False, 0)
                         for m in c.menu:
-                            b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER, margin_right=5)
-                            b.connect('clicked', lambda e,c=c: self.update_ctrl(c, m.text_id))
-                            ctrl_box.pack_end(b, False, False, 0)
+                            b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
+                            b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
+                            box.add(b)
                             c.gui_ctrls += b
                         c.gui_default_btn = None
 
