@@ -1359,7 +1359,7 @@ class LogitechCtrls:
 
 class V4L2Ctrl(BaseCtrl):
     def __init__(self, id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
-        super().__init__(text_id, name, type, value, default, min, max, step, menu)
+        super().__init__(text_id, name, type, value, default, min, max, step, menu=menu)
         self._id = id
 
 class V4L2Ctrls:
@@ -1368,6 +1368,7 @@ class V4L2Ctrls:
         V4L2_CTRL_TYPE_BOOLEAN: 'boolean',
         V4L2_CTRL_TYPE_MENU: 'menu',
         V4L2_CTRL_TYPE_INTEGER_MENU: 'menu',
+        V4L2_CTRL_TYPE_BUTTON: 'button',
     }
     strtrans = bytes.maketrans(b' -', b'__')
 
@@ -1394,6 +1395,8 @@ class V4L2Ctrls:
                     logging.warning(f'V4L2Ctrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
                     continue
                 intvalue = menu.value
+            elif ctrl.type == 'button':
+                intvalue = 0
             else:
                 logging.warning(f'V4L2Ctrls: Can\'t set {k} to {v} (Unsupported control type {ctrl.type})')
                 continue
@@ -1421,21 +1424,25 @@ class V4L2Ctrls:
             except:
                 break
             if qctrl.type in [V4L2_CTRL_TYPE_INTEGER, V4L2_CTRL_TYPE_BOOLEAN,
-                V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
-
-                try:
-                    ctrl = v4l2_control(qctrl.id)
-                    ioctl(self.fd, VIDIOC_G_CTRL, ctrl)
-                except:
-                    logging.warning(f'V4L2Ctrls: Can\'t get ctrl {qctrl.name} value')
+                V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU, V4L2_CTRL_TYPE_BUTTON]:
 
                 text_id = self.to_text_id(qctrl.name)
                 text = str(qctrl.name, 'utf-8')
                 ctrl_type = V4L2Ctrls.to_type.get(qctrl.type)
                 if ctrl_type == 'integer' and qctrl.minimum == 0 and qctrl.maximum == 1 and qctrl.step == 1:
                     ctrl_type = 'boolean'
-                v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, int(ctrl.value),
-                    qctrl.default, qctrl.minimum, qctrl.maximum, qctrl.step)
+                
+                if ctrl_type != 'button':
+                    try:
+                        ctrl = v4l2_control(qctrl.id)
+                        ioctl(self.fd, VIDIOC_G_CTRL, ctrl)
+                    except:
+                        logging.warning(f'V4L2Ctrls: Can\'t get ctrl {qctrl.name} value')
+
+                    v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, int(ctrl.value),
+                        qctrl.default, qctrl.minimum, qctrl.maximum, qctrl.step)
+                else:
+                    v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, None, menu = [ BaseCtrlMenu(text_id, text, text_id) ])
 
                 # doesn't work with some contols, uvc driver bug?
                 # v4l2ctrl.updater = bool(qctrl.flags & V4L2_CTRL_FLAG_UPDATE)
