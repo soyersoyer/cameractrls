@@ -770,7 +770,7 @@ def query_xu_control(fd, unit_id, selector, query, data):
     try:
         ioctl(fd, UVCIOC_CTRL_QUERY, xu_ctrl_query)
     except Exception as e:
-        logging.warning(f'UVCIOC_CTRL_QUERY ({query}) - Fd: {fd} - Error: {e}')
+        logging.warning(f'UVCIOC_CTRL_QUERY (0x{query:02x}) - Fd: {fd} - Error: {e}')
 
 # the usb device descriptors file contains the descriptors in a binary format
 # the byte before the extension guid is the extension unit id
