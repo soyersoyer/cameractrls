@@ -229,6 +229,7 @@ class CameraCtrlsGui:
                             digits=0, value_pos=Gtk.PositionType.LEFT, adjustment=adjustment, width_request=264)
                         if c.zeroer:
                             scale.connect('button-release-event', lambda sc, e: sc.set_value(0))
+                            scale.connect('key-release-event', lambda sc, e: sc.set_value(0))
                         if c.step and c.step != 1:
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])

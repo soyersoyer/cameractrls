@@ -144,6 +144,7 @@ class CameraCtrlsGui:
                 c.gui_sc = ttk.Scale(cframe, style='Highlight.Horizontal.TScale', from_=c.min, to=c.max, variable=c.var, orient='horizontal')
                 if c.zeroer:
                     c.gui_sc.bind('<ButtonRelease-1>', lambda e, c=c: c.var.set(0))
+                    c.gui_sc.bind('<KeyRelease>', lambda e, c=c: c.var.set(0))
                 c.gui_sc.grid(row=row,column=1, sticky='EW', ipadx=2, ipady=2)
                 label = ttk.Label(cframe, textvariable=c.uvar, justify='right')
                 label.grid(row=row, column=2, sticky='NE', ipadx=4)
