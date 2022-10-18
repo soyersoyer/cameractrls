@@ -1836,7 +1836,7 @@ class CameraCtrls:
                         print(', '.join([m.text_id for m in c.menu]), end = ' )')
                     elif c.type in ['integer', 'boolean']:
                         print(f' = {c.value}\t( default: {c.default} min: {c.min} max: {c.max}', end = '')
-                        if c.step != 1:
+                        if c.step and c.step != 1:
                             print(f' step: {c.step}', end = '')
                         print(' )', end = '')
                     if c.updater:
