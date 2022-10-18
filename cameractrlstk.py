@@ -5,7 +5,7 @@ from cameractrls import CameraCtrls, get_devices, v4ldirs
 from cameractrls import version, ghurl
 
 try:
-    from tkinter import Tk, ttk, PhotoImage, Scale, IntVar, StringVar
+    from tkinter import Tk, ttk, PhotoImage, IntVar, StringVar
 except Exception as e:
     logging.error(f'tkinter import failed: {e}, please install the python3-tk package')
     sys.exit(3)
