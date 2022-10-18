@@ -334,6 +334,7 @@ class CameraCtrlsGui:
                 gui_ctrl.set_sensitive(not c.inactive)
             if c.gui_default_btn != None:
                 c.gui_default_btn.set_opacity(0 if c.default == None or c.default == c.value else 1)
+                c.gui_default_btn.set_can_focus(0 if c.default == None or c.default == c.value else 1)
 
     def preserve_widget(self, widget):
         self.preserved_widget = widget
