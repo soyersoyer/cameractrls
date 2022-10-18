@@ -36,6 +36,9 @@ class CameraCtrlsGui:
         s = ttk.Style()
         s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
         s.configure('Short.TButton', padding=[10,0,10,0])
+        s.map('Horizontal.TScale', background=[('focus', '#aaaaaa')])
+        s.map('TCombobox', background=[('focus', '#aaaaaa')])
+
 
         head = ttk.Frame(self.window)
         head.grid(row=1, sticky='E')
