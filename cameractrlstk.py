@@ -120,16 +120,31 @@ class CameraCtrlsGui:
             c.gui_ctrls = [ctrllabel]
 
             if c.type == 'integer':
+                c.uvar = IntVar(cframe, c.value) # for update and label
+                c.uvar.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.uvar.get()))
+
+                # step handling
                 c.var = IntVar(cframe, c.value)
-                c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
-                # ttk.Scale doesn't support resolution, using tk.Scale
-                sc = Scale(cframe, from_=c.min, to=c.max, resolution=c.step, variable=c.var, showvalue=False, orient='horizontal')
+                if c.step and c.step != 1:
+                    c.var.trace_add('write', lambda v,a,b,c=c: [
+                        c.var.get() == c.uvar.get()-1 and c.var.set(c.uvar.get() - c.step), # handle key left
+                        c.var.get() == c.uvar.get()+1 and c.var.set(c.uvar.get() + c.step), # handle key right
+                        c.var.set(c.var.get() - c.var.get() % c.step
+                            if c.var.get() % c.step < c.step/2 else
+                            c.var.get() - c.var.get() % c.step + c.step), # handle mouse
+                        c.var.get() != c.uvar.get() and c.uvar.set(c.var.get()),
+                        c.gui_sc.set(c.var.get()),
+                    ])
+                else:
+                    c.var.trace_add('write', lambda v,a,b,c=c: c.uvar.set(c.var.get()))
+
+                c.gui_sc = ttk.Scale(cframe, style='Highlight.Horizontal.TScale', from_=c.min, to=c.max, variable=c.var, orient='horizontal')
                 if c.zeroer:
-                    sc.bind('<ButtonRelease-1>', lambda e, c=c: c.var.set(0))
-                sc.grid(row=row,column=1, sticky='NESW', ipadx=2)
-                label = ttk.Label(cframe, textvariable=c.var, justify='right')
+                    c.gui_sc.bind('<ButtonRelease-1>', lambda e, c=c: c.var.set(0))
+                c.gui_sc.grid(row=row,column=1, sticky='EW', ipadx=2, ipady=2)
+                label = ttk.Label(cframe, textvariable=c.uvar, justify='right')
                 label.grid(row=row, column=2, sticky='NE', ipadx=4)
-                c.gui_ctrls += [sc, label]
+                c.gui_ctrls += [c.gui_sc, label]
 
             elif c.type == 'boolean':
                 menuctrls = ttk.Frame(cframe)
@@ -181,13 +196,8 @@ class CameraCtrlsGui:
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
             for gui_ctrl in c.gui_ctrls:
-                if hasattr(gui_ctrl, 'state'):
                     state = ['disabled'] if c.inactive else ['!disabled']
                     gui_ctrl.state(state)
-                else:
-                    #tk.Scale doesn't support the ttk's .state(), using .configure()
-                    state = 'disabled' if c.inactive else 'normal'
-                    gui_ctrl.configure(state=state)
             self.update_default_btn(c)
 
     def update_default_btn(self, c):
