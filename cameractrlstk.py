@@ -200,8 +200,8 @@ class CameraCtrlsGui:
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
             for gui_ctrl in c.gui_ctrls:
-                    state = ['disabled'] if c.inactive else ['!disabled']
-                    gui_ctrl.state(state)
+                state = ['disabled'] if c.inactive else ['!disabled']
+                gui_ctrl.state(state)
             self.update_default_btn(c)
 
     def update_default_btn(self, c):
