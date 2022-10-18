@@ -1455,6 +1455,7 @@ class V4L2Ctrls:
 
                 if qctrl.id in V4L2_CTRL_ZEROERS:
                     v4l2ctrl.zeroer = True
+                    v4l2ctrl.default = 0
 
                 if qctrl.type in [V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
                     v4l2ctrl.menu = []
