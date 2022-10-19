@@ -116,11 +116,19 @@ def v4l2_fourcc(a, b, c, d):
     return ord(a) | (ord(b) << 8) | (ord(c) << 16) | (ord(d) << 24)
 
 V4L2_PIX_FMT_YUYV = v4l2_fourcc('Y', 'U', 'Y', 'V')
+V4L2_PIX_FMT_YVYU = v4l2_fourcc('Y', 'V', 'Y', 'U')
+V4L2_PIX_FMT_UYVY = v4l2_fourcc('U', 'Y', 'V', 'Y')
 V4L2_PIX_FMT_MJPEG = v4l2_fourcc('M', 'J', 'P', 'G')
 V4L2_PIX_FMT_JPEG = v4l2_fourcc('J', 'P', 'E', 'G')
 V4L2_PIX_FMT_NV12 = v4l2_fourcc('N', 'V', '1', '2')
+V4L2_PIX_FMT_NV21 = v4l2_fourcc('N', 'V', '2', '1')
 V4L2_PIX_FMT_YU12 = v4l2_fourcc('Y', 'U', '1', '2')
+V4L2_PIX_FMT_YV12 = v4l2_fourcc('Y', 'V', '1', '2')
 V4L2_PIX_FMT_GREY = v4l2_fourcc('G', 'R', 'E', 'Y')
+V4L2_PIX_FMT_RGB24 = v4l2_fourcc('R', 'G', 'B', '3')
+V4L2_PIX_FMT_BGR24 = v4l2_fourcc('B', 'G', 'R', '3')
+V4L2_PIX_FMT_RX24 = v4l2_fourcc('R', 'X', '2', '4')
+
 
 V4L2_BUF_TYPE_VIDEO_CAPTURE = 1
 V4L2_MEMORY_MMAP = 1
