@@ -62,6 +62,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.zero_box.show_all()
 
         self.device_cb = Gtk.ComboBoxText()
+        cellrenderer = self.device_cb.get_cells()[0]
+        cellrenderer.set_property('ellipsize', Pango.EllipsizeMode.MIDDLE)
+        cellrenderer.set_property('max-width-chars', 70)
+        cellrenderer.set_property('width-chars', 70)
         self.device_cb.connect('changed', lambda e: self.gui_open_device(self.device_cb.get_active()))
         self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin=10, margin_bottom=0)
         self.device_box.pack_start(self.device_cb, True, True, 0)
