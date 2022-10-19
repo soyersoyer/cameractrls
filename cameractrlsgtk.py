@@ -6,55 +6,50 @@ from cameractrls import CameraCtrls, find_by_text_id, get_devices, v4ldirs, find
 from cameractrls import version, ghurl
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gio, GLib, Pango, Gdk
 
-class CameraCtrlsGui:
-    def __init__(self):
+class CameraCtrlsWindow(Gtk.ApplicationWindow):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, type_hint=Gdk.WindowTypeHint.DIALOG, **kwargs)
         self.devices = []
         
         self.fd = 0
         self.device = ''
         self.camera = None
 
-        self.window = None
         self.grid = None
         self.frame = None
         self.device_cb = None
-
-        self.child_processes = []
 
         self.init_window()
         self.refresh_devices()
 
     def init_window(self):
-        self.window = Gtk.Window(title='Cameractrls', type_hint=Gdk.WindowTypeHint.DIALOG)
-        self.window.connect('destroy', Gtk.main_quit)
-        self.window.set_default_icon_from_file(f'{sys.path[0]}/images/icon_256.png')
+        self.set_default_icon_from_file(f'{sys.path[0]}/images/icon_256.png')
+
+        hambuger_menu = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL,
+            margin=10, spacing=10,
+            child=Gtk.ModelButton(action_name='app.about', label='About'),
+        )
+        hambuger_menu.show_all()
+
+        hamburger_button = Gtk.MenuButton(
+            popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=hambuger_menu),
+            image=Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU)
+        )
+
+        self.open_cam_button = Gtk.Button(
+            action_name='app.open_camera_window',
+            action_target=GLib.Variant('s', ''),
+            image=Gtk.Image.new_from_icon_name('camera-video', Gtk.IconSize.MENU)
+        )
 
         headerbar = Gtk.HeaderBar(title='Cameractrls', show_close_button=True)
-        self.window.set_titlebar(headerbar)
-
-        hamburger = Gtk.MenuButton()
-        hamburger_icon = Gtk.Image.new_from_icon_name("open-menu-symbolic", Gtk.IconSize.MENU)
-        hamburger.add(hamburger_icon)
-
-        popover = Gtk.Popover(position=Gtk.PositionType.BOTTOM)
-        menu = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=10, spacing=10)
-        about_elem = Gtk.Button(label='About', relief=Gtk.ReliefStyle.NONE)
-        about_elem.connect('clicked', lambda e,p=popover: [self.open_about(), p.popdown()])
-        menu.pack_start(about_elem, True, True, 0)
-        menu.show_all()
-        popover.add(menu)
-        hamburger.set_popover(popover)
-
-        self.open_cam_button = Gtk.Button(no_show_all=True)
-        camera_video_icon = Gtk.Image.new_from_icon_name('camera-video', Gtk.IconSize.MENU)
-        camera_video_icon.show()
-        self.open_cam_button.add(camera_video_icon)
-        self.open_cam_button.connect('clicked', lambda e: self.open_camera_window())
-
-        headerbar.pack_end(hamburger)
+        headerbar.pack_end(hamburger_button)
         headerbar.pack_end(self.open_cam_button)
+        headerbar.show_all()
+        self.set_titlebar(headerbar)
 
         self.grid = Gtk.Grid()
 
@@ -66,30 +61,14 @@ class CameraCtrlsGui:
         self.zero_box.pack_start(zero_refresh, True, True, 5)
         self.zero_box.show_all()
 
-        self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin=10, margin_bottom=0)
         self.device_cb = Gtk.ComboBoxText()
         self.device_cb.connect('changed', lambda e: self.gui_open_device(self.device_cb.get_active()))
+        self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin=10, margin_bottom=0)
         self.device_box.pack_start(self.device_cb, True, True, 0)
         self.device_box.show_all()
 
         self.grid.attach(self.zero_box, 0, 0, 1, 1)
-        self.window.add(self.grid)
-
-    def open_about(self):
-        about = Gtk.AboutDialog(transient_for=self.window, modal=self.window)
-        about.set_program_name('Cameractrls')
-        about.set_authors(['Gergo Koteles <soyer@irl.hu>'])
-        about.set_copyright('Copyright © 2022 Gergo Koteles')
-        about.set_license_type(Gtk.License.MIT_X11)
-        about.set_website(ghurl)
-        about.set_website_label('GitHub')
-        about.set_version(version)
-        about.connect('response', lambda d, r: d.destroy())
-        about.present()
-
-    def open_camera_window(self):
-        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device])
-        self.child_processes.append(p)
+        self.add(self.grid)
 
     def refresh_devices(self):
         logging.info('refresh_devices')
@@ -103,7 +82,7 @@ class CameraCtrlsGui:
         for device in self.devices:
             self.device_cb.append_text(device)
         self.device_cb.append_text('Refresh device list ...')
-        
+
         if len(self.devices):
             if self.device not in self.devices:
                 self.device_cb.set_active(0)
@@ -150,6 +129,7 @@ class CameraCtrlsGui:
 
         self.camera = CameraCtrls(device, self.fd)
         self.device = device
+        self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device))
 
     def close_device(self):
         if self.fd:
@@ -162,7 +142,7 @@ class CameraCtrlsGui:
         if self.frame:
             self.frame.destroy()
             # forget old size
-            self.window.resize(1,1)
+            self.resize(1,1)
 
         if self.device == '':
             return
@@ -340,9 +320,52 @@ class CameraCtrlsGui:
     def preserve_widget(self, widget):
         self.preserved_widget = widget
 
-    def start(self):
-        self.window.show_all()
-        Gtk.main()
+class CameraCtrlsApp(Gtk.Application):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, application_id='hu.irl.cameractrls', **kwargs)
+
+        self.window = None
+        self.child_processes = []
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+        action = Gio.SimpleAction.new('about', None)
+        action.connect('activate', self.on_about)
+        self.add_action(action)
+
+        action = Gio.SimpleAction.new('open_camera_window', GLib.VariantType('s'))
+        action.connect('activate', self.open_camera_window)
+        self.add_action(action)
+
+        action = Gio.SimpleAction.new('quit', None)
+        action.connect('activate', self.on_quit)
+        self.add_action(action)
+
+        self.set_accels_for_action('app.quit',["<Primary>Q"])
+
+    def do_activate(self):
+        self.window = CameraCtrlsWindow(application=self, title='Cameractrls')
+        self.window.present()
+
+    def on_about(self, action, param):
+        about = Gtk.AboutDialog(transient_for=self.window, modal=self.window)
+        about.set_program_name('Cameractrls')
+        about.set_authors(['Gergo Koteles <soyer@irl.hu>'])
+        about.set_copyright('Copyright © 2022 Gergo Koteles')
+        about.set_license_type(Gtk.License.MIT_X11)
+        about.set_website(ghurl)
+        about.set_website_label('GitHub')
+        about.set_version(version)
+        about.connect('response', lambda d, r: d.destroy())
+        about.present()
+
+    def on_quit(self, action, param):
+        self.quit()
+
+    def open_camera_window(self, action, device):
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', device.get_string()])
+        self.child_processes.append(p)
 
     def kill_child_processes(self):
         for proc in self.child_processes:
@@ -350,6 +373,6 @@ class CameraCtrlsGui:
 
 
 if __name__ == '__main__':
-    gui = CameraCtrlsGui()
-    gui.start()
-    gui.kill_child_processes()
+    app = CameraCtrlsApp()
+    app.run()
+    app.kill_child_processes()
