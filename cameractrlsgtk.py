@@ -154,7 +154,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.frame = Gtk.Grid(hexpand=True, halign=Gtk.Align.FILL)
         self.grid.attach(self.frame, 0, 1, 1, 1)
 
-        stack_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=10, vexpand=True, halign=Gtk.Align.CENTER)
+        stack_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=10, vexpand=True, halign=Gtk.Align.FILL)
         stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=500)
         stack_sw = Gtk.StackSwitcher(stack=stack, hexpand=True, halign=Gtk.Align.CENTER)
         stack_box.pack_start(stack_sw, False, False, 0)
