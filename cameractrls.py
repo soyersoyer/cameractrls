@@ -1908,11 +1908,11 @@ class CameraCtrls:
             CtrlPage('Exposure', [
                 CtrlCategory('Exposure', pop_list_by_ids(ctrls, [
                     V4L2_CID_EXPOSURE_AUTO,
+                    V4L2_CID_EXPOSURE_ABSOLUTE,
                     V4L2_CID_EXPOSURE_AUTO_PRIORITY,
                     V4L2_CID_AUTOGAIN,
                     V4L2_CID_EXPOSURE,
                     V4L2_CID_EXPOSURE_METERING,
-                    V4L2_CID_EXPOSURE_ABSOLUTE,
                     V4L2_CID_AUTO_EXPOSURE_BIAS,
                     V4L2_CID_GAIN,
                     V4L2_CID_CHROMA_AGC,
