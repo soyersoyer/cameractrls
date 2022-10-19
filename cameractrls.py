@@ -1954,6 +1954,8 @@ class CameraCtrls:
                 CtrlCategory('Power Line', pop_list_by_ids(ctrls, [V4L2_CID_POWER_LINE_FREQUENCY])),
                 CtrlCategory('Privacy', pop_list_by_ids(ctrls, [V4L2_CID_PRIVACY])),
                 CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
+            ]),
+            CtrlPage('Compression', [
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
                 CtrlCategory('JPEG', pop_list_by_base_id(ctrls, V4L2_CID_JPEG_CLASS_BASE)),
             ]),
