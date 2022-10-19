@@ -34,6 +34,25 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.4.11" date="2022-10-19">
+            <description>
+                <ul>
+                    <li>Pan/Tilt relative and reset controls for some Logitech PTZ cameras (like bcc950)</li>
+                    <li>LED and focus controls for some old Logitech cameras (like QuickCam Pro 9000)</li>
+                    <li>V4L2 buttons</li>
+                    <li>Controls also work with keyboard</li>
+                    <li>Pan/Tilt speed controls stop when the key or button released</li>
+                    <li>Highlight focused controls in the TK app</li>
+                    <li>Gray out the inactive controls</li>
+                    <li>Quit with Primary+q</li>
+                    <li>New compression page with the Codec and JPEG categories</li>
+                    <li>Fullscreen with double-click in the cameraview</li>
+                    <li>Support YVYU, UYVY, NV21, YV12, RGB24, BGR24, RX24 formats in the cameraview</li>
+                    <li>Limit the combobox width in the GTK app</li>
+                    <li>Controls fill the width in the GTK app</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.4.10" date="2022-10-07">
             <description>
                 <ul>
