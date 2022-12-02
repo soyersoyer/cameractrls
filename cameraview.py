@@ -75,6 +75,7 @@ SDL_RenderCopy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ct
 # int SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_Rect * dstrect);
 
 SDL_RenderPresent = sdl2.SDL_RenderPresent
+SDL_RenderPresent.restype = None
 SDL_RenderPresent.argtypes = [ctypes.c_void_p]
 # void SDL_RenderPresent(SDL_Renderer * renderer);
 
@@ -210,6 +211,10 @@ tj_decompress.restype = ctypes.c_int
 #                  unsigned char *dstBuf,
 #                  int width, int pitch, int height, int pixelFormat,
 #                  int flags);
+
+tj_get_error_str = turbojpeg.tjGetErrorStr
+tj_get_error_str.restype = ctypes.c_char_p
+#char* tjGetErrorStr()
 
 tj_destroy = turbojpeg.tjDestroy
 tj_destroy.argtypes = [ctypes.c_void_p]
@@ -419,7 +424,8 @@ class SDLCameraWindow():
         bytesperline = self.cam.bytesperline
         if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG or self.cam.pixelformat == V4L2_PIX_FMT_JPEG:
             bytesperline = self.cam.width * 3
-            tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, bytesperline, self.cam.height, TJPF_RGB, 0)
+            if tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, bytesperline, self.cam.height, TJPF_RGB, 0) != 0:
+                logging.warning(f'tj_decompress failed: {tj_get_error_str()}')
             ptr = self.outbuffer
         elif self.cam.pixelformat == V4L2_PIX_FMT_GREY:
             ctypes.memmove(self.outbuffer, ptr, buf.bytesused)
@@ -449,9 +455,12 @@ class SDLCameraWindow():
                 event.button.clicks == 2:
                     self.toggle_fullscreen()
             elif event.type == self.sdl_new_image_event:
-                SDL_UpdateTexture(self.texture, None, event.user.data1, event.user.code)
-                SDL_RenderClear(self.renderer)
-                SDL_RenderCopy(self.renderer, self.texture, None, None)
+                if SDL_UpdateTexture(self.texture, None, event.user.data1, event.user.code) != 0:
+                    logging.warning(f'SDL_UpdateTexture failed: {SDL_GetError()}')
+                if SDL_RenderClear(self.renderer) != 0:
+                    logging.warning(f'SDL_RenderClear failed: {SDL_GetError()}')
+                if SDL_RenderCopy(self.renderer, self.texture, None, None) != 0:
+                    logging.warning(f'SDL_RenderCopy failed: {SDL_GetError()}')
                 SDL_RenderPresent(self.renderer)
 
     def toggle_fullscreen(self):
