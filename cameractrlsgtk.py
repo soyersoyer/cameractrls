@@ -72,6 +72,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device_box.show_all()
 
         self.grid.attach(self.zero_box, 0, 0, 1, 1)
+        self.grid.show()
         self.add(self.grid)
 
     def refresh_devices(self):
@@ -94,13 +95,15 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 idx = self.devices.index(self.device)
                 self.device_cb.set_active(idx)
 
-        if len(self.devices) == 0 and self.device_box.get_parent() != None:
-            self.grid.remove(self.device_box)
-            self.grid.attach(self.zero_box, 0, 0, 1, 1)
+        if len(self.devices) == 0:
+            if self.device_box.get_parent() != None:
+                self.grid.remove(self.device_box)
+                self.grid.attach(self.zero_box, 0, 0, 1, 1)
             self.open_cam_button.hide()
-        elif len(self.devices) != 0 and self.zero_box.get_parent() != None:
-            self.grid.remove(self.zero_box)
-            self.grid.attach(self.device_box, 0, 0, 1, 1)
+        elif len(self.devices) != 0:
+            if self.zero_box.get_parent() != None:
+                self.grid.remove(self.zero_box)
+                self.grid.attach(self.device_box, 0, 0, 1, 1)
             self.open_cam_button.show()
 
     def gui_open_device(self, id):        
