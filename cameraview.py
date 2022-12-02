@@ -2,6 +2,7 @@
 
 import os, sys, ctypes, ctypes.util, logging, mmap, struct, getopt
 from fcntl import ioctl
+from threading import Thread
 
 from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
 from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_S_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
@@ -32,6 +33,11 @@ SDL_GetError = sdl2.SDL_GetError
 SDL_GetError.restype = ctypes.c_char_p
 SDL_GetError.argtypes = []
 # const char* SDL_GetError(void);
+
+SDL_RegisterEvents = sdl2.SDL_RegisterEvents
+SDL_RegisterEvents.restype = ctypes.c_uint32
+SDL_RegisterEvents.argtypes = [ctypes.c_int]
+# Uint32 SDL_RegisterEvents(int numevents);
 
 SDL_CreateWindow = sdl2.SDL_CreateWindow
 SDL_CreateWindow.restype = ctypes.c_void_p
@@ -72,10 +78,15 @@ SDL_RenderPresent = sdl2.SDL_RenderPresent
 SDL_RenderPresent.argtypes = [ctypes.c_void_p]
 # void SDL_RenderPresent(SDL_Renderer * renderer);
 
-SDL_PollEvent = sdl2.SDL_PollEvent
-SDL_PollEvent.restype = ctypes.c_int
-SDL_PollEvent.argtypes = [ctypes.c_void_p]
-# int SDL_PollEvent(SDL_Event * event);
+SDL_PushEvent = sdl2.SDL_PushEvent
+SDL_PushEvent.restype = ctypes.c_int
+SDL_PushEvent.argtypes = [ctypes.c_void_p]
+#int SDL_PushEvent(SDL_Event * event);
+
+SDL_WaitEvent = sdl2.SDL_WaitEvent
+SDL_WaitEvent.restype = ctypes.c_int
+SDL_WaitEvent.argtypes = [ctypes.c_void_p]
+# int SDL_WaitEvent(SDL_Event * event);
 
 SDL_DestroyWindow = sdl2.SDL_DestroyWindow
 SDL_DestroyWindow.argtypes = [ctypes.c_void_p]
@@ -163,11 +174,23 @@ class SDL_MouseButtonEvent(ctypes.Structure):
         ('y', ctypes.c_int32),
     ]
 
+class SDL_UserEvent(ctypes.Structure):
+    _fields_ = [
+        ('type', ctypes.c_uint32),
+        ('timestamp', ctypes.c_uint32),
+        ('windowID', ctypes.c_uint32),
+        ('code', ctypes.c_int32),
+        ('data1', ctypes.c_void_p),
+        ('data2', ctypes.c_void_p),
+    ]
+
+
 class SDL_Event(ctypes.Union):
     _fields_ = [
         ('type', ctypes.c_uint32),
         ('key', SDL_KeyboardEvent),
         ('button', SDL_MouseButtonEvent),
+        ('user', SDL_UserEvent),
         ('padding', (ctypes.c_uint8 * _event_pad_size)),
     ]
 
@@ -195,8 +218,9 @@ tj_destroy.restype = ctypes.c_int
 
 TJPF_RGB = 0
 
-class V4L2Camera():
+class V4L2Camera(Thread):
     def __init__(self, device):
+        super().__init__()
         self.device = device
         self.width = 0
         self.height = 0
@@ -303,6 +327,15 @@ class V4L2Camera():
     def stop_capturing(self):
         self.stopped = True
 
+    # thread start
+    def run(self):
+        self.start_capturing()
+    
+    # thread stop
+    def stop(self):
+        self.stop_capturing()
+        self.join()
+
 
 def V4L2Format2SDL(format):
     if format == V4L2_PIX_FMT_YUYV:
@@ -363,6 +396,9 @@ class SDLCameraWindow():
             logging.error(f'SDL_Init failed: {SDL_GetError()}')
             sys.exit(1)
 
+        # create a new sdl user event type for new image events
+        self.sdl_new_image_event = SDL_RegisterEvents(1)
+
         self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN)
         if self.window == None:
             logging.error(f'SDL_CreateWindow failed: {SDL_GetError()}')
@@ -377,7 +413,6 @@ class SDLCameraWindow():
         if self.texture == None:
             logging.error(f'SDL_CreateTexture failed: {SDL_GetError()}')
             sys.exit(1)
-        self.event = SDL_Event()
 
     def write_buf(self, buf):
         ptr = (ctypes.c_uint8 * buf.bytesused).from_buffer(buf.buffer)
@@ -390,35 +425,45 @@ class SDLCameraWindow():
             ctypes.memmove(self.outbuffer, ptr, buf.bytesused)
             ptr = self.outbuffer
 
-        SDL_UpdateTexture(self.texture, None, ptr, bytesperline)
-        SDL_RenderClear(self.renderer)
-        SDL_RenderCopy(self.renderer, self.texture, None, None)
-        SDL_RenderPresent(self.renderer)
+        event = SDL_Event()
+        event.type = self.sdl_new_image_event
+        event.user.code = bytesperline
+        event.user.data1 = ctypes.cast(ptr, ctypes.c_void_p)
+        if SDL_PushEvent(ctypes.byref(event)) < 0:
+            logging.warning(f'SDL_PushEvent failed: {SDL_GetError()}')
 
-        while SDL_PollEvent(ctypes.byref(self.event)) != 0:
-            if self.event.type == SDL_QUIT:
+    def event_loop(self):
+        event = SDL_Event()
+        while SDL_WaitEvent(ctypes.byref(event)) != 0:
+            if event.type == SDL_QUIT:
                 self.stop_capturing()
                 break
-            elif self.event.type == SDL_KEYDOWN and self.event.key.repeat == 0:
-                if self.event.key.keysym.sym == SDLK_q or self.event.key.keysym.sym == SDLK_ESCAPE:
+            elif event.type == SDL_KEYDOWN and event.key.repeat == 0:
+                if event.key.keysym.sym == SDLK_q or event.key.keysym.sym == SDLK_ESCAPE:
                     self.stop_capturing()
                     break
-                if self.event.key.keysym.sym == SDLK_f:
+                if event.key.keysym.sym == SDLK_f:
                     self.toggle_fullscreen()
-            elif self.event.type == SDL_MOUSEBUTTONUP and \
-                self.event.button.button == SDL_BUTTON_LEFT and \
-                self.event.button.clicks == 2:
+            elif event.type == SDL_MOUSEBUTTONUP and \
+                event.button.button == SDL_BUTTON_LEFT and \
+                event.button.clicks == 2:
                     self.toggle_fullscreen()
+            elif event.type == self.sdl_new_image_event:
+                SDL_UpdateTexture(self.texture, None, event.user.data1, event.user.code)
+                SDL_RenderClear(self.renderer)
+                SDL_RenderCopy(self.renderer, self.texture, None, None)
+                SDL_RenderPresent(self.renderer)
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
         SDL_SetWindowFullscreen(self.window, SDL_WINDOW_FULLSCREEN_DESKTOP if self.fullscreen else 0)
 
     def start_capturing(self):
-        self.cam.start_capturing()
+        self.cam.start()
+        self.event_loop()
 
     def stop_capturing(self):
-        self.cam.stop_capturing()
+        self.cam.stop()
 
     def close(self):
         tj_destroy(self.tj)
