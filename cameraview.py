@@ -391,6 +391,7 @@ class SDLCameraWindow():
         self.fullscreen = False
         self.tj = None
         self.outbuffer = None
+        self.bytesperline = self.cam.bytesperline
 
         if self.cam.pixelformat in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
             self.tj = tj_init_decompress()
@@ -398,6 +399,7 @@ class SDLCameraWindow():
             buf_size = width * height * 3
             buf = ctypes.create_string_buffer(b"", buf_size)
             self.outbuffer = (ctypes.c_uint8 * buf_size).from_buffer(buf)
+            self.bytesperline = width * 3
         elif self.cam.pixelformat == V4L2_PIX_FMT_GREY:
             # create nv12 buffer
             buf_size = width * height * 2
@@ -411,6 +413,9 @@ class SDLCameraWindow():
 
         # create a new sdl user event type for new image events
         self.sdl_new_image_event = SDL_RegisterEvents(1)
+        # new image event
+        self.new_image_event = SDL_Event()
+        self.new_image_event.type = self.sdl_new_image_event
 
         self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN)
         if self.window == None:
@@ -429,21 +434,16 @@ class SDLCameraWindow():
 
     def write_buf(self, buf):
         ptr = (ctypes.c_uint8 * buf.bytesused).from_buffer(buf.buffer)
-        bytesperline = self.cam.bytesperline
         if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG or self.cam.pixelformat == V4L2_PIX_FMT_JPEG:
-            bytesperline = self.cam.width * 3
-            if tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, bytesperline, self.cam.height, TJPF_RGB, 0) != 0:
+            if tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, self.bytesperline, self.cam.height, TJPF_RGB, 0) != 0:
                 logging.warning(f'tj_decompress failed: {tj_get_error_str()}')
             ptr = self.outbuffer
         elif self.cam.pixelformat == V4L2_PIX_FMT_GREY:
             ctypes.memmove(self.outbuffer, ptr, buf.bytesused)
             ptr = self.outbuffer
 
-        event = SDL_Event()
-        event.type = self.sdl_new_image_event
-        event.user.code = bytesperline
-        event.user.data1 = ctypes.cast(ptr, ctypes.c_void_p)
-        if SDL_PushEvent(ctypes.byref(event)) < 0:
+        self.new_image_event.user.data1 = ctypes.cast(ptr, ctypes.c_void_p)
+        if SDL_PushEvent(ctypes.byref(self.new_image_event)) < 0:
             logging.warning(f'SDL_PushEvent failed: {SDL_GetError()}')
 
     def event_loop(self):
@@ -463,7 +463,7 @@ class SDLCameraWindow():
                 event.button.clicks == 2:
                     self.toggle_fullscreen()
             elif event.type == self.sdl_new_image_event:
-                if SDL_UpdateTexture(self.texture, None, event.user.data1, event.user.code) != 0:
+                if SDL_UpdateTexture(self.texture, None, event.user.data1, self.bytesperline) != 0:
                     logging.warning(f'SDL_UpdateTexture failed: {SDL_GetError()}')
                 if SDL_RenderClear(self.renderer) != 0:
                     logging.warning(f'SDL_RenderClear failed: {SDL_GetError()}')
