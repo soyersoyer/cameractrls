@@ -437,6 +437,7 @@ class SDLCameraWindow():
         if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG or self.cam.pixelformat == V4L2_PIX_FMT_JPEG:
             if tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, self.bytesperline, self.cam.height, TJPF_RGB, 0) != 0:
                 logging.warning(f'tj_decompress failed: {tj_get_error_str()}')
+                return
             ptr = self.outbuffer
         elif self.cam.pixelformat == V4L2_PIX_FMT_GREY:
             ctypes.memmove(self.outbuffer, ptr, buf.bytesused)
