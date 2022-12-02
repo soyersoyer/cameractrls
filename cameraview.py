@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, ctypes, ctypes.util, logging, mmap, struct, getopt
+import os, sys, ctypes, ctypes.util, logging, mmap, struct, getopt, select
 from fcntl import ioctl
 from threading import Thread
 
@@ -312,7 +312,15 @@ class V4L2Camera(Thread):
         qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
         qbuf.memory = self.cap_bufs[0].memory
 
+        poll = select.poll()
+        poll.register(self.fd, select.POLLIN)
+
         while not self.stopped:
+            # DQBUF can block forever, so poll with 1000 ms timeout before
+            if len(poll.poll(1000)) == 0:
+                logging.warning(f'{self.device}: timeout occured')
+                continue
+            
             ioctl(self.fd, VIDIOC_DQBUF, qbuf)
 
             buf = self.cap_bufs[qbuf.index]
