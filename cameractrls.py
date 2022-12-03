@@ -1568,7 +1568,7 @@ class V4L2FmtCtrls:
             )
         if len(framerates) > 0:
             self.ctrls.append(
-                BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True,  tooltip='Frame per second', menu=[
+                BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, tooltip='Frame per second', menu=[
                     BaseCtrlMenu(fps, fps, None) for fps in framerates
                 ]), # fps menu should be dropdown
             )
@@ -1629,6 +1629,7 @@ class V4L2FmtCtrls:
             return 0
 
         if parm.parm.capture.timeperframe.numerator == 0:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get fps: numerator == 0')
             return 0
 
         return dn2str(parm.parm.capture.timeperframe)

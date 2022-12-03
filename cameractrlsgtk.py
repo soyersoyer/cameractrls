@@ -106,7 +106,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 self.grid.attach(self.device_box, 0, 0, 1, 1)
             self.open_cam_button.show()
 
-    def gui_open_device(self, id):        
+    def gui_open_device(self, id):
         # if the selection is empty (after remove_all)
         if id == -1:
             return
@@ -286,7 +286,11 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             for m in c.menu:
                                 wb_cb.append_text(m.name)
                             if c.value:
-                                wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == c.value))
+                                idx = find_idx(c.menu, lambda m: m.text_id == c.value)
+                                if idx != None:
+                                    wb_cb.set_active(idx)
+                                else:
+                                    logging.warning(f'Control {c.text_id}: Can\'t find {c.value} in {[m.text_id for m in c.menu]}')
                             wb_cb.connect('changed', lambda e,c=c: [
                                 self.update_ctrl(c, c.menu[e.get_active()].text_id),
                                 # XXX: Workaround: GTK emits a signal or calls something later on the ComboBox widget,
