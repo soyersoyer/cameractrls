@@ -1628,8 +1628,9 @@ class V4L2FmtCtrls:
             logging.warning(f'V4L2FmtCtrls: Can\'t get fps: {e}')
             return 0
 
-        if parm.parm.capture.timeperframe.numerator == 0:
-            logging.warning(f'V4L2FmtCtrls: Can\'t get fps: numerator == 0')
+        tf = parm.parm.capture.timeperframe
+        if tf.numerator == 0 or tf.denominator == 0:
+            logging.warning(f'V4L2FmtCtrls: invalid fps ({tf.denominator} / {tf.numerator})')
             return 0
 
         return dn2str(parm.parm.capture.timeperframe)
