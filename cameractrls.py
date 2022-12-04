@@ -4,7 +4,7 @@ import ctypes, logging, os.path, getopt, sys, subprocess
 from fcntl import ioctl
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
-version = 'v0.4.11'
+version = 'v0.4.12'
 
 
 v4ldirs = {

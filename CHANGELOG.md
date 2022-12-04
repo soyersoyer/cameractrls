@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.12] - 2022-12-04
+
+### Changed
+ - Improved error handling and logging
+ - The icon has been given some bloom to make it visible even on a dark background (thx nekohayo for the suggestion)
+
+### Fixed
+ - Fixed Dynex 1.3MP Webcam preview and fps control (thx dln949 for testing)
+
 ## [0.4.11] - 2022-10-19
 
 ### Added
