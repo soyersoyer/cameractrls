@@ -34,6 +34,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.4.13" date="2023-03-02">
+            <description>
+                <ul>
+                    <li>Brio 500 FoV support (thx crabmanX)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.4.12" date="2022-12-04">
             <description>
                 <ul>

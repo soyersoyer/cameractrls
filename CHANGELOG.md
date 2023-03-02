@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.13] - 2023-03-02
+
+### Added
+ - Brio 500 FoV support (thx crabmanX)
+
 ## [0.4.12] - 2022-12-04
 
 ### Changed
