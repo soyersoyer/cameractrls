@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.4.14] - 2023-03-05
+
+### Added
+ - Brio 4K Stream Edition FoV support (thx chrishoage)
+
 ## [0.4.13] - 2023-03-02
 
 ### Added

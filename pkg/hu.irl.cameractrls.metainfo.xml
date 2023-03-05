@@ -34,6 +34,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.4.14" date="2023-03-05">
+            <description>
+                <ul>
+                    <li>Brio 4K Stream Edition FoV support (thx chrishoage)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.4.13" date="2023-03-02">
             <description>
                 <ul>
