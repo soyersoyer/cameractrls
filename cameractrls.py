@@ -1111,7 +1111,7 @@ LOGITECH_MOTOR_CONTROL_FOCUS_DESC = 'Allows the control of focus motor movements
 # Logitech BRIO GUID 49e40215-f434-47fe-b158-0e885023e51b
 LOGITECH_BRIO_GUID = b'\x15\x02\xe4\x49\x34\xf4\xfe\x47\xb1\x58\x0e\x88\x50\x23\xe5\x1b'
 
-LOGITECH_BRIO_FOV_DEV_MATCH = ['046d:085e', '046d:0943']
+LOGITECH_BRIO_FOV_DEV_MATCH = ['046d:085e', '046d:0943', '046d:086b']
 LOGITECH_BRIO_FOV_SEL = 0x05
 LOGITECH_BRIO_FOV_LEN = 1
 LOGITECH_BRIO_FOV_OFFSET = 0
@@ -1439,7 +1439,7 @@ class V4L2Ctrls:
                 ctrl_type = V4L2Ctrls.to_type.get(qctrl.type)
                 if ctrl_type == 'integer' and qctrl.minimum == 0 and qctrl.maximum == 1 and qctrl.step == 1:
                     ctrl_type = 'boolean'
-                
+
                 if ctrl_type != 'button':
                     try:
                         ctrl = v4l2_control(qctrl.id)
