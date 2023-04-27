@@ -3,34 +3,13 @@ Camera controls for Linux
 
 It's a standalone Python CLI and GUI (GTK, TK) and camera Viewer (SDL) to set the camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, relative Pan/Tilt), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Systemd extension (Save and restore controls with Systemd path+service).
 
+# Install
 <a href='https://flathub.org/apps/details/hu.irl.cameractrls'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
+<a href='https://snapcraft.io/cameractrls'><img height='80' alt='Get it from the Snap Store' src='https://snapcraft.io/static/images/badges/en/snap-store-black.svg'/></a>
 
-# cameractrls.py
+On Arch `pacman -S cameractrls`
 
-The CLI.
-
-Clone the repo
-```shell
-git clone https://github.com/soyersoyer/cameractrls.git
-```
-
-Run the cameractrls
-```shell
-cd cameractrls
-./cameractrls.py
-usage: ./cameractrls.py [--help] [-d DEVICE] [--list] [-c CONTROLS]
-
-optional arguments:
-  -h, --help         show this help message and exit
-  -d DEVICE          use DEVICE, default /dev/video0
-  -l, --list         list the controls and values
-  -L, --list-devices list capture devices
-  -c CONTROLS        set CONTROLS (eg.: hdr=on,fov=wide)
-
-example:
-  ./cameractrls.py -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide
-```
-
+For the git mode read below
 
 # cameractrlsgtk
 GTK GUI for the Camera controls
@@ -107,6 +86,32 @@ cameractrls.desktop
 Run from the launcher or from the shell
 ```shell
 ./cameractrlstk.py
+```
+
+# cameractrls.py
+
+The CLI.
+
+Clone the repo
+```shell
+git clone https://github.com/soyersoyer/cameractrls.git
+```
+
+Run the cameractrls
+```shell
+cd cameractrls
+./cameractrls.py
+usage: ./cameractrls.py [--help] [-d DEVICE] [--list] [-c CONTROLS]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -d DEVICE          use DEVICE, default /dev/video0
+  -l, --list         list the controls and values
+  -L, --list-devices list capture devices
+  -c CONTROLS        set CONTROLS (eg.: hdr=on,fov=wide)
+
+example:
+  ./cameractrls.py -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide
 ```
 
 # Updating the cameractrls
