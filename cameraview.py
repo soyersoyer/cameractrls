@@ -116,7 +116,6 @@ SDLK_q = ord('q')
 SDLK_ESCAPE = 27
 
 SDL_WINDOW_FULLSCREEN = 0x00000001
-SDL_WINDOW_SHOWN = 0x00000004
 SDL_WINDOW_RESIZABLE = 0x00000020
 SDL_WINDOW_FULLSCREEN_DESKTOP = (SDL_WINDOW_FULLSCREEN | 0x00001000)
 SDL_WINDOWPOS_UNDEFINED = 0x1FFF0000
@@ -418,7 +417,7 @@ class SDLCameraWindow():
         self.new_image_event = SDL_Event()
         self.new_image_event.type = self.sdl_new_image_event
 
-        self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE)
+        self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_RESIZABLE)
         if self.window == None:
             logging.error(f'SDL_CreateWindow failed: {SDL_GetError()}')
             sys.exit(1)
