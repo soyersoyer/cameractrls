@@ -27,6 +27,26 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def init_window(self):
         self.set_default_icon_from_file(f'{sys.path[0]}/images/icon_256.png')
 
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_data(b'''
+        #white-balance-temperature trough {
+            background-image: linear-gradient(to left, 
+                #89F3FF, #AFF7FF, #DDFCFF, #FFF2AA, #FFDD27, #FFC500, #FFB000, #FF8D00, #FF7A00
+            );
+        }
+        #white-balance-temperature trough:disabled {
+            background-blend-mode: color;
+        }
+        #white-balance-temperature highlight {
+            background-color: transparent;
+        }
+        ''')
+
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
         hambuger_menu = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL,
             margin=10, spacing=10,
@@ -221,6 +241,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
                             scale.set_adjustment(adjustment_step)
+                        if c.wbtemperature:
+                            scale.set_name('white-balance-temperature')
 
                         if c.default != None:
                             scale.add_mark(value=c.default, position=Gtk.PositionType.BOTTOM, markup=None)

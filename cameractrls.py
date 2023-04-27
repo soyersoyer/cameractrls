@@ -915,7 +915,7 @@ def to_bool(val):
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
                 inactive = False, updater = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
-                zeroer = False, kernel_id = None):
+                zeroer = False, wbtemperature = False, kernel_id = None):
         self.text_id = text_id
         self.kernel_id = kernel_id
         self.name = name
@@ -932,6 +932,7 @@ class BaseCtrl:
         self.menu = menu
         self.tooltip = tooltip
         self.zeroer = zeroer
+        self.wbtemperature = wbtemperature
 
 class BaseCtrlMenu:
     def __init__(self, text_id, name, value):
@@ -1474,6 +1475,9 @@ class V4L2Ctrls:
                 if qctrl.id in V4L2_CTRL_ZEROERS:
                     v4l2ctrl.zeroer = True
                     v4l2ctrl.default = 0
+
+                if qctrl.id == V4L2_CID_WHITE_BALANCE_TEMPERATURE:
+                    v4l2ctrl.wbtemperature = True
 
                 if qctrl.type in [V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
                     v4l2ctrl.menu = []
