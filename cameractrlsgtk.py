@@ -30,7 +30,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(b'''
         #white-balance-temperature trough {
-            background-image: linear-gradient(to left, 
+            background-image: linear-gradient(to right, 
                 #89F3FF, #AFF7FF, #DDFCFF, #FFF2AA, #FFDD27, #FFC500, #FFB000, #FF8D00, #FF7A00
             );
         }
