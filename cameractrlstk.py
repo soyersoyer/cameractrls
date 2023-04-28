@@ -19,7 +19,6 @@ class CameraCtrlsGui:
         self.camera = None
 
         self.window = None
-        self.kpsmallimg = None
         self.frame = None
         self.devicescb = None
 
@@ -31,8 +30,6 @@ class CameraCtrlsGui:
     def init_window(self):
         self.window = Tk(className='hu.irl.cameractrls')
         self.window.bind('<Control-q>', lambda e: self.window.quit())
-        self.kpsmallimg = PhotoImage(file=f'{sys.path[0]}/images/icon_256.png')
-        self.window.wm_iconphoto(True, self.kpsmallimg)
 
         s = ttk.Style()
         s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
