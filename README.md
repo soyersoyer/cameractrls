@@ -51,6 +51,33 @@ Run from the launcher or from the shell
 ./cameractrlsgtk.py
 ```
 
+### GTK4 GUI install (experimental)
+
+Install the dependencies
+```shell
+sudo apt install libsdl2-2.0-0 libturbojpeg
+```
+
+Clone the repo
+```shell
+git clone https://github.com/soyersoyer/cameractrls.git
+```
+
+Add icon and desktop file to the launcher
+```shell
+cd cameractrls
+xdg-icon-resource install --novendor --size 256 pkg/icon.png hu.irl.cameractrls
+desktop-file-install --dir="$HOME/.local/share/applications" \
+--set-key=Exec --set-value="$PWD/cameractrlsgtk4.py" \
+--set-key=Path --set-value="$PWD" \
+pkg/hu.irl.cameractrls.desktop
+```
+
+Run from the launcher or from the shell
+```shell
+./cameractrlsgtk4.py
+```
+
 # cameractrlstk
 TKinter GUI for the Camera controls
 
