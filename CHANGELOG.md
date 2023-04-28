@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.5.0] - 2023-04-29
+
+### Added
+ - Brio 501 FoV support (thx Monkatraz)
+ - Colorized White Balance scale
+ - GTK4 GUI (experimental)
+
+### Changed
+ - Simpler looking scales
+ - Icon now comes from the Window Manager
+ - Breaking: The desktop filename have to be hu.irl.cameractrls.desktop
+ - Breaking: The desktop file moved to pkg dir
+ - Breaking: The icon should be installed also
+
 ## [0.4.14] - 2023-03-05
 
 ### Added
