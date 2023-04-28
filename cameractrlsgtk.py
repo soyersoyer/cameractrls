@@ -25,8 +25,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.refresh_devices()
 
     def init_window(self):
-        self.set_default_icon_from_file(f'{sys.path[0]}/images/icon_256.png')
-
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(b'''
         #white-balance-temperature trough {
@@ -384,6 +382,7 @@ class CameraCtrlsApp(Gtk.Application):
         about.set_authors(['Gergo Koteles <soyer@irl.hu>'])
         about.set_copyright('Copyright © 2022 - 2023 Gergo Koteles')
         about.set_license_type(Gtk.License.MIT_X11)
+        about.set_logo_icon_name('hu.irl.cameractrls')
         about.set_website(ghurl)
         about.set_website_label('GitHub')
         about.set_version(version)
