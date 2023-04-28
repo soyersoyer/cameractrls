@@ -14,14 +14,14 @@ For the git mode read below
 # cameractrlsgtk
 GTK GUI for the Camera controls
 
-<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png" width="200">
+<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_launcher.png" width="200">
 
 <div>
-<img alt="cameractrls crop screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_1.png" width="380">
-<img alt="cameractrls image screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_2.png" width="380">
-<img alt="cameractrls exposure screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_3.png" width="380">
-<img alt="cameractrls advanced screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_4.png" width="380">
-<img alt="cameractrls capture screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_gtk_5.png" width="380">
+<img alt="cameractrls crop screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_1.png" width="380">
+<img alt="cameractrls image screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_2.png" width="380">
+<img alt="cameractrls exposure screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_3.png" width="380">
+<img alt="cameractrls advanced screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_4.png" width="380">
+<img alt="cameractrls capture screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_5.png" width="380">
 </div>
 
 ### GTK GUI install
@@ -56,9 +56,9 @@ TKinter GUI for the Camera controls
 
 If you like the old user interfaces.
 
-<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_launcher.png" width="200">
+<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_launcher.png" width="200">
 
-<img alt="cameractrls tk screen" src="https://github.com/soyersoyer/cameractrls/raw/main/images/gui_screen_tk.png" width="400">
+<img alt="cameractrls tk screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_tk.png" width="400">
 
 
 ### TK GUI install
