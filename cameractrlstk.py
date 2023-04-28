@@ -29,7 +29,7 @@ class CameraCtrlsGui:
         self.refresh_devices()
 
     def init_window(self):
-        self.window = Tk(className='cameractrls')
+        self.window = Tk(className='hu.irl.cameractrls')
         self.window.bind('<Control-q>', lambda e: self.window.quit())
         self.kpsmallimg = PhotoImage(file=f'{sys.path[0]}/images/icon_256.png')
         self.window.wm_iconphoto(True, self.kpsmallimg)
