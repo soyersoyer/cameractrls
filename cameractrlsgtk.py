@@ -37,9 +37,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         #white-balance-temperature trough:disabled {
             background-blend-mode: color;
         }
-        #white-balance-temperature highlight {
-            background-color: transparent;
-        }
         ''')
 
         Gtk.StyleContext.add_provider_for_screen(
@@ -233,7 +230,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         adjustment = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=1)
                         adjustment.connect('value-changed', lambda a,c=c: self.update_ctrl(c, a.get_value()))
                         scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL,
-                            digits=0, value_pos=Gtk.PositionType.LEFT, adjustment=adjustment, width_request=264)
+                            digits=0, has_origin=False, value_pos=Gtk.PositionType.LEFT, adjustment=adjustment, width_request=264)
                         if c.zeroer:
                             scale.connect('button-release-event', lambda sc, e: sc.set_value(0))
                             scale.connect('key-release-event', lambda sc, e: sc.set_value(0))
