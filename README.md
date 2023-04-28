@@ -39,7 +39,7 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
-xdg-icon-resource install --novendor --size 256 images/icon_256.png hu.irl.cameractrls
+xdg-icon-resource install --novendor --size 256 pkg/icon.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
@@ -76,7 +76,7 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
-xdg-icon-resource install --novendor --size 256 images/icon_256.png hu.irl.cameractrls
+xdg-icon-resource install --novendor --size 256 pkg/icon.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
