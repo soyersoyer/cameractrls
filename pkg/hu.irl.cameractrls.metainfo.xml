@@ -2,7 +2,7 @@
 <component type="desktop-application">
     <id>hu.irl.cameractrls</id>
     <launchable type="desktop-id">hu.irl.cameractrls.desktop</launchable>
-    <name>cameractrls</name>
+    <name>Cameractrls</name>
     <summary>Camera controls for Linux</summary>
     <description>
         <p>

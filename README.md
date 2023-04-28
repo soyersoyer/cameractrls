@@ -36,14 +36,14 @@ Clone the repo
 git clone https://github.com/soyersoyer/cameractrls.git
 ```
 
-Add the desktop file to the launcher
+Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
+xdg-icon-resource install --novendor --size 256 images/icon_256.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
---set-icon="$PWD/images/icon_256.png" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
-cameractrls.desktop
+pkg/hu.irl.cameractrls.desktop
 ```
 
 Run from the launcher or from the shell
@@ -73,14 +73,14 @@ Clone the repo
 git clone https://github.com/soyersoyer/cameractrls.git
 ```
 
-Add the desktop file to the launcher
+Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
+xdg-icon-resource install --novendor --size 256 images/icon_256.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
---set-icon="$PWD/images/icon_256.png" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
-cameractrls.desktop
+pkg/hu.irl.cameractrls.desktop
 ```
 
 Run from the launcher or from the shell
@@ -130,9 +130,10 @@ systemctl --user disable --now cameractrls-*
 rm cameractrls-*
 ```
 
-Remove the launcher shortcut
+Remove the icon and launcher shortcut
 ```shell
-rm ~/.local/share/applications/cameractrls.desktop
+xdg-icon-resource uninstall --size 256 hu.irl.cameractrls
+rm ~/.local/share/applications/hu.irl.cameractrls.desktop
 ```
 
 Delete the cameractrls:

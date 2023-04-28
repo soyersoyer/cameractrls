@@ -1,10 +1,9 @@
 [Desktop Entry]
 Type=Application
 Version=1.0
-Name=cameractrls
+Name=Cameractrls
 Comment=Camera controls for Linux
-Exec=$PWD/cameractrlsgtk.py
-Path=$PWD
-Icon=$PWD/images/icon_256.png
+Exec=cameractrlsgtk.py
+Icon=hu.irl.cameractrls
 Terminal=false
 Categories=Settings;
