@@ -181,7 +181,7 @@ class CameraCtrlsGui:
                     c.gui_ctrls += [cb]
 
             if c.default != None:
-                btn = ttk.Button(labelframe, text='⟳', width=2, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
+                btn = ttk.Button(labelframe, text='«', width=2, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
                 btn.grid(row=0, column=1, sticky='N')
                 c.gui_ctrls += [btn]
                 c.gui_default_btn = btn
@@ -209,7 +209,7 @@ class CameraCtrlsGui:
                 c.gui_default_btn.configure(text='')
                 c.gui_default_btn.state(['disabled', '!focus'])
             else:
-                c.gui_default_btn.configure(text='⟳')
+                c.gui_default_btn.configure(text='«')
 
     def start(self):
         self.window.mainloop()
