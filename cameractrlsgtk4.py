@@ -34,6 +34,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 #89F3FF, #AFF7FF, #DDFCFF, #FFF2AA, #FFDD27, #FFC500, #FFB000, #FF8D00, #FF7A00
             );
         }
+        #white-balance-temperature trough:disabled {
+            background-blend-mode: color;
+        }
         /* make page stackswitcher gtk3 size */
         stackswitcher button {
             padding-left: 10px;
