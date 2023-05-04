@@ -292,11 +292,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 rb.connect('toggled', lambda b, c=c, m=m: self.update_ctrl(c, m.text_id) if b.get_active() else None)
                                 box.append(rb)
                                 m.gui_rb = rb
-                            if c.value == None:
-                                rb = Gtk.ToggleButton(group=rb, label='Undefined')
-                                rb.set_active(True)
-                                rb.set_visible(False)
-                                box.add(rb)
 
                             refresh = Gtk.Button(icon_name='edit-undo', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                             if c.default != None:
