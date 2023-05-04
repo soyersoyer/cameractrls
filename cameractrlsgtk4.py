@@ -28,7 +28,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
     def init_window(self):
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_data('''
+        css = '''
         #white-balance-temperature trough {
             background-image: linear-gradient(to right, 
                 #89F3FF, #AFF7FF, #DDFCFF, #FFF2AA, #FFDD27, #FFC500, #FFB000, #FF8D00, #FF7A00
@@ -47,7 +47,13 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             margin-top: 7px;
             margin-bottom: -7px;
         }
-        ''', -1)
+        '''
+        # XXX: remove workaround when merged
+        # https://gitlab.gnome.org/GNOME/pygobject/-/merge_requests/231/
+        if (Gtk.get_major_version(), Gtk.get_minor_version()) >= (4, 9):
+            css_provider.load_from_data(css, -1)
+        else:
+            css_provider.load_from_data(css.encode())
 
         Gtk.StyleContext.add_provider_for_display(
             Gdk.Display.get_default(), css_provider,
