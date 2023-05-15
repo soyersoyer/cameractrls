@@ -69,10 +69,11 @@ SDL_RenderClear.restype = ctypes.c_int
 SDL_RenderClear.argtypes = [ctypes.c_void_p]
 # int SDL_RenderClear(SDL_Renderer * renderer);
 
-SDL_RenderCopy = sdl2.SDL_RenderCopy
-SDL_RenderCopy.restype = ctypes.c_int
-SDL_RenderCopy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
-# int SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_Rect * dstrect);
+SDL_RenderCopyEx = sdl2.SDL_RenderCopyEx
+SDL_RenderCopyEx.restype = ctypes.c_int
+SDL_RenderCopyEx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_double, ctypes.c_void_p, ctypes.c_int]
+#int SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_Rect * dstrect,
+#                   const double angle, const SDL_Point *center, const SDL_RendererFlip flip);
 
 SDL_RenderPresent = sdl2.SDL_RenderPresent
 SDL_RenderPresent.restype = None
@@ -112,8 +113,15 @@ SDL_KEYDOWN = 0x300
 SDL_MOUSEBUTTONUP = 0x402
 SDL_BUTTON_LEFT = 1
 SDLK_f = ord('f')
+SDLK_m = ord('m')
 SDLK_q = ord('q')
+SDLK_r = ord('r')
 SDLK_ESCAPE = 27
+KMOD_NONE = 0x0000
+KMOD_LSHIFT = 0x0001
+KMOD_RSHIFT = 0x0002
+KMOD_SHIFT = KMOD_LSHIFT | KMOD_RSHIFT
+
 
 SDL_WINDOW_FULLSCREEN = 0x00000001
 SDL_WINDOW_RESIZABLE = 0x00000020
@@ -382,7 +390,7 @@ def V4L2Format2SDL(format):
     sys.exit(3)
 
 class SDLCameraWindow():
-    def __init__(self, device):
+    def __init__(self, device, angle, flip):
         self.cam = V4L2Camera(device)
         self.cam.pipe = self
         width = self.cam.width
@@ -392,6 +400,9 @@ class SDLCameraWindow():
         self.tj = None
         self.outbuffer = None
         self.bytesperline = self.cam.bytesperline
+
+        self.angle = angle
+        self.flip = flip
 
         if self.cam.pixelformat in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
             self.tj = tj_init_decompress()
@@ -459,6 +470,14 @@ class SDLCameraWindow():
                     break
                 if event.key.keysym.sym == SDLK_f:
                     self.toggle_fullscreen()
+                elif event.key.keysym.sym == SDLK_r and event.key.keysym.mod == KMOD_NONE:
+                    self.rotate(90)
+                elif event.key.keysym.sym == SDLK_r and event.key.keysym.mod | KMOD_SHIFT:
+                    self.rotate(-90)
+                elif event.key.keysym.sym == SDLK_m and event.key.keysym.mod == KMOD_NONE:
+                    self.mirror(1)
+                elif event.key.keysym.sym == SDLK_m and event.key.keysym.mod | KMOD_SHIFT:
+                    self.mirror(-1)
             elif event.type == SDL_MOUSEBUTTONUP and \
                 event.button.button == SDL_BUTTON_LEFT and \
                 event.button.clicks == 2:
@@ -468,13 +487,21 @@ class SDLCameraWindow():
                     logging.warning(f'SDL_UpdateTexture failed: {SDL_GetError()}')
                 if SDL_RenderClear(self.renderer) != 0:
                     logging.warning(f'SDL_RenderClear failed: {SDL_GetError()}')
-                if SDL_RenderCopy(self.renderer, self.texture, None, None) != 0:
+                if SDL_RenderCopyEx(self.renderer, self.texture, None, None, self.angle, None, self.flip) != 0:
                     logging.warning(f'SDL_RenderCopy failed: {SDL_GetError()}')
                 SDL_RenderPresent(self.renderer)
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
         SDL_SetWindowFullscreen(self.window, SDL_WINDOW_FULLSCREEN_DESKTOP if self.fullscreen else 0)
+
+    def rotate(self, angle):
+        self.angle += angle
+        self.angle %= 360
+
+    def mirror(self, flip):
+        self.flip += flip
+        self.flip %= 4
 
     def start_capturing(self):
         self.cam.start()
@@ -490,24 +517,33 @@ class SDLCameraWindow():
 
 
 def usage():
-    print(f'usage: {sys.argv[0]} [--help] [-d DEVICE]\n')
+    print(f'usage: {sys.argv[0]} [--help] [-d DEVICE] [-r ANGLE] [-m FLIP]\n')
     print(f'optional arguments:')
     print(f'  -h, --help         show this help message and exit')
     print(f'  -d DEVICE          use DEVICE, default /dev/video0')
+    print(f'  -r ANGLE           rotate the image by ANGLE, default 0')
+    print(f'  -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)')
     print()
     print(f'example:')
     print(f'  {sys.argv[0]} -d /dev/video2')
+    print()
+    print(f'shortcuts:')
+    print(f'  f: toggle fullscreen')
+    print(f'  r: ANGLE +90 (shift+r -90)')
+    print(f'  m: FLIP next (shift+m prev)')
 
 
 def main():
     try:
-        arguments, values = getopt.getopt(sys.argv[1:], 'hd:', ['help'])
+        arguments, values = getopt.getopt(sys.argv[1:], 'hd:r:m:', ['help'])
     except getopt.error as err:
         print(err)
         usage()
         sys.exit(2)
 
     device = '/dev/video0'
+    angle = 0
+    flip = 0
 
     for current_argument, current_value in arguments:
         if current_argument in ('-h', '--help'):
@@ -515,11 +551,26 @@ def main():
             sys.exit(0)
         elif current_argument in ('-d', '--device'):
             device = current_value
+        elif current_argument in ('-r'):
+            angle = int(current_value)
+        elif current_argument in ('-m'):
+            if current_value == 'no':
+                flip = 0
+            elif current_value == 'h':
+                flip = 1
+            elif current_value == 'v':
+                flip = 2
+            elif current_value == 'hv':
+                flip = 3
+            else:
+                print(f'invalid FLIP value: {current_value}')
+                usage()
+                sys.exit(1)
 
 
     os.environ['SDL_VIDEO_X11_WMCLASS'] = 'hu.irl.cameractrls'
 
-    win = SDLCameraWindow(device)
+    win = SDLCameraWindow(device, angle, flip)
     win.start_capturing()
     win.close()
 
