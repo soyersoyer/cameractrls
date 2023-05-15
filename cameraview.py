@@ -549,11 +549,11 @@ def main():
         if current_argument in ('-h', '--help'):
             usage()
             sys.exit(0)
-        elif current_argument in ('-d', '--device'):
+        elif current_argument == '-d':
             device = current_value
-        elif current_argument in ('-r'):
+        elif current_argument == '-r':
             angle = int(current_value)
-        elif current_argument in ('-m'):
+        elif current_argument == '-m':
             if current_value == 'no':
                 flip = 0
             elif current_value == 'h':
