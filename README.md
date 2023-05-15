@@ -141,6 +141,29 @@ example:
   ./cameractrls.py -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide
 ```
 
+# cameraview.py
+
+The camera viewer.
+
+```shell
+ ./cameraview.py -h
+usage: ./cameraview.py [--help] [-d DEVICE] [-r ANGLE] [-m FLIP]
+
+optional arguments:
+  -h, --help         show this help message and exit
+  -d DEVICE          use DEVICE, default /dev/video0
+  -r ANGLE           rotate the image by ANGLE, default 0
+  -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)
+
+example:
+  ./cameraview.py -d /dev/video2
+
+shortcuts:
+  f: toggle fullscreen
+  r: ANGLE +90 (shift+r -90)
+  m: FLIP next (shift+m prev)
+```
+
 # Updating the cameractrls
 
 ```shell
