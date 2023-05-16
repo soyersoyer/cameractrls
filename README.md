@@ -39,10 +39,10 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
-xdg-icon-resource install --novendor --size 256 pkg/icon.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
+--set-key=Icon --set-value="$PWD/pkg/icon.png" \
 pkg/hu.irl.cameractrls.desktop
 ```
 
@@ -66,10 +66,10 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
-xdg-icon-resource install --novendor --size 256 pkg/icon.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk4.py" \
 --set-key=Path --set-value="$PWD" \
+--set-key=Icon --set-value="$PWD/pkg/icon.png" \
 pkg/hu.irl.cameractrls.desktop
 ```
 
@@ -103,10 +103,10 @@ git clone https://github.com/soyersoyer/cameractrls.git
 Add icon and desktop file to the launcher
 ```shell
 cd cameractrls
-xdg-icon-resource install --novendor --size 256 pkg/icon.png hu.irl.cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
+--set-key=Icon --set-value="$PWD/pkg/icon.png" \
 pkg/hu.irl.cameractrls.desktop
 ```
 
@@ -182,7 +182,6 @@ rm cameractrls-*
 
 Remove the icon and launcher shortcut
 ```shell
-xdg-icon-resource uninstall --size 256 hu.irl.cameractrls
 rm ~/.local/share/applications/hu.irl.cameractrls.desktop
 ```
 
