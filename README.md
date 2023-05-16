@@ -1,4 +1,7 @@
 # cameractrls
+
+<img align='left' height='140' src='https://github.com/soyersoyer/cameractrls/raw/main/pkg/hu.irl.cameractrls.svg'>
+
 Camera controls for Linux
 
 It's a standalone Python CLI and GUI (GTK3, GTK4, TK) and camera Viewer (SDL) to set the camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, relative Pan/Tilt), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Systemd extension (Save and restore controls with Systemd path+service).
@@ -42,7 +45,7 @@ cd cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
---set-key=Icon --set-value="$PWD/pkg/icon.png" \
+--set-key=Icon --set-value="$PWD/pkg/hu.irl.cameractrls.svg" \
 pkg/hu.irl.cameractrls.desktop
 ```
 
@@ -69,7 +72,7 @@ cd cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk4.py" \
 --set-key=Path --set-value="$PWD" \
---set-key=Icon --set-value="$PWD/pkg/icon.png" \
+--set-key=Icon --set-value="$PWD/pkg/hu.irl.cameractrls.svg" \
 pkg/hu.irl.cameractrls.desktop
 ```
 
@@ -106,7 +109,7 @@ cd cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
---set-key=Icon --set-value="$PWD/pkg/icon.png" \
+--set-key=Icon --set-value="$PWD/pkg/hu.irl.cameractrls.svg" \
 pkg/hu.irl.cameractrls.desktop
 ```
 

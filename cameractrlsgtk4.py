@@ -387,6 +387,7 @@ class CameraCtrlsApp(Gtk.Application):
         about = Gtk.AboutDialog(transient_for=self.window, modal=self.window)
         about.set_program_name('Cameractrls')
         about.set_authors(['Gergo Koteles <soyer@irl.hu>'])
+        about.set_artists(['Jorge Toledo https://lacajita.es'])
         about.set_copyright('Copyright © 2022 - 2023 Gergo Koteles')
         about.set_license_type(Gtk.License.MIT_X11)
         about.set_logo_icon_name('hu.irl.cameractrls')
