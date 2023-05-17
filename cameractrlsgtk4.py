@@ -365,6 +365,9 @@ class CameraCtrlsApp(Gtk.Application):
     def do_startup(self):
         Gtk.Application.do_startup(self)
 
+        icon_theme = Gtk.IconTheme.get_for_display(Gdk.Display.get_default())
+        icon_theme.add_search_path(f'{sys.path[0]}/pkg')
+
         action = Gio.SimpleAction.new('about', None)
         action.connect('activate', self.on_about)
         self.add_action(action)
