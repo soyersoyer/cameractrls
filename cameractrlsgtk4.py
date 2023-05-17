@@ -71,7 +71,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.open_cam_button = Gtk.Button(
             action_name='app.open_camera_window',
             action_target=GLib.Variant('s', ''),
-            icon_name='camera-video'
+            icon_name='camera-video-symbolic'
         )
 
         headerbar = Gtk.HeaderBar(show_title_buttons=True)
@@ -258,7 +258,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         if c.default != None:
                             scale.add_mark(value=c.default, position=Gtk.PositionType.BOTTOM, markup=None)
                         
-                        refresh = Gtk.Button(icon_name='edit-undo', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
+                        refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.append(refresh)
                         ctrl_box.append(scale)
@@ -268,7 +268,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                     elif c.type == 'boolean':
                         switch = Gtk.Switch(valign=Gtk.Align.CENTER, active=c.value, margin_end=5, hexpand=True, halign=Gtk.Align.END)
                         switch.connect('state-set', lambda a,b,c=c: self.update_ctrl(c, a.get_active()))
-                        refresh = Gtk.Button(icon_name='edit-undo', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
+                        refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         if c.default != None:
                             refresh.connect('clicked', lambda e,switch=switch,c=c: switch.set_active(c.default))
                         ctrl_box.append(refresh)
@@ -299,7 +299,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 box.append(rb)
                                 m.gui_rb = rb
 
-                            refresh = Gtk.Button(icon_name='edit-undo', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
+                            refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                             if c.default != None:
                                 refresh.connect('clicked', lambda e,c=c: find_by_text_id(c.menu, c.default).gui_rb.set_active(True))
                             ctrl_box.append(refresh)
@@ -326,7 +326,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 # not to recreate everything in case the ctrl is a reopener
                                 self.preserve_widget(e),
                                 ])
-                            refresh = Gtk.Button(icon_name='edit-undo', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
+                            refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                             if c.default != None:
                                 refresh.connect('clicked', lambda e,c=c,wb_dd=wb_dd: wb_dd.set_selected(find_idx(c.menu, lambda m: m.text_id == c.default)))
                             ctrl_box.append(refresh)
