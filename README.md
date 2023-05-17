@@ -154,7 +154,7 @@ The camera viewer.
 ./cameraview.py -h
 ```
 ```
-usage: ./cameraview.py [--help] [-d DEVICE] [-r ANGLE] [-m FLIP]
+usage: ./cameraview.py [--help] [-d DEVICE] [-r ANGLE] [-m FLIP] [-c COLORMAP]
 
 optional arguments:
   -h, --help         show this help message and exit

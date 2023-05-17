@@ -691,7 +691,7 @@ class SDLCameraWindow():
 
 
 def usage():
-    print(f'usage: {sys.argv[0]} [--help] [-d DEVICE] [-r ANGLE] [-m FLIP]\n')
+    print(f'usage: {sys.argv[0]} [--help] [-d DEVICE] [-r ANGLE] [-m FLIP] [-c COLORMAP]\n')
     print(f'optional arguments:')
     print(f'  -h, --help         show this help message and exit')
     print(f'  -d DEVICE          use DEVICE, default /dev/video0')
