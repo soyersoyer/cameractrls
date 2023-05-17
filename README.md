@@ -149,7 +149,7 @@ example:
 The camera viewer.
 
 ```shell
- ./cameraview.py -h
+./cameraview.py -h
 usage: ./cameraview.py [--help] [-d DEVICE] [-r ANGLE] [-m FLIP]
 
 optional arguments:
@@ -157,6 +157,8 @@ optional arguments:
   -d DEVICE          use DEVICE, default /dev/video0
   -r ANGLE           rotate the image by ANGLE, default 0
   -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)
+  -c COLORMAP        set colormap for GREY streams, default grayscale
+                                      (grayscale, inferno, ironblack)
 
 example:
   ./cameraview.py -d /dev/video2
@@ -165,6 +167,7 @@ shortcuts:
   f: toggle fullscreen
   r: ANGLE +90 (shift+r -90)
   m: FLIP next (shift+m prev)
+  c: COLORMAP next (shift+c prev)
 ```
 
 # Updating the cameractrls
