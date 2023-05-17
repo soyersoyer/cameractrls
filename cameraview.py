@@ -536,7 +536,7 @@ class SDLCameraWindow():
 
         self.angle = angle
         self.flip = flip
-        self.colormap = colormap
+        self.colormap = None
 
         if self.cam.pixelformat in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
             self.tj = tj_init_decompress()
@@ -581,7 +581,7 @@ class SDLCameraWindow():
             if self.surface == None:
                 logging.error(f'SDL_CreateRGBSurfaceFrom failed: {SDL_GetError()}')
                 sys.exit(1)
-            self.set_colormap(self.colormap)
+            self.set_colormap(colormap)
 
     def write_buf(self, buf):
         ptr = (ctypes.c_uint8 * buf.bytesused).from_buffer(buf.buffer)
@@ -666,13 +666,13 @@ class SDLCameraWindow():
         pal = SDL_PALS.get(colormap)    
 
         self.colormap = colormap
-
-        if self.surface == None:
-            logging.warning(f'set_colormap: only for GREY streams')
-            return
         SDL_SetPaletteColors(self.surface[0].format[0].palette, pal, 0, 256)
 
     def step_colormap(self, step):
+        if self.colormap == None:
+            logging.warning(f'step_colormap: only for GREY streams')
+            return
+
         cms = list(SDL_PALS.keys())
         step = (cms.index(self.colormap) + step) % len(cms)
         self.set_colormap(cms[step])
