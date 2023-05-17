@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.1] - 2023-05-17
+
+### Added
+ - New Icon (thx Jorge Toledo eldelacajita)
+ - Rotate, mirror the preview image
+ - Colormaps (inferno, ironblack) for Thermal/ToF camera GREY previews
+ - RGB565 format support
+
+### Changed
+ - Use edit-undo-symbolic icon instead of ⟳ in default buttons
+ - Various GTK/GTK4 fixes
+ - Breaking: pkg/icon.png -> pkg/hu.irl.cameractrls.svg
+
 ## [0.5.0] - 2023-04-29
 
 ### Added

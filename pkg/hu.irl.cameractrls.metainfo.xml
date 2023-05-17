@@ -34,6 +34,18 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.1" date="2023-05-17">
+            <description>
+                <ul>
+                    <li>New Icon (thx Jorge Toledo eldelacajita)</li>
+                    <li>Rotate, mirror the preview image</li>
+                    <li>Colormaps (inferno, ironblack) for Thermal/ToF camera GREY previews</li>
+                    <li>RGB565 format support</li>
+                    <li>Use edit-undo-symbolic icon instead of ⟳ in default buttons</li>
+                    <li>Various GTK/GTK4 fixes</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.0" date="2023-04-29">
             <description>
                 <ul>
