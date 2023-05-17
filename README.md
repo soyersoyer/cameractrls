@@ -131,6 +131,8 @@ Run the cameractrls
 ```shell
 cd cameractrls
 ./cameractrls.py
+```
+```
 usage: ./cameractrls.py [--help] [-d DEVICE] [--list] [-c CONTROLS]
 
 optional arguments:
@@ -150,6 +152,8 @@ The camera viewer.
 
 ```shell
 ./cameraview.py -h
+```
+```
 usage: ./cameraview.py [--help] [-d DEVICE] [-r ANGLE] [-m FLIP]
 
 optional arguments:
