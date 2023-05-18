@@ -86,11 +86,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.grid = Gtk.Grid()
 
         self.zero_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, hexpand=True, halign=Gtk.Align.CENTER)
-        zero_label = Gtk.Label(label='0 camera found', margin_top=10, margin_bottom=10, margin_start=10, margin_end=10)
-        zero_refresh = Gtk.Button(label='Refresh', margin_top=5, margin_bottom=5, margin_start=5, margin_end=5)
-        zero_refresh.connect('clicked', lambda e: self.refresh_devices())
-        self.zero_box.append(zero_label)
-        self.zero_box.append(zero_refresh)
+        self.zero_box.append(Gtk.Image(icon_name='camera-disabled-symbolic', icon_size=Gtk.IconSize.LARGE, pixel_size=96,
+                                margin_top=30, margin_bottom=10, margin_start=80, margin_end=80))
+        self.zero_box.append(Gtk.Label(label='<span size="17000" color="gray">0 camera found</span>', use_markup=True,
+                                margin_top=10, margin_bottom=20))
 
         factory = Gtk.SignalListItemFactory()
         factory.connect('setup', lambda f, list_item: 
