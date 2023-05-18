@@ -90,6 +90,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 margin_top=30, margin_bottom=10, margin_start=80, margin_end=80))
         self.zero_box.append(Gtk.Label(label='<span size="17000" color="gray">0 camera found</span>', use_markup=True,
                                 margin_top=10, margin_bottom=20))
+        if 'SNAP' in os.environ:
+            self.zero_box.append(Gtk.Label(label='Please permit access with', max_width_chars=30, wrap=True, margin_top=10))
+            self.zero_box.append(Gtk.Label(label='snap connect cameractrls:camera', selectable=True, margin_bottom=10))
 
         factory = Gtk.SignalListItemFactory()
         factory.connect('setup', lambda f, list_item: 

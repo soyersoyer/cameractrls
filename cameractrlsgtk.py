@@ -79,6 +79,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                             margin_top=30, margin_bottom=10, margin_start=80, margin_end=80), True, True, 0)
         self.zero_box.pack_start(Gtk.Label(label='<span size="17000" color="gray">0 camera found</span>', use_markup=True,
                                             margin_top=10, margin_bottom=20), True, True, 0)
+        if 'SNAP' in os.environ:
+            self.zero_box.pack_start(Gtk.Label(label='Please permit access with', max_width_chars=30, wrap=True, margin_top=10), True, True, 0)
+            self.zero_box.pack_start(Gtk.Label(label='snap connect cameractrls:camera', selectable=True, margin_bottom=10), True, True, 0)
         self.zero_box.show_all()
 
         self.device_cb = Gtk.ComboBoxText()
