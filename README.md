@@ -12,10 +12,21 @@ It's a standalone Python CLI and GUI (GTK3, GTK4, TK) and camera Viewer (SDL) to
 
 On Arch `pacman -S cameractrls`
 
-For the git mode read below
+## Git Install method
+
+Install the dependencies
+```shell
+sudo apt install git libsdl2-2.0-0 libturbojpeg
+```
+
+Clone the repo
+```shell
+git clone https://github.com/soyersoyer/cameractrls.git
+cd cameractrls
+```
 
 # cameractrlsgtk
-GTK GUI for the Camera controls
+GTK3 GUI for the Camera controls
 
 <img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_launcher.png" width="200">
 
@@ -29,19 +40,8 @@ GTK GUI for the Camera controls
 
 ### GTK3 GUI install
 
-Install the dependencies
-```shell
-sudo apt install libsdl2-2.0-0 libturbojpeg
-```
-
-Clone the repo
-```shell
-git clone https://github.com/soyersoyer/cameractrls.git
-```
-
 Add icon and desktop file to the launcher
 ```shell
-cd cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
 --set-key=Path --set-value="$PWD" \
@@ -56,19 +56,8 @@ Run from the launcher or from the shell
 
 ### GTK4 GUI install (experimental)
 
-Install the dependencies
-```shell
-sudo apt install libsdl2-2.0-0 libturbojpeg
-```
-
-Clone the repo
-```shell
-git clone https://github.com/soyersoyer/cameractrls.git
-```
-
 Add icon and desktop file to the launcher
 ```shell
-cd cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk4.py" \
 --set-key=Path --set-value="$PWD" \
@@ -93,19 +82,13 @@ If you like the old user interfaces.
 
 ### TK GUI install
 
-Install the dependencies
+Install the python3-tk dependency
 ```shell
-sudo apt install python3-tk libsdl2-2.0-0 libturbojpeg
-```
-
-Clone the repo
-```shell
-git clone https://github.com/soyersoyer/cameractrls.git
+sudo apt install python3-tk
 ```
 
 Add icon and desktop file to the launcher
 ```shell
-cd cameractrls
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
 --set-key=Path --set-value="$PWD" \
@@ -122,14 +105,8 @@ Run from the launcher or from the shell
 
 The CLI.
 
-Clone the repo
-```shell
-git clone https://github.com/soyersoyer/cameractrls.git
-```
-
 Run the cameractrls
 ```shell
-cd cameractrls
 ./cameractrls.py
 ```
 ```
@@ -162,7 +139,7 @@ optional arguments:
   -r ANGLE           rotate the image by ANGLE, default 0
   -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)
   -c COLORMAP        set colormap for GREY streams, default grayscale
-                                      (grayscale, inferno, ironblack)
+                    (grayscale, inferno, viridis, ironblack, rainbow)
 
 example:
   ./cameraview.py -d /dev/video2
@@ -177,7 +154,6 @@ shortcuts:
 # Updating the cameractrls
 
 ```shell
-cd cameractrls
 git pull
 ```
 
@@ -190,7 +166,7 @@ systemctl --user disable --now cameractrls-*
 rm cameractrls-*
 ```
 
-Remove the icon and launcher shortcut
+Remove launcher shortcut
 ```shell
 rm ~/.local/share/applications/hu.irl.cameractrls.desktop
 ```
