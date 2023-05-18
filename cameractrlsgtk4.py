@@ -74,7 +74,11 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             icon_name='camera-video-symbolic'
         )
 
+        refresh_button = Gtk.Button(icon_name='view-refresh-symbolic')
+        refresh_button.connect('clicked', lambda e: self.refresh_devices())
+
         headerbar = Gtk.HeaderBar(show_title_buttons=True)
+        headerbar.pack_start(refresh_button)
         headerbar.pack_end(hamburger_button)
         headerbar.pack_end(self.open_cam_button)
         self.set_titlebar(headerbar)
@@ -94,10 +98,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         )
         factory.connect('bind', lambda f, list_item: list_item.get_child().set_text(list_item.get_item().get_string()))
 
-        model = Gtk.StringList()
-        model.append('Refresh device list ...')
-
-        self.device_dd = Gtk.DropDown(model=model, factory=factory, hexpand=True)
+        self.device_dd = Gtk.DropDown(model=Gtk.StringList(), factory=factory, hexpand=True)
 
         self.device_dd.connect('notify::selected-item', lambda e, _: self.gui_open_device(self.device_dd.get_selected()))
         self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin_top=10, margin_start=10, margin_end=10, margin_bottom=0)
@@ -115,7 +116,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.init_gui_device()
 
         model = self.device_dd.get_model()
-        model.splice(0, model.get_n_items() - 1, self.devices)
+        model.splice(0, model.get_n_items(), self.devices)
 
         if len(self.devices):
             if self.device not in self.devices:
@@ -136,12 +137,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.open_cam_button.set_visible(True)
 
     def gui_open_device(self, id):
-        # if the selection is empty (after remove_all)
+        # if the selection is empty
         if id == Gtk.INVALID_LIST_POSITION:
-            return
-        # after the last device there is the refresh
-        if id == len(self.devices):
-            self.refresh_devices()
             return
 
         self.close_device()

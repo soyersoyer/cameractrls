@@ -60,7 +60,13 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             image=Gtk.Image.new_from_icon_name('camera-video-symbolic', Gtk.IconSize.MENU)
         )
 
+        refresh_button = Gtk.Button(
+            image=Gtk.Image.new_from_icon_name('view-refresh-symbolic', Gtk.IconSize.MENU)
+        )
+        refresh_button.connect('clicked', lambda e: self.refresh_devices())
+
         headerbar = Gtk.HeaderBar(title='Cameractrls', show_close_button=True)
+        headerbar.pack_start(refresh_button)
         headerbar.pack_end(hamburger_button)
         headerbar.pack_end(self.open_cam_button)
         headerbar.show_all()
@@ -101,7 +107,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device_cb.remove_all()
         for device in self.devices:
             self.device_cb.append_text(device)
-        self.device_cb.append_text('Refresh device list ...')
 
         if len(self.devices):
             if self.device not in self.devices:
@@ -124,10 +129,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def gui_open_device(self, id):
         # if the selection is empty (after remove_all)
         if id == -1:
-            return
-        # after the last device there is the refresh
-        if id == len(self.devices):
-            self.refresh_devices()
             return
 
         self.close_device()
