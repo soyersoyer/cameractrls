@@ -15,7 +15,7 @@ class CameraCtrlsGui:
         self.devices = []
         
         self.fd = 0
-        self.device = ''
+        self.device = None
         self.camera = None
 
         self.window = None
@@ -55,33 +55,42 @@ class CameraCtrlsGui:
                 self.open_device(self.devices[0])
             self.init_gui_device()
         if self.devicescb:
-            self.devicescb['values'] = self.devices
+            self.devicescb['values'] = [d.name for d in self.devices]
 
     def open_camera_window(self):
-        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device])
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device.path])
         self.child_processes.append(p)
 
-    def gui_open_device(self, device):
+    def gui_open_device(self, id):
+        if id == -1:
+            return
+
+        self.close_device()
+        self.open_device(self.devices[id])
+        self.init_gui_device()
+
+    def reopen_device(self):
+        device = self.device
         self.close_device()
         self.open_device(device)
         self.init_gui_device()
 
     def open_device(self, device):
-        logging.info(f'opening device: {device}')
+        logging.info(f'opening device: {device.path}')
 
         try:
-            self.fd = os.open(device, os.O_RDWR, 0)
+            self.fd = os.open(device.path, os.O_RDWR, 0)
         except Exception as e:
-            logging.error(f'os.open({device}, os.O_RDWR, 0) failed: {e}')
+            logging.error(f'os.open({device.path}, os.O_RDWR, 0) failed: {e}')
 
-        self.camera = CameraCtrls(device, self.fd)
+        self.camera = CameraCtrls(device.path, self.fd)
         self.device = device
 
     def close_device(self):
         if self.fd:
             os.close(self.fd)
             self.fd = 0
-            self.device = ''
+            self.device = None
             self.camera = None
 
     def init_gui_device(self):
@@ -101,10 +110,10 @@ class CameraCtrlsGui:
         deviceframe = ttk.Frame(self.frame)
         deviceframe.grid(sticky='NESW', pady=10)
         deviceframe.grid_columnconfigure(0, weight = 1)
-        self.devicescb = ttk.Combobox(deviceframe, state='readonly', values=self.devices, postcommand=self.refresh_devices)
-        self.devicescb.set(self.device)
+        self.devicescb = ttk.Combobox(deviceframe, state='readonly', values=[d.name for d in self.devices], postcommand=self.refresh_devices)
+        self.devicescb.set(self.device.name)
         self.devicescb.grid(sticky='NESW')
-        self.devicescb.bind('<<ComboboxSelected>>', lambda e: self.gui_open_device(self.devicescb.get()))
+        self.devicescb.bind('<<ComboboxSelected>>', lambda e: self.gui_open_device(self.devicescb.current()))
 
         open_button = ttk.Button(deviceframe, text='Show video', command=self.open_camera_window)
         open_button.grid(row=0, column=1, sticky='NESW')
@@ -200,7 +209,7 @@ class CameraCtrlsGui:
             self.camera.update_ctrls()
         self.update_ctrls_state()
         if ctrl.reopener:
-            self.gui_open_device(self.device)
+            self.reopen_device()
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():

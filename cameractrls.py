@@ -14,6 +14,30 @@ v4ldirs = {
 }
 
 
+class Device:
+    def __init__(self, name, path, real_path, driver):
+        self.name = name
+        self.path = path
+        self.real_path = real_path
+        self.driver = driver
+
+    def _is_valid_operand(self, other):
+        return (hasattr(other, "name") and
+                hasattr(other, "path"))
+
+    def __lt__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+        return self.name < other.name
+
+    def __eq__(self, other):
+        if not self._is_valid_operand(other):
+            return NotImplemented
+        return self.path == other.path
+
+    def __str__(self):
+        return f'"{self.name}" at {self.path}{" -> " + self.real_path if self.real_path != self.path else ""}'
+
 def get_devices(dirs):
     devices = []
     resolved_devices = []
@@ -27,9 +51,11 @@ def get_devices(dirs):
             resolved = device if not os.path.islink(device) else os.path.abspath(dir + os.readlink(device))
             if resolved in resolved_devices:
                 continue
-            devices.append(device)
+            caps = get_device_capability(device)
+            if not(caps.device_caps & V4L2_CAP_VIDEO_CAPTURE):
+                continue
+            devices.append(Device(f'{str(caps.card, "utf-8")} ({resolved})', device, resolved, str(caps.driver)))
             resolved_devices.append(resolved)
-    devices = [d for d in devices if get_device_capabilities(d) & V4L2_CAP_VIDEO_CAPTURE]
     devices.sort()
     return devices
 
@@ -843,16 +869,16 @@ def read_usb_id_from_file(file):
         logging.warning(f'Failed to read usb id from {file}: {e}')
     return id
 
-def get_device_capabilities(device):
+def get_device_capability(device):
     cap = v4l2_capability()
     try:
         fd = os.open(device, os.O_RDWR, 0)
         ioctl(fd, VIDIOC_QUERYCAP, cap)
         os.close(fd)
     except Exception as e:
-        logging.error(f'get_device_capabilities({device}) failed: {e}')
+        logging.error(f'get_device_capability({device}) failed: {e}')
 
-    return cap.device_caps
+    return cap
 
 def find_by_value(menu, value):
     for m in menu:

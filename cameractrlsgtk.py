@@ -14,7 +14,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.devices = []
         
         self.fd = 0
-        self.device = ''
+        self.device = None
         self.camera = None
 
         self.grid = None
@@ -110,7 +110,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         self.device_cb.remove_all()
         for device in self.devices:
-            self.device_cb.append_text(device)
+            self.device_cb.append_text(device.name)
 
         if len(self.devices):
             if self.device not in self.devices:
@@ -146,21 +146,21 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.stack.set_visible_child_full(opened_page, Gtk.StackTransitionType.NONE)
 
     def open_device(self, device):
-        logging.info(f'opening device: {device}')
+        logging.info(f'opening device: {device.path}')
         try:
-            self.fd = os.open(device, os.O_RDWR, 0)
+            self.fd = os.open(device.path, os.O_RDWR, 0)
         except Exception as e:
-            logging.error(f'os.open({device}, os.O_RDWR, 0) failed: {e}')
+            logging.error(f'os.open({device.path}, os.O_RDWR, 0) failed: {e}')
 
-        self.camera = CameraCtrls(device, self.fd)
+        self.camera = CameraCtrls(device.path, self.fd)
         self.device = device
-        self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device))
+        self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device.path))
 
     def close_device(self):
         if self.fd:
             os.close(self.fd)
             self.fd = 0
-            self.device = ''
+            self.device = None
             self.camera = None
 
     def init_gui_device(self):
@@ -169,7 +169,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             # forget old size
             self.resize(1,1)
 
-        if self.device == '':
+        if self.device == None:
             return
 
         self.frame = Gtk.Grid(hexpand=True, halign=Gtk.Align.FILL)
