@@ -1522,6 +1522,11 @@ class V4L2Ctrls:
     def to_text_id(self, text):
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
 
+V4L2_CAP_CARD_DESC = 'Name of the device, a NUL-terminated UTF-8 string. For example: “Yoyodyne TV/FM”. One driver may support different brands or models of video hardware. This information is intended for users, for example in a menu of available devices. Since multiple TV cards of the same brand may be installed which are supported by the same driver, this name should be combined with the character device file name (e. g. /dev/video2) or the bus_info string to avoid ambiguities.'
+V4L2_CAP_DRIVER_DESC = 'Name of the driver, a unique NUL-terminated ASCII string. For example: “bttv”. Driver specific applications can use this information to verify the driver identity. It is also useful to work around known bugs, or to identify drivers in error reports.'
+V4L2_PATH_DESC = 'Location of the character device in the system.'
+V4L2_REAL_PATH_DESC = 'The real location of the character device in the system.'
+
 class V4L2FmtCtrls:
     def __init__(self, device, fd):
         self.device = device
@@ -1539,6 +1544,9 @@ class V4L2FmtCtrls:
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl == None:
+                continue
+            if ctrl.type == 'info':
+                logging.warning(f'V4L2FmtCtrls: info type {k} couldn\'t be set')
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu == None:
@@ -1568,12 +1576,21 @@ class V4L2FmtCtrls:
         fmts = self.get_fmts()
         resolutions = self.get_resolutions(fmt.fmt.pix.pixelformat)
         framerates = self.get_framerates(fmt.fmt.pix.pixelformat, fmt.fmt.pix.width, fmt.fmt.pix.height)
+        cap = self.get_capability()
+        card = str(cap.card, 'utf-8')
+        driver = str(cap.driver, 'utf-8')
+        path = self.device
+        real_path = os.path.abspath(os.path.join(os.path.dirname(path), os.readlink(path))) if os.path.islink(path) else path
 
         self.ctrls = [
             # must reopen the fd, because changing these lock the device, and can't be open by another processes
             BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, tooltip='Output pixel format', menu=[
                 BaseCtrlMenu(fmt, fmt, None) for fmt in fmts
             ]),
+            BaseCtrl('card', 'Card', 'info', card, tooltip=V4L2_CAP_CARD_DESC),
+            BaseCtrl('driver', 'Driver', 'info', driver, tooltip=V4L2_CAP_DRIVER_DESC),
+            BaseCtrl('path', 'Path', 'info', path, tooltip=V4L2_PATH_DESC),
+            BaseCtrl('real_path', 'Real Path', 'info', real_path, tooltip=V4L2_REAL_PATH_DESC),
         ]
         if len(resolutions) > 0:
             self.ctrls.append(
@@ -1715,6 +1732,14 @@ class V4L2FmtCtrls:
             framerates.append(dn2str(frmi.discrete))
             frmi.index += 1
         return framerates
+
+    def get_capability(self):
+        cap = v4l2_capability()
+        try:
+            ioctl(self.fd, VIDIOC_QUERYCAP, cap)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get capability: {e}')
+        return cap
 
 def str2pxf(str):
     return ord(str[0]) | (ord(str[1]) << 8) | (ord(str[2]) << 16) | (ord(str[3]) << 24)
@@ -1859,6 +1884,8 @@ class CameraCtrls:
                     elif c.type == 'button':
                         print('\t\t( buttons: ', end = '')
                         print(', '.join([m.text_id for m in c.menu]), end = ' )')
+                    elif c.type == 'info':
+                        print(f' = {c.value}', end = '')
                     elif c.type in ['integer', 'boolean']:
                         print(f' = {c.value}\t( default: {c.default} min: {c.min} max: {c.max}', end = '')
                         if c.step and c.step != 1:
@@ -1986,6 +2013,7 @@ class CameraCtrls:
             ]),
             CtrlPage('Capture', [
                 CtrlCategory('Capture', pop_list_by_text_ids(ctrls, ['pixelformat', 'resolution', 'fps'])),
+                CtrlCategory('Info', pop_list_by_text_ids(ctrls, ['card', 'driver', 'path', 'real_path'])),
             ]),
             CtrlPage('Settings', [
                 CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save'])),

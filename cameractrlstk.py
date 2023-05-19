@@ -165,6 +165,12 @@ class CameraCtrlsGui:
                     ttk.Button(buttonctrls, text=m.name, style='Short.TButton', command=lambda c=c,m=m: self.update_ctrl(c, m.text_id)).grid(column=column, row=0, sticky='NESW', ipadx=10)
                 c.gui_ctrls += buttonctrls.winfo_children()
 
+            elif c.type == 'info':
+                c.svar = StringVar(cframe, c.value)
+                entry = ttk.Entry(cframe, textvariable=c.svar, justify='right', state='readonly', width=32)
+                entry.grid(row=row, column=1, sticky='NE', ipadx=4)
+                c.gui_ctrls += [entry]
+
             elif c.type == 'menu':
                 c.var = StringVar(cframe, c.value)
                 c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))

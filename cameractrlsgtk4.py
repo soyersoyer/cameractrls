@@ -283,6 +283,11 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             c.gui_ctrls += b
                         c.gui_default_btn = None
 
+                    elif c.type == 'info':
+                        label = Gtk.Label(label=c.value, selectable=True, justify=Gtk.Justification.RIGHT, hexpand=True, halign=Gtk.Align.END, wrap=True, wrap_mode=Pango.WrapMode.CHAR, max_width_chars=32, width_chars=32, xalign=1)
+                        ctrl_box.append(label)
+                        c.gui_default_btn = None
+
                     elif c.type == 'menu':
                         if len(c.menu) < 4 and not c.menu_dd:
                             box = Gtk.Box(valign=Gtk.Align.CENTER, hexpand=True, halign=Gtk.Align.END)
