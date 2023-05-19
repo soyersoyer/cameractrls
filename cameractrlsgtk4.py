@@ -94,17 +94,16 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.zero_box.append(Gtk.Label(label='Please permit access with', max_width_chars=30, wrap=True, margin_top=10))
             self.zero_box.append(Gtk.Label(label='snap connect cameractrls:camera', selectable=True, margin_bottom=10))
 
-        factory = Gtk.SignalListItemFactory()
-        factory.connect('setup', lambda f, list_item: 
-            list_item.set_child(Gtk.Label(ellipsize=Pango.EllipsizeMode.MIDDLE, width_chars=55, max_width_chars=55, xalign=0))
-        )
-        factory.connect('bind', lambda f, list_item: list_item.get_child().set_text(list_item.get_item().get_string()))
-
-        self.device_dd = Gtk.DropDown(model=Gtk.StringList(), factory=factory, hexpand=True)
+        self.device_dd = Gtk.DropDown(model=Gtk.StringList(), hexpand=True, show_arrow=False)
+        # use the default factory as list_factory
+        self.device_dd.set_list_factory(self.device_dd.get_factory())
+        # then set the icon_factory as factory
+        icon_factory = Gtk.SignalListItemFactory()
+        icon_factory.connect('setup', lambda f, item: item.set_child(Gtk.Image(icon_name='camera-switch-symbolic')))
+        self.device_dd.set_factory(icon_factory)
 
         self.device_dd.connect('notify::selected-item', lambda e, _: self.gui_open_device(self.device_dd.get_selected()))
-        self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin_top=10, margin_start=10, margin_end=10, margin_bottom=0)
-        self.device_box.append(self.device_dd)
+        headerbar.pack_start(self.device_dd)
 
         self.grid.attach(self.zero_box, 0, 0, 1, 1)
         self.set_child(self.grid)
@@ -128,14 +127,12 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 self.device_dd.set_selected(idx)
 
         if len(self.devices) == 0:
-            if self.device_box.get_parent() != None:
-                self.grid.remove(self.device_box)
-                self.grid.attach(self.zero_box, 0, 0, 1, 1)
+            self.zero_box.set_visible(True)
+            self.device_dd.set_visible(False)
             self.open_cam_button.set_visible(False)
-        elif len(self.devices) != 0:
-            if self.zero_box.get_parent() != None:
-                self.grid.remove(self.zero_box)
-                self.grid.attach(self.device_box, 0, 0, 1, 1)
+        else:
+            self.zero_box.set_visible(False)
+            self.device_dd.set_visible(True)
             self.open_cam_button.set_visible(True)
 
     def gui_open_device(self, id):
@@ -184,7 +181,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             return
 
         self.frame = Gtk.Grid(hexpand=True, halign=Gtk.Align.FILL)
-        self.grid.attach(self.frame, 0, 1, 1, 1)
+        self.grid.attach(self.frame, 0, 0, 1, 1)
 
         stack_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, vexpand=True, halign=Gtk.Align.FILL,
             margin_bottom=10, margin_top=10, margin_start=10, margin_end=10)
