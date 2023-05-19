@@ -83,6 +83,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.zero_box.pack_start(Gtk.Label(label='Please permit access with', max_width_chars=30, wrap=True, margin_top=10), True, True, 0)
             self.zero_box.pack_start(Gtk.Label(label='snap connect cameractrls:camera', selectable=True, margin_bottom=10), True, True, 0)
         self.zero_box.show_all()
+        self.zero_box.set_no_show_all(True)
 
         self.device_cb = Gtk.ComboBoxText()
         cellrenderer = self.device_cb.get_cells()[0]
@@ -95,6 +96,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device_box.show_all()
 
         self.grid.attach(self.zero_box, 0, 0, 1, 1)
+        self.grid.attach(self.device_box, 0, 0, 1, 1)
         self.grid.show()
         self.add(self.grid)
 
@@ -118,15 +120,13 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 self.device_cb.set_active(idx)
 
         if len(self.devices) == 0:
-            if self.device_box.get_parent() != None:
-                self.grid.remove(self.device_box)
-                self.grid.attach(self.zero_box, 0, 0, 1, 1)
-            self.open_cam_button.hide()
-        elif len(self.devices) != 0:
-            if self.zero_box.get_parent() != None:
-                self.grid.remove(self.zero_box)
-                self.grid.attach(self.device_box, 0, 0, 1, 1)
-            self.open_cam_button.show()
+            self.zero_box.set_visible(True)
+            self.device_cb.set_visible(False)
+            self.open_cam_button.set_visible(False)
+        else:
+            self.zero_box.set_visible(False)
+            self.device_cb.set_visible(True)
+            self.open_cam_button.set_visible(True)
 
     def gui_open_device(self, id):
         # if the selection is empty (after remove_all)
