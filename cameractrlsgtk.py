@@ -416,7 +416,21 @@ class CameraCtrlsApp(Gtk.Application):
         self.quit()
 
     def open_camera_window(self, action, device):
-        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', device.get_string()])
+        width, height = self.window.get_size()
+        monitor = self.window.get_screen().get_display().get_monitor_at_window(self.window.get_window())
+        monr = monitor.get_geometry()
+        scale = monitor.get_scale_factor()
+        win_width = monr.width//scale - width - 50
+        win_height = height
+        display_name = self.window.get_screen().get_display().__class__.__name__
+        # on X11 GdkMonitor.get_geometry returns in application pixels, on Wayland returns in device pixels
+        # on X11 SDL doesnt support highdpi, so scale
+        if display_name == 'X11Display':
+            win_width = monr.width - width - 50
+            win_width *= scale
+            win_height *= scale
+        logging.info(f'open cameraview.py for {device.get_string()} with size {win_width}x{win_height}, monitor size {monr.width}x{monr.height}@{scale} {display_name}')
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', device.get_string(), '-s', f'{win_width}x{win_height}'])
         self.child_processes.append(p)
 
     def kill_child_processes(self):
