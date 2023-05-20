@@ -181,7 +181,7 @@ class CameraCtrlsGui:
             elif c.type == 'info':
                 c.svar = StringVar(cframe, c.value)
                 entry = ttk.Entry(cframe, textvariable=c.svar, justify='right', state='readonly', width=32)
-                entry.grid(row=row, column=1, sticky='NE', ipadx=4)
+                entry.grid(row=row, column=1, sticky='NESW', ipadx=4)
                 c.gui_ctrls += [entry]
 
             elif c.type == 'menu':
