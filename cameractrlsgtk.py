@@ -91,7 +91,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.zero_box.set_no_show_all(True)
 
         self.model = Gio.ListStore()
-        self.device_lb = Gtk.ListBox(activate_on_single_click=True, selection_mode=Gtk.SelectionMode.SINGLE)
+        self.device_lb = Gtk.ListBox(activate_on_single_click=True, selection_mode=Gtk.SelectionMode.SINGLE, margin=5)
         self.device_lb.bind_model(self.model, lambda i: Gtk.Label(label=i.text, margin=10, xalign=0))
         self.device_lb.show_all()
         # row-selected fires at every popover open so only row-activated used
