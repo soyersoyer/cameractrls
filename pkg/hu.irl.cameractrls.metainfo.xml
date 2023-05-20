@@ -13,6 +13,13 @@
     </description>
     <metadata_license>MIT</metadata_license>
     <project_license>MIT</project_license>
+    <supports>
+        <control>pointing</control>
+        <control>keyboard</control>
+        <control>touch</control>
+        <control>tablet</control>
+        <display_length compare="ge">medium</display_length>
+    </supports>
     <content_rating type="oars-1.0"/>
     <url type="homepage">https://github.com/soyersoyer/cameractrls</url>
     <url type="bugtracker">https://github.com/soyersoyer/cameractrls/issues</url>
