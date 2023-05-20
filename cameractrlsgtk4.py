@@ -120,11 +120,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         model.splice(0, model.get_n_items(), [d.name for d in self.devices])
 
         if len(self.devices):
-            if self.device not in self.devices:
-                self.device_dd.set_selected(0)
-            else:
+            idx = 0
+            if self.device in self.devices:
                 idx = self.devices.index(self.device)
-                self.device_dd.set_selected(idx)
+            self.device_dd.set_selected(idx)
 
         if len(self.devices) == 0:
             self.zero_box.set_visible(True)
