@@ -312,6 +312,7 @@ SDL_PALS = {
 SDL_WINDOW_FULLSCREEN = 0x00000001
 SDL_WINDOW_RESIZABLE = 0x00000020
 SDL_WINDOW_FULLSCREEN_DESKTOP = (SDL_WINDOW_FULLSCREEN | 0x00001000)
+SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000
 SDL_WINDOWPOS_UNDEFINED = 0x1FFF0000
 
 SDL_MESSAGEBOX_ERROR = 0x00000010
@@ -580,12 +581,15 @@ def V4L2Format2SDL(format):
     sys.exit(3)
 
 class SDLCameraWindow():
-    def __init__(self, device, angle, flip, colormap):
+    def __init__(self, device, win_width, win_height, angle, flip, colormap):
         self.cam = V4L2Camera(device)
         self.cam.pipe = self
         width = self.cam.width
         height = self.cam.height
-
+ 
+        win_width = width if win_width == 0 else min(int(win_height * (width/height)), win_width, width)
+        win_height = height if win_height == 0 else min(int(win_width * (height/width)), win_height, height)
+ 
         self.fullscreen = False
         self.tj = None
         self.outbuffer = None
@@ -618,7 +622,7 @@ class SDLCameraWindow():
         self.new_grey_image_event = SDL_Event()
         self.new_grey_image_event.type = self.sdl_new_grey_image_event
 
-        self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_RESIZABLE)
+        self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, win_width, win_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
         if self.window == None:
             logging.error(f'SDL_CreateWindow failed: {SDL_GetError()}')
             sys.exit(1)
@@ -749,10 +753,11 @@ class SDLCameraWindow():
 
 
 def usage():
-    print(f'usage: {sys.argv[0]} [--help] [-d DEVICE] [-r ANGLE] [-m FLIP] [-c COLORMAP]\n')
+    print(f'usage: {sys.argv[0]} [--help] [-d DEVICE] [-s SIZE] [-r ANGLE] [-m FLIP] [-c COLORMAP]\n')
     print(f'optional arguments:')
     print(f'  -h, --help         show this help message and exit')
     print(f'  -d DEVICE          use DEVICE, default /dev/video0')
+    print(f'  -s SIZE            put window inside SIZE rectangle (wxh), default unset')
     print(f'  -r ANGLE           rotate the image by ANGLE, default 0')
     print(f'  -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)')
     print(f'  -c COLORMAP        set colormap for GREY streams, default grayscale')
@@ -770,13 +775,15 @@ def usage():
 
 def main():
     try:
-        arguments, values = getopt.getopt(sys.argv[1:], 'hd:r:m:c:', ['help'])
+        arguments, values = getopt.getopt(sys.argv[1:], 'hd:s:r:m:c:', ['help'])
     except getopt.error as err:
         print(err)
         usage()
         sys.exit(2)
 
     device = '/dev/video0'
+    width = 0
+    height = 0
     angle = 0
     flip = 0
     colormap = 'grayscale'
@@ -787,6 +794,13 @@ def main():
             sys.exit(0)
         elif current_argument == '-d':
             device = current_value
+        elif current_argument == '-s':
+            args = current_value.split('x')
+            if len(args) == 2:
+                width = int(args[0])
+                height = int(args[1])
+            else:
+                logging.warning(f'invalid size: {current_value}')
         elif current_argument == '-r':
             angle = int(current_value)
         elif current_argument == '-m':
@@ -808,7 +822,7 @@ def main():
 
     os.environ['SDL_VIDEO_X11_WMCLASS'] = 'hu.irl.cameractrls'
 
-    win = SDLCameraWindow(device, angle, flip, colormap)
+    win = SDLCameraWindow(device, width, height, angle, flip, colormap)
     win.start_capturing()
     win.close()
 
