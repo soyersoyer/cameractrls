@@ -40,7 +40,7 @@ GTK3 GUI for the Camera controls
 
 ### GTK3 GUI install
 
-Add icon and desktop file to the launcher
+Add desktop file to the launcher
 ```shell
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk.py" \
@@ -56,7 +56,7 @@ Run from the launcher or from the shell
 
 ### GTK4 GUI install (experimental)
 
-Add icon and desktop file to the launcher
+Add desktop file to the launcher
 ```shell
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlsgtk4.py" \
@@ -73,12 +73,9 @@ Run from the launcher or from the shell
 # cameractrlstk
 TKinter GUI for the Camera controls
 
-If you like the old user interfaces.
-
-<img alt="cameractrls launcher" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_launcher.png" width="200">
+If you like old looking user interfaces.
 
 <img alt="cameractrls tk screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_tk.png" width="400">
-
 
 ### TK GUI install
 
@@ -87,7 +84,7 @@ Install the python3-tk dependency
 sudo apt install python3-tk
 ```
 
-Add icon and desktop file to the launcher
+Add desktop file to the launcher
 ```shell
 desktop-file-install --dir="$HOME/.local/share/applications" \
 --set-key=Exec --set-value="$PWD/cameractrlstk.py" \
