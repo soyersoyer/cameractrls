@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.3] - 2023-05-21
+
+### Added
+ - Display warnings on the GUIs as well
+
+### Fixed
+ - Fixed device listbox margin in GTK app
+
 ## [0.5.2] - 2023-05-20
 
 ### Added

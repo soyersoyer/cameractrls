@@ -41,6 +41,14 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.3" date="2023-05-21">
+            <description>
+                <ul>
+                    <li>Display warnings on the GUIs as well</li>
+                    <li>Fixed device listbox margin in GTK app</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.2" date="2023-05-20">
             <description>
                 <ul>
