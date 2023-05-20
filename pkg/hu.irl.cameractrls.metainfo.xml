@@ -34,6 +34,19 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.2" date="2023-05-20">
+            <description>
+                <ul>
+                    <li>Two more colormaps</li>
+                    <li>Capture - Info category with camera informations</li>
+                    <li>Show devices by name, not by the long v4l path</li>
+                    <li>Move device combobox to headerbar</li>
+                    <li>Add refresh button to headerbar</li>
+                    <li>Limit the size of the preview to fit next to the window</li>
+                    <li>Redesigned Zero camera page with snap instructions</li>
+                </ul>
+            </description>
+        </release>        
         <release version="0.5.1" date="2023-05-17">
             <description>
                 <ul>

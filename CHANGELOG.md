@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.2] - 2023-05-20
+
+### Added
+ - Two more colormaps
+ - Capture - Info category with camera informations
+
+### Changed
+ - Show devices by name, not by the long v4l path
+ - Move device combobox to headerbar
+ - Add refresh button to headerbar
+ - Limit the size of the preview to fit next to the window
+ - Redesigned Zero camera page with snap instructions
+
 ## [0.5.1] - 2023-05-17
 
 ### Added
