@@ -6,7 +6,14 @@ from cameractrls import CameraCtrls, find_by_text_id, get_devices, v4ldirs, find
 from cameractrls import version, ghurl
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio, GLib, Pango, Gdk
+from gi.repository import Gtk, Gio, GLib, Pango, Gdk, GObject
+
+class GStr(GObject.GObject):
+    def __init__(self, text):
+        GObject.GObject.__init__(self)
+        self.text = text
+    def __str__(self):
+        return self.text
 
 class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
@@ -69,8 +76,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         headerbar.pack_start(refresh_button)
         headerbar.pack_end(hamburger_button)
         headerbar.pack_end(self.open_cam_button)
-        headerbar.show_all()
-        self.set_titlebar(headerbar)
 
         self.grid = Gtk.Grid()
 
@@ -85,18 +90,26 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.zero_box.show_all()
         self.zero_box.set_no_show_all(True)
 
-        self.device_cb = Gtk.ComboBoxText()
-        cellrenderer = self.device_cb.get_cells()[0]
-        cellrenderer.set_property('ellipsize', Pango.EllipsizeMode.MIDDLE)
-        cellrenderer.set_property('max-width-chars', 70)
-        cellrenderer.set_property('width-chars', 70)
-        self.device_cb.connect('changed', lambda e: self.gui_open_device(self.device_cb.get_active()))
-        self.device_box = Gtk.Box(halign=Gtk.Align.FILL, hexpand=True, margin=10, margin_bottom=0)
-        self.device_box.pack_start(self.device_cb, True, True, 0)
-        self.device_box.show_all()
+        self.model = Gio.ListStore()
+        self.device_lb = Gtk.ListBox(activate_on_single_click=True, selection_mode=Gtk.SelectionMode.SINGLE)
+        self.device_lb.bind_model(self.model, lambda i: Gtk.Label(label=i.text, margin=10, xalign=0))
+        self.device_lb.show_all()
+        # row-selected fires at every popover open so only row-activated used
+        self.device_lb.connect('row-activated', lambda lb, r: [
+            self.gui_open_device(r.get_index()),
+            self.device_sw.get_popover().popdown(),
+        ])
+
+        self.device_sw = Gtk.MenuButton(
+            popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=self.device_lb),
+            image=Gtk.Image.new_from_icon_name('camera-switch-symbolic', Gtk.IconSize.MENU)
+        )
+        headerbar.pack_start(self.device_sw)
+
+        headerbar.show_all()
+        self.set_titlebar(headerbar)
 
         self.grid.attach(self.zero_box, 0, 0, 1, 1)
-        self.grid.attach(self.device_box, 0, 0, 1, 1)
         self.grid.show()
         self.add(self.grid)
 
@@ -108,24 +121,22 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.close_device()
             self.init_gui_device()
 
-        self.device_cb.remove_all()
-        for device in self.devices:
-            self.device_cb.append_text(device.name)
+        self.model.splice(0, self.model.get_n_items(), [GStr(d.name) for d in self.devices])
 
         if len(self.devices):
-            if self.device not in self.devices:
-                self.device_cb.set_active(0)
-            else:
+            idx = 0
+            if self.device in self.devices:
                 idx = self.devices.index(self.device)
-                self.device_cb.set_active(idx)
+            self.device_lb.select_row(self.device_lb.get_row_at_index(idx))
+            self.gui_open_device(idx)
 
         if len(self.devices) == 0:
             self.zero_box.set_visible(True)
-            self.device_cb.set_visible(False)
+            self.device_sw.set_visible(False)
             self.open_cam_button.set_visible(False)
         else:
             self.zero_box.set_visible(False)
-            self.device_cb.set_visible(True)
+            self.device_sw.set_visible(True)
             self.open_cam_button.set_visible(True)
 
     def gui_open_device(self, id):
@@ -173,7 +184,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             return
 
         self.frame = Gtk.Grid(hexpand=True, halign=Gtk.Align.FILL)
-        self.grid.attach(self.frame, 0, 1, 1, 1)
+        self.grid.attach(self.frame, 0, 0, 1, 1)
 
         stack_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=10, vexpand=True, halign=Gtk.Align.FILL)
         stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=500)
