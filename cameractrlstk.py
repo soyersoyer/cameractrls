@@ -5,7 +5,7 @@ from cameractrls import CameraCtrls, get_devices, v4ldirs
 from cameractrls import version, ghurl
 
 try:
-    from tkinter import Tk, ttk, PhotoImage, IntVar, StringVar
+    from tkinter import Tk, ttk, PhotoImage, IntVar, StringVar, messagebox
 except Exception as e:
     logging.error(f'tkinter import failed: {e}, please install the python3-tk package')
     sys.exit(3)
@@ -208,7 +208,10 @@ class CameraCtrlsGui:
         self.update_ctrls_state()
 
     def update_ctrl(self, ctrl, value):
-        self.camera.setup_ctrls({ctrl.text_id: value}),
+        errs = []
+        self.camera.setup_ctrls({ctrl.text_id: value}, errs)
+        if errs:
+            messagebox.showwarning(message='\n'.join(errs))
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()
