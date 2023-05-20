@@ -106,7 +106,25 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         headerbar.pack_start(self.device_dd)
 
         self.grid.attach(self.zero_box, 0, 0, 1, 1)
-        self.set_child(self.grid)
+
+        self._notify_timeout = None
+
+        overlay = Gtk.Overlay()
+        overlay.set_child(self.grid)
+
+        # Notification overlay widget
+        self._revealer = Gtk.Revealer(valign=Gtk.Align.END, halign=Gtk.Align.CENTER)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=18)
+        box.add_css_class('app-notification')
+        self._notify_label = Gtk.Label(wrap=True, halign=Gtk.Align.FILL)
+        box.append(self._notify_label)
+        button = Gtk.Button(icon_name='window-close-symbolic', halign=Gtk.Align.END, has_frame=False, receives_default=True)
+        button.connect('clicked', lambda e: self._revealer.set_reveal_child(False))
+        box.append(button)
+        self._revealer.set_child(box)
+        overlay.add_overlay(self._revealer)
+
+        self.set_child(overlay)
 
     def refresh_devices(self):
         logging.info('refresh_devices')
@@ -339,8 +357,27 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         self.update_ctrls_state()
 
+    def close_notify(self):
+        self._revealer.set_reveal_child(False)
+        self._notify_timeout = None
+        # False removes the timeout
+        return False
+
+    def notify(self, message, timeout=5):
+        if self._notify_timeout is not None:
+            GLib.Source.remove(self._notify_timeout)
+
+        self._notify_label.set_text(message)
+        self._revealer.set_reveal_child(True)
+
+        if timeout > 0:
+            self._notify_timeout = GLib.timeout_add_seconds(timeout, self.close_notify)
+
     def update_ctrl(self, ctrl, value):
-        self.camera.setup_ctrls({ctrl.text_id: value}),
+        errs = []
+        self.camera.setup_ctrls({ctrl.text_id: value}, errs)
+        if errs:
+            self.notify('\n'.join(errs))
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()
