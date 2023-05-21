@@ -14,9 +14,14 @@ On Arch `pacman -S cameractrls`
 
 ## Git Install method
 
-Install the dependencies
+Install the dependencies via apt:
 ```shell
 sudo apt install git libsdl2-2.0-0 libturbojpeg
+```
+
+via dnf:
+```shell
+sudo dnf install git SDL2 turbojpeg
 ```
 
 Clone the repo
@@ -79,10 +84,15 @@ If you like old looking user interfaces.
 
 ### TK GUI install
 
-Install the python3-tk dependency
+Install the python3 tkinter dependency via apt:
 ```shell
 sudo apt install python3-tk
 ```
+
+via dnf:
+```shell
+sudo dnf install python3-tkinter
+``
 
 Add desktop file to the launcher
 ```shell
