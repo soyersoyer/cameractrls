@@ -305,7 +305,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         c.gui_default_btn = None
 
                     elif c.type == 'info':
-                        label = Gtk.Label(label=c.value, selectable=True, justify=Gtk.Justification.RIGHT, wrap=True, wrap_mode=Pango.WrapMode.CHAR, max_width_chars=64, width_chars=32, xalign=1)
+                        label = Gtk.Label(label=c.value, selectable=True, justify=Gtk.Justification.RIGHT,
+                                            wrap=True, wrap_mode=Pango.WrapMode.CHAR,
+                                            max_width_chars=48, width_chars=32, xalign=1)
                         ctrl_box.pack_end(label, False, False, 0)
                         c.gui_default_btn = None
 
