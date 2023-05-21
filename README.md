@@ -19,7 +19,7 @@ Install the dependencies via apt:
 sudo apt install git libsdl2-2.0-0 libturbojpeg
 ```
 
-via dnf:
+or via dnf:
 ```shell
 sudo dnf install git SDL2 turbojpeg
 ```
@@ -89,10 +89,10 @@ Install the python3 tkinter dependency via apt:
 sudo apt install python3-tk
 ```
 
-via dnf:
+or via dnf:
 ```shell
 sudo dnf install python3-tkinter
-``
+```
 
 Add desktop file to the launcher
 ```shell
