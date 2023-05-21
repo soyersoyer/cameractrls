@@ -41,6 +41,14 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.4" date="2023-05-21">
+            <description>
+                <ul>
+                    <li>Limit the initial size of the preview window to control window so it can be placed next to each other</li>
+                    <li>Flatpak version now uses Wayland (bundled SDL2, libdecor)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.3" date="2023-05-21">
             <description>
                 <ul>

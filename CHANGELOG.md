@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.4] - 2023-05-21
+
+### Changed
+ - Limit the initial size of the preview window to control window so it can be placed next to each other
+
 ## [0.5.3] - 2023-05-21
 
 ### Added
