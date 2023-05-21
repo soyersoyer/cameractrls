@@ -58,14 +58,8 @@ class CameraCtrlsGui:
             self.devicescb['values'] = [d.name for d in self.devices]
 
     def open_camera_window(self):
-        # XXX: HighDPI handling?
-        # XXX: Orientation handling?
-        margin = 50
-        scr_width, scr_height = self.window.winfo_screenwidth(), self.window.winfo_screenheight()
         win_width, win_height = self.window.winfo_width(), self.window.winfo_height()
-        win_width = scr_width - margin - win_width
-        win_height = scr_height - margin
-        logging.info(f'open cameraview.py for {self.device.path} with max size {win_width}x{win_height} screen size {scr_width}x{scr_height}')
+        logging.info(f'open cameraview.py for {self.device.path} with max size {win_width}x{win_height}')
         p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device.path, '-s', f'{win_width}x{win_height}'])
         self.child_processes.append(p)
 
