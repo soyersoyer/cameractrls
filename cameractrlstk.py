@@ -57,11 +57,23 @@ class CameraCtrlsGui:
         if self.devicescb:
             self.devicescb['values'] = [d.name for d in self.devices]
 
+    def check_preview_open(self, p):
+        # if process returned
+        if p.poll() != None:
+            (stdout, stderr) = p.communicate()
+            errstr = str(stderr, 'utf-8')
+            sys.stderr.write(errstr)
+            if p.returncode != 0:
+                messagebox.showwarning(message=errstr.strip())
+        else:
+            self.window.after(1000, self.check_preview_open, p)
+
     def open_camera_window(self):
         win_width, win_height = self.window.winfo_width(), self.window.winfo_height()
         logging.info(f'open cameraview.py for {self.device.path} with max size {win_width}x{win_height}')
-        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device.path, '-s', f'{win_width}x{win_height}'])
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', self.device.path, '-s', f'{win_width}x{win_height}'], stderr=subprocess.PIPE)
         self.child_processes.append(p)
+        self.window.after(300, self.check_preview_open, p)
 
     def gui_open_device(self, id):
         if id == -1:

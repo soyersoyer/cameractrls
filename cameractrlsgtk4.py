@@ -116,7 +116,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self._revealer = Gtk.Revealer(valign=Gtk.Align.END, halign=Gtk.Align.CENTER)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=18)
         box.add_css_class('app-notification')
-        self._notify_label = Gtk.Label(wrap=True, halign=Gtk.Align.FILL)
+        self._notify_label = Gtk.Label(wrap=True, wrap_mode=Pango.WrapMode.CHAR, natural_wrap_mode=Gtk.NaturalWrapMode.NONE, halign=Gtk.Align.FILL)
         box.append(self._notify_label)
         button = Gtk.Button(icon_name='window-close-symbolic', halign=Gtk.Align.END, has_frame=False, receives_default=True)
         button.connect('clicked', lambda e: self._revealer.set_reveal_child(False))
@@ -442,11 +442,24 @@ class CameraCtrlsApp(Gtk.Application):
     def on_quit(self, action, param):
         self.quit()
 
+    def check_preview_open(self, p):
+        # if process returned
+        if p.poll() != None:
+            (stdout, stderr) = p.communicate()
+            errstr = str(stderr, 'utf-8')
+            sys.stderr.write(errstr)
+            if p.returncode != 0:
+                self.window.notify(errstr.strip())
+            # False removes the timeout
+            return False
+        return True
+
     def open_camera_window(self, action, device):
         win_width, win_height = self.window.get_default_size()
         logging.info(f'open cameraview.py for {device.get_string()} with max size {win_width}x{win_height}')
-        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', device.get_string(), '-s', f'{win_width}x{win_height}'])
+        p = subprocess.Popen([f'{sys.path[0]}/cameraview.py', '-d', device.get_string(), '-s', f'{win_width}x{win_height}'], stderr=subprocess.PIPE)
         self.child_processes.append(p)
+        GLib.timeout_add(300, self.check_preview_open, p)
 
     def kill_child_processes(self):
         for proc in self.child_processes:
