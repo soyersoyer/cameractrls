@@ -741,6 +741,7 @@ class SDLCameraWindow():
             elif event.type == self.sdl_camera_error_event:
                 self.stop_capturing()
                 self.returncode = 4
+                break
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
