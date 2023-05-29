@@ -821,6 +821,7 @@ def main():
 
 
     os.environ['SDL_VIDEO_X11_WMCLASS'] = 'hu.irl.cameractrls'
+    os.environ['SDL_VIDEO_WAYLAND_WMCLASS'] = 'hu.irl.cameractrls'
 
     win = SDLCameraWindow(device, width, height, angle, flip, colormap)
     win.start_capturing()
