@@ -522,10 +522,17 @@ class V4L2Camera(Thread):
         poll = select.poll()
         poll.register(self.fd, select.POLLIN)
 
+        timeout = 0
+
         while not self.stopped:
             # DQBUF can block forever, so poll with 1000 ms timeout before
+            # quit after 5s
             if len(poll.poll(1000)) == 0:
                 logging.warning(f'{self.device}: timeout occured')
+                timeout += 1
+                if timeout == 5:
+                    self.pipe.write_buf(None)
+                    return
                 continue
 
             try:
