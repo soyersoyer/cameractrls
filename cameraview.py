@@ -432,7 +432,11 @@ class V4L2Camera(Thread):
         self.num_cap_bufs = 6
         self.cap_bufs = []
 
-        self.fd = os.open(self.device, os.O_RDWR, 0)
+        try:
+            self.fd = os.open(self.device, os.O_RDWR, 0)
+        except Exception as e:
+            logging.error(f'os.open: {e}')
+            sys.exit(3)
 
         self.init_device()
         self.init_buffers()
@@ -450,7 +454,7 @@ class V4L2Camera(Thread):
         try:
             ioctl(self.fd, VIDIOC_S_FMT, fmt)
         except Exception as e:
-            logging.warning(f'V4L2FmtCtrls: Can\'t set fmt {e}')
+            logging.warning(f'V4L2Camera: Can\'t set fmt: {e}')
 
         if not (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE):
             logging.error(f'{self.device} is not a video capture device')
@@ -477,7 +481,7 @@ class V4L2Camera(Thread):
         try:
             ioctl(self.fd, VIDIOC_REQBUFS, req)
         except Exception as e:
-            logging.error(f'Video buffer request failed on {self.device} ({e})')
+            logging.error(f'Video buffer request failed on {self.device}: {e}')
             sys.exit(3)
 
         if req.count != self.num_cap_bufs:
@@ -501,6 +505,13 @@ class V4L2Camera(Thread):
             self.cap_bufs.append(buf)
 
     def capture_loop(self):
+        try:
+            ioctl(self.fd, VIDIOC_STREAMON, struct.pack('I', V4L2_BUF_TYPE_VIDEO_CAPTURE))
+        except Exception as e:
+            logging.error(f'VIDIOC_STREAMON failed {self.device}: {e}')
+            self.pipe.write_buf(None)
+            return
+
         for buf in self.cap_bufs:
             ioctl(self.fd, VIDIOC_QBUF, buf)
 
@@ -516,8 +527,13 @@ class V4L2Camera(Thread):
             if len(poll.poll(1000)) == 0:
                 logging.warning(f'{self.device}: timeout occured')
                 continue
-            
-            ioctl(self.fd, VIDIOC_DQBUF, qbuf)
+
+            try:
+                ioctl(self.fd, VIDIOC_DQBUF, qbuf)
+            except Exception as e:
+                logging.error(f'VIDIOC_DQBUF failed {self.device}: {e}')
+                self.pipe.write_buf(None)
+                return
 
             buf = self.cap_bufs[qbuf.index]
             buf.bytesused = qbuf.bytesused
@@ -527,18 +543,17 @@ class V4L2Camera(Thread):
 
             ioctl(self.fd, VIDIOC_QBUF, buf)
 
-
-    def start_capturing(self):
-        ioctl(self.fd, VIDIOC_STREAMON, struct.pack('I', V4L2_BUF_TYPE_VIDEO_CAPTURE))
-        self.capture_loop()
-        ioctl(self.fd, VIDIOC_STREAMOFF, struct.pack('I', V4L2_BUF_TYPE_VIDEO_CAPTURE))
+        try:
+            ioctl(self.fd, VIDIOC_STREAMOFF, struct.pack('I', V4L2_BUF_TYPE_VIDEO_CAPTURE))
+        except Exception as e:
+            logging.error(f'VIDIOC_STREAMOFF failed {self.device}: {e}')
 
     def stop_capturing(self):
         self.stopped = True
 
     # thread start
     def run(self):
-        self.start_capturing()
+        self.capture_loop()
     
     # thread stop
     def stop(self):
@@ -582,6 +597,7 @@ def V4L2Format2SDL(format):
 
 class SDLCameraWindow():
     def __init__(self, device, win_width, win_height, angle, flip, colormap):
+        self.returncode = 0
         self.cam = V4L2Camera(device)
         self.cam.pipe = self
         width = self.cam.width
@@ -615,12 +631,16 @@ class SDLCameraWindow():
         # create a new sdl user event type for new image events
         self.sdl_new_image_event = SDL_RegisterEvents(1)
         self.sdl_new_grey_image_event = SDL_RegisterEvents(1)
+        self.sdl_camera_error_event = SDL_RegisterEvents(1)
 
         self.new_image_event = SDL_Event()
         self.new_image_event.type = self.sdl_new_image_event
 
         self.new_grey_image_event = SDL_Event()
         self.new_grey_image_event.type = self.sdl_new_grey_image_event
+
+        self.camera_error_event = SDL_Event()
+        self.camera_error_event.type = self.sdl_camera_error_event
 
         self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, win_width, win_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
         if self.window == None:
@@ -646,6 +666,10 @@ class SDLCameraWindow():
             self.set_colormap(colormap)
 
     def write_buf(self, buf):
+        if buf == None:
+            SDL_PushEvent(ctypes.byref(self.camera_error_event))
+            return
+
         ptr = (ctypes.c_uint8 * buf.bytesused).from_buffer(buf.buffer)
         event = self.new_image_event if self.cam.pixelformat != V4L2_PIX_FMT_GREY else self.new_grey_image_event
 
@@ -707,6 +731,9 @@ class SDLCameraWindow():
                     logging.warning(f'SDL_RenderCopy failed: {SDL_GetError()}')
                 SDL_RenderPresent(self.renderer)
                 SDL_DestroyTexture(texture)
+            elif event.type == self.sdl_camera_error_event:
+                self.stop_capturing()
+                self.returncode = 4
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
@@ -750,6 +777,7 @@ class SDLCameraWindow():
         tj_destroy(self.tj)
         SDL_DestroyWindow(self.window)
         SDL_Quit()
+        return self.returncode
 
 
 def usage():
@@ -813,9 +841,7 @@ def main():
             elif current_value == 'hv':
                 flip = 3
             else:
-                print(f'invalid FLIP value: {current_value}')
-                usage()
-                sys.exit(1)
+                logging.warning(f'invalid FLIP value: {current_value}')
         elif current_argument == '-c':
             colormap = current_value
 
@@ -825,8 +851,8 @@ def main():
 
     win = SDLCameraWindow(device, width, height, angle, flip, colormap)
     win.start_capturing()
-    win.close()
+    return win.close()
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
