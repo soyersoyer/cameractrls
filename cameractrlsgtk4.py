@@ -65,16 +65,16 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         hamburger_button = Gtk.MenuButton(
             popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=hambuger_menu),
-            icon_name='open-menu-symbolic'
+            icon_name='open-menu-symbolic', has_frame=False,
         )
 
         self.open_cam_button = Gtk.Button(
             action_name='app.open_camera_window',
             action_target=GLib.Variant('s', ''),
-            icon_name='camera-video-symbolic'
+            icon_name='camera-video-symbolic', has_frame=False,
         )
 
-        refresh_button = Gtk.Button(icon_name='view-refresh-symbolic')
+        refresh_button = Gtk.Button(icon_name='view-refresh-symbolic', has_frame=False)
         refresh_button.connect('clicked', lambda e: self.refresh_devices())
 
         headerbar = Gtk.HeaderBar(show_title_buttons=True)
@@ -97,6 +97,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device_dd = Gtk.DropDown(model=Gtk.StringList(), hexpand=True, show_arrow=False)
         # use the default factory as list_factory
         self.device_dd.set_list_factory(self.device_dd.get_factory())
+        self.device_dd.get_first_child().set_has_frame(False)
         # then set the icon_factory as factory
         icon_factory = Gtk.SignalListItemFactory()
         icon_factory.connect('setup', lambda f, item: item.set_child(Gtk.Image(icon_name='camera-switch-symbolic')))
