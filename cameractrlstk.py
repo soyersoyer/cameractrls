@@ -242,8 +242,6 @@ class CameraCtrlsGui:
                 self.window.after_idle(lambda errs=errs: messagebox.showwarning(message='\n'.join(errs)))
                 self.window.after_idle(self.update_ctrl_value, ctrl)
 
-        if ctrl.updater:
-            self.camera.update_ctrls()
         self.update_ctrls_state()
         if ctrl.reopener:
             self.reopen_device()

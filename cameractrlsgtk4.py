@@ -395,8 +395,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 self.notify('\n'.join(errs))
                 GLib.idle_add(self.update_ctrl_value, ctrl),
 
-        if ctrl.updater:
-            self.camera.update_ctrls()
         self.update_ctrls_state()
         if ctrl.reopener:
             self.reopen_device()

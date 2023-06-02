@@ -590,13 +590,6 @@ V4L2_CID_JPEG_RESTART_INTERVAL = V4L2_CID_JPEG_CLASS_BASE + 2
 V4L2_CID_JPEG_COMPRESSION_QUALITY = V4L2_CID_JPEG_CLASS_BASE + 3
 V4L2_CID_JPEG_ACTIVE_MARKER	 = V4L2_CID_JPEG_CLASS_BASE + 4
 
-V4L2_CTRL_UPDATERS = [
-    V4L2_CID_EXPOSURE_AUTO,
-    V4L2_CID_FOCUS_AUTO,
-    V4L2_CID_AUTO_WHITE_BALANCE,
-    V4L2_CID_ISO_SENSITIVITY_AUTO,
-]
-
 # controls value should be zero after releasing mouse button
 V4L2_CTRL_ZEROERS = [
     V4L2_CID_PAN_SPEED,
@@ -1008,7 +1001,7 @@ def collect_warning(w, ws):
 
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
-                inactive = False, updater = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
+                inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
                 zeroer = False, wbtemperature = False, kernel_id = None):
         self.text_id = text_id
         self.kernel_id = kernel_id
@@ -1020,7 +1013,6 @@ class BaseCtrl:
         self.max = max
         self.step = step
         self.inactive = inactive
-        self.updater = updater
         self.reopener = reopener
         self.menu_dd = menu_dd
         self.menu = menu
@@ -1131,10 +1123,6 @@ class KiyoProCtrls:
                 query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu._before))
 
             query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu.value))
-
-
-    def update_ctrls(self):
-        return
 
     def get_ctrls(self):
         return self.ctrls
@@ -1464,9 +1452,6 @@ class LogitechCtrls:
 
             ctrl.value = desired
 
-    def update_ctrls(self):
-        return
-
     def get_ctrls(self):
         return self.ctrls
 
@@ -1567,9 +1552,6 @@ class V4L2Ctrls:
                 else:
                     v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, None, menu = [ BaseCtrlMenu(text_id, text, text_id) ])
 
-                # doesn't work with some contols, uvc driver bug?
-                # v4l2ctrl.updater = bool(qctrl.flags & V4L2_CTRL_FLAG_UPDATE)
-                v4l2ctrl.updater = bool(qctrl.flags & V4L2_CTRL_FLAG_UPDATE) or qctrl.id in V4L2_CTRL_UPDATERS
                 v4l2ctrl.inactive = bool(qctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
                 ctrl_info = V4L2_CTRL_INFO.get(qctrl.id)
                 if ctrl_info != None:
@@ -1608,16 +1590,6 @@ class V4L2Ctrls:
             qctrl = v4l2_queryctrl(qctrl.id | next_flag)
 
         self.ctrls = ctrls
-
-    def update_ctrls(self):
-        for c in self.ctrls:
-            qctrl = v4l2_queryctrl(c.v4l2_id)
-            try:
-                ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
-            except:
-                logging.warning(f'V4L2Ctrls: Can\'t update ctrl {c.name} ')
-                continue
-            c.inactive = bool(qctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
 
     def get_ctrls(self):
         return self.ctrls
@@ -1696,9 +1668,6 @@ class V4L2FmtCtrls:
 
     def get_ctrls(self):
         return self.ctrls
-
-    def update_ctrls(self):
-        return
 
     def setup_ctrls(self, params, errs=[]):
         for k, v in params.items():
@@ -1935,9 +1904,6 @@ class SystemdSaver:
     def get_ctrls(self):
         return self.ctrls
 
-    def update_ctrls(self):
-        return
-
     def setup_ctrls(self, params, errs=[]):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
@@ -2051,8 +2017,6 @@ class CameraCtrls:
                         if c.step and c.step != 1:
                             print(f' step: {c.step}', end = '')
                         print(' )', end = '')
-                    if c.updater:
-                        print(' | updater', end = '')
                     if c.inactive:
                         print(' | inactive', end = '')
                     print()
@@ -2063,10 +2027,6 @@ class CameraCtrls:
         unknown_ctrls = list(set(params.keys()) - set([c.text_id for c in self.get_ctrls()]))
         if len(unknown_ctrls) > 0:
             collect_warning(f'CameraCtrls: can\'t find {unknown_ctrls} controls', errs)
-
-    def update_ctrls(self):
-        for c in self.ctrls:
-            c.update_ctrls()
 
     def get_ctrls(self):
         ctrls = []
