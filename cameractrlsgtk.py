@@ -23,6 +23,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.fd = 0
         self.device = None
         self.camera = None
+        self.listener = None
 
         self.grid = None
         self.frame = None
@@ -132,6 +133,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         self.add(overlay)
 
+        self.connect('delete-event', lambda w,e: self.close_device())
+
     def refresh_devices(self):
         logging.info('refresh_devices')
         self.devices = get_devices(v4ldirs)
@@ -159,6 +162,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.open_cam_button.set_visible(True)
 
     def gui_open_device(self, id):
+        logging.info('gui_open_device')
         # if the selection is empty (after remove_all)
         if id == -1:
             return
@@ -183,17 +187,25 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             logging.error(f'os.open({device.path}, os.O_RDWR, 0) failed: {e}')
 
         self.camera = CameraCtrls(device.path, self.fd)
+        self.listener = self.camera.subscribe_events(
+            lambda c: GLib.idle_add(self.update_ctrl_value, c),
+            lambda ws: GLib.idle_add(self.notify, ws),
+        )
         self.device = device
         self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device.path))
 
     def close_device(self):
         if self.fd:
-            os.close(self.fd)
-            self.fd = 0
+            logging.info('close_device')    
             self.device = None
             self.camera = None
+            self.listener.stop()
+            self.listener = None
+            os.close(self.fd)
+            self.fd = 0
 
     def init_gui_device(self):
+        logging.info('init_gui_device')
         if self.frame:
             self.frame.destroy()
             # forget old size
@@ -256,6 +268,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                     ctrl_box.pack_start(label, False, False, 0)
 
                     c.gui_ctrls = [label]
+                    c.gui_value_set = None
 
                     if c.type == 'integer':
                         adjustment = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=1)
@@ -279,17 +292,19 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(scale, False, False, 0)
+                        c.gui_value_set = adjustment.set_value
                         c.gui_ctrls += [scale, refresh]
                         c.gui_default_btn = refresh
 
                     elif c.type == 'boolean':
                         switch = Gtk.Switch(valign=Gtk.Align.CENTER, active=c.value, margin_right=5)
-                        switch.connect('state-set', lambda a,b,c=c: self.update_ctrl(c, a.get_active()))
+                        switch.connect('state-set', lambda w,state,c=c: self.update_ctrl(c, state))
                         refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         if c.default != None:
                             refresh.connect('clicked', lambda e,switch=switch,c=c: switch.set_active(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(switch, False, False, 0)
+                        c.gui_value_set = switch.set_active
                         c.gui_ctrls += [switch, refresh]
                         c.gui_default_btn = refresh
 
@@ -309,6 +324,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                             wrap=True, wrap_mode=Pango.WrapMode.CHAR,
                                             max_width_chars=48, width_chars=32, xalign=1)
                         ctrl_box.pack_end(label, False, False, 0)
+                        c.gui_value_set = label.set_label
                         c.gui_default_btn = None
 
                     elif c.type == 'menu':
@@ -336,6 +352,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 refresh.connect('clicked', lambda e,c=c: find_by_text_id(c.menu, c.default).gui_rb.set_active(True))
                             ctrl_box.pack_start(refresh, False, False, 0)
                             ctrl_box.pack_end(box, False, False, 0)
+                            c.gui_value_set = lambda ctext, c=c: find_by_text_id(c.menu, ctext).gui_rb.set_active(True)
                             c.gui_ctrls += [m.gui_rb for m in c.menu] + [refresh]
                             c.gui_default_btn = refresh
                         else:
@@ -363,6 +380,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 refresh.connect('clicked', lambda e,c=c,wb_cb=wb_cb: wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == c.default)))
                             ctrl_box.pack_start(refresh, False, False, 0)
                             ctrl_box.pack_end(wb_cb, False, False, 0)
+                            c.gui_value_set = lambda ctext, c=c, wb_cb=wb_cb: wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == ctext))
                             c.gui_ctrls += [wb_cb, refresh]
                             c.gui_default_btn = refresh
 
@@ -386,10 +404,14 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self._notify_timeout = GLib.timeout_add_seconds(timeout, self.close_notify)
 
     def update_ctrl(self, ctrl, value):
-        errs = []
-        self.camera.setup_ctrls({ctrl.text_id: value}, errs)
-        if errs:
-            self.notify('\n'.join(errs))
+        # only update if out of sync (when new value comes from the gui)
+        if ctrl.value != value:
+            errs = []
+            self.camera.setup_ctrls({ctrl.text_id: value}, errs)
+            if errs:
+                self.notify('\n'.join(errs))
+                GLib.idle_add(self.update_ctrl_value, ctrl),
+
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()
@@ -403,6 +425,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             if c.gui_default_btn != None:
                 c.gui_default_btn.set_opacity(0 if c.default == None or c.default == c.value else 1)
                 c.gui_default_btn.set_can_focus(0 if c.default == None or c.default == c.value else 1)
+
+    def update_ctrl_value(self, c):
+        if c.gui_value_set:
+            c.gui_value_set(c.value)
 
     def preserve_widget(self, widget):
         self.preserved_widget = widget
