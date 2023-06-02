@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
-import ctypes, logging, os.path, getopt, sys, subprocess
+import ctypes, logging, os.path, getopt, sys, subprocess, select
 from fcntl import ioctl
+from threading import Thread
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
 version = 'v0.5.4'
@@ -723,12 +724,74 @@ class uvc_xu_control_query(ctypes.Structure):
         ('data', ctypes.c_void_p),
     ]
 
+V4L2_EVENT_SUB_FL_SEND_INITIAL = 1
+V4L2_EVENT_SUB_FL_ALLOW_FEEDBACK = 2
+
+V4L2_EVENT_CTRL = 3
+
+class v4l2_event_subscription(ctypes.Structure):
+    _fields_ = [
+        ('type', ctypes.c_uint32),
+        ('id', ctypes.c_uint32),
+        ('flags', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 5),
+    ]
+
+class timespec(ctypes.Structure):
+    _fields_ = [
+        ('tv_sec', ctypes.c_long),
+        ('tv_nsec', ctypes.c_long),
+    ]
+
+V4L2_EVENT_CTRL_CH_VALUE = 1
+V4L2_EVENT_CTRL_CH_FLAGS = 2
+V4L2_EVENT_CTRL_CH_RANGE = 4
+V4L2_EVENT_CTRL_CH_DIMENSIONS = 8
+
+class v4l2_event_ctrl(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('value', ctypes.c_int32),
+            ('value64', ctypes.c_int64),
+        ]
+    _fields_ = [
+        ('changes', ctypes.c_uint32),
+        ('type', ctypes.c_uint32),
+        ('_u', _u),
+        ('flags', ctypes.c_uint32),
+        ('minimum', ctypes.c_int32),
+        ('maximum', ctypes.c_int32),
+        ('step', ctypes.c_int32),
+        ('default_value', ctypes.c_int32),
+    ]
+    _anonymous_ = ('_u',)
+
+class v4l2_event(ctypes.Structure):
+    class _u(ctypes.Union):
+        _fields_ = [
+            ('ctrl', v4l2_event_ctrl),
+            ('data', ctypes.c_uint8 * 64),
+        ]
+    _fields_ = [
+        ('type', ctypes.c_uint32),
+        ('_u', _u),
+        ('pending', ctypes.c_uint32),
+        ('sequence', ctypes.c_uint32),
+        ('timestamp', timespec),
+        ('id', ctypes.c_uint32),
+        ('reserved', ctypes.c_uint32 * 8),
+    ]
+    _anonymous_ = ('_u',)
+
 VIDIOC_QUERYCAP = _IOR('V', 0, v4l2_capability)
 UVCIOC_CTRL_QUERY = _IOWR('u', 0x21, uvc_xu_control_query)
 VIDIOC_G_CTRL = _IOWR('V', 27, v4l2_control)
 VIDIOC_S_CTRL = _IOWR('V', 28, v4l2_control)
 VIDIOC_QUERYCTRL = _IOWR('V', 36, v4l2_queryctrl)
 VIDIOC_QUERYMENU = _IOWR('V', 37, v4l2_querymenu)
+VIDIOC_DQEVENT = _IOR('V', 89, v4l2_event)
+VIDIOC_SUBSCRIBE_EVENT = _IOW('V', 90, v4l2_event_subscription)
+VIDIOC_UNSUBSCRIBE_EVENT = _IOW('V', 91, v4l2_event_subscription)
 
 # A.8. Video Class-Specific Request Codes
 UVC_RC_UNDEFINED = 0x00
@@ -1464,6 +1527,15 @@ class V4L2Ctrls:
             except Exception as e:
                 collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} ({e})', errs)
 
+    def set_ctrl_int_value(self, ctrl, intvalue, errs=[]):
+        if ctrl.type != 'menu':
+            ctrl.value = intvalue
+        else:
+            menu = find_by_value(ctrl.menu, intvalue)
+            if menu == None:
+                collect_warning(f'V4L2Ctrls: Can\'t find {intvalue} in {[c.value for c in ctrl.menu]}', errs)
+                return
+            ctrl.value = menu.text_id
 
     def get_device_controls(self):
         ctrls = []
@@ -1552,6 +1624,63 @@ class V4L2Ctrls:
 
     def to_text_id(self, text):
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
+
+    def find_by_v4l2_id(self, v4l2_id):
+        idx = find_idx(self.ctrls, lambda c: hasattr(c, '_id') and c._id == v4l2_id)
+        if idx != None:
+            return self.ctrls[idx]
+        else:
+            None
+
+    def subscribe_events(self, cb, err_cb):
+        thread = V4L2Listener(self, cb, err_cb)
+        thread.start()
+        return thread
+
+class V4L2Listener(Thread):
+    def __init__(self, ctrls, cb, err_cb):
+        super().__init__()
+        self.fd = ctrls.fd
+        self.ctrls = ctrls
+        self.cb = cb
+        self.err_cb = err_cb
+        self.epoll = select.epoll() 
+        self.epoll.register(self.fd, select.POLLPRI | select.POLLERR | select.POLLNVAL)
+    
+        sub = v4l2_event_subscription()
+        sub.type = V4L2_EVENT_CTRL
+        for c in self.ctrls.ctrls:
+            sub.id = c._id
+            ioctl(self.fd, VIDIOC_SUBSCRIBE_EVENT, sub)
+
+    # thread start
+    def run(self):
+        event = v4l2_event()
+        while not self.epoll.closed:
+            p = self.epoll.poll(1)
+            if len(p) == 0:
+                continue
+            (fd , v) = p[0]
+            if v == select.POLLNVAL or v == select.POLLERR:
+                break
+            try:
+                ioctl(self.fd, VIDIOC_DQEVENT, event)
+            except Exception as e:
+                self.err_cb(collect_warning(f'VIDIOC_DQEVENT failed: {e}', []))
+                continue
+            ctrl = self.ctrls.find_by_v4l2_id(event.id)
+            ctrl.inactive = bool(event.ctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
+            errs = []
+            self.ctrls.set_ctrl_int_value(ctrl, int(event.ctrl.value), errs)
+            if errs:
+                self.err_cb(errs)
+                continue
+            self.cb(ctrl)
+
+    # thread stop
+    def stop(self):
+        self.epoll.close()
+
 
 V4L2_CAP_CARD_DESC = 'Name of the device, a NUL-terminated UTF-8 string. For example: “Yoyodyne TV/FM”. One driver may support different brands or models of video hardware. This information is intended for users, for example in a menu of available devices. Since multiple TV cards of the same brand may be installed which are supported by the same driver, this name should be combined with the character device file name (e. g. /dev/video2) or the bus_info string to avoid ambiguities.'
 V4L2_CAP_DRIVER_DESC = 'Name of the driver, a unique NUL-terminated ASCII string. For example: “bttv”. Driver specific applications can use this information to verify the driver identity. It is also useful to work around known bugs, or to identify drivers in error reports.'
@@ -2058,6 +2187,9 @@ class CameraCtrls:
         pages = [page for page in pages if len(page.categories)]
 
         return pages
+
+    def subscribe_events(self, cb, err_cb):
+        return self.ctrls[0].subscribe_events(cb, err_cb)
 
 
 def usage():
