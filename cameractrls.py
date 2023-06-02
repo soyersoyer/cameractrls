@@ -938,9 +938,10 @@ def to_bool(val):
         return False
     return bool(val)
 
-def collect_warning(arr, w):
+def collect_warning(w, ws):
     logging.warning(w)
-    arr.append(w)
+    ws.append(w)
+    return ws
 
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
@@ -1059,7 +1060,7 @@ class KiyoProCtrls:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu == None:
-                collect_warning(errs, f'KiyoProCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                collect_warning(f'KiyoProCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
             ctrl.value = menu.text_id
 
@@ -1367,13 +1368,13 @@ class LogitechCtrls:
             if ctrl.type == 'menu' or ctrl.type == 'button':
                 menu  = find_by_text_id(ctrl.menu, v)
                 if menu == None:
-                    collect_warning(errs, f'LogitechCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                    collect_warning(f'LogitechCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                     continue
                 desired = menu.value
             elif ctrl.type == 'integer':
                 desired = int(v)
             else:
-                collect_warning(errs, f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})')
+                collect_warning(f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})', errs)
                 continue
 
             if ctrl.type == 'button':
@@ -1395,7 +1396,7 @@ class LogitechCtrls:
                 if curmenu:
                     current = curmenu.text_id
             if current != desired:
-                collect_warning(errs, f'LogitechCtrls: failed to set {k} to {desired}, current value {current}\n')
+                collect_warning( f'LogitechCtrls: failed to set {k} to {desired}, current value {current}\n', errs)
                 continue
 
             ctrl.value = desired
@@ -1441,19 +1442,19 @@ class V4L2Ctrls:
             elif ctrl.type == 'menu':
                 menu = find_by_text_id(ctrl.menu, v)
                 if menu == None:
-                    collect_warning(errs, f'V4L2Ctrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                    collect_warning(f'V4L2Ctrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                     continue
                 intvalue = menu.value
             elif ctrl.type == 'button':
                 intvalue = 0
             else:
-                collect_warning(errs, f'V4L2Ctrls: Can\'t set {k} to {v} (Unsupported control type {ctrl.type})')
+                collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} (Unsupported control type {ctrl.type})', errs)
                 continue
             try:
                 new_ctrl = v4l2_control(ctrl._id, intvalue)
                 ioctl(self.fd, VIDIOC_S_CTRL, new_ctrl)
                 if new_ctrl.value != intvalue:
-                    collect_warning(errs, f'V4L2Ctrls: Can\'t set {k} to {v} using {new_ctrl.value} instead of {intvalue}')
+                    collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} using {new_ctrl.value} instead of {intvalue}', errs)
                     continue
 
                 if ctrl.type == 'menu':
@@ -1461,7 +1462,8 @@ class V4L2Ctrls:
                 else:
                     ctrl.value = intvalue
             except Exception as e:
-                collect_warning(errs, f'V4L2Ctrls: Can\'t set {k} to {v} ({e})')
+                collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} ({e})', errs)
+
 
     def get_device_controls(self):
         ctrls = []
@@ -1575,11 +1577,11 @@ class V4L2FmtCtrls:
             if ctrl == None:
                 continue
             if ctrl.type == 'info':
-                collect_warning(errs, f'V4L2FmtCtrls: info type {k} couldn\'t be set')
+                collect_warning(f'V4L2FmtCtrls: info type {k} couldn\'t be set', errs)
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu == None:
-                collect_warning(errs, f'V4L2FmtCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                collect_warning(f'V4L2FmtCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
             if ctrl.text_id == 'pixelformat':
                 self.set_pixelformat(ctrl, v, errs)
@@ -1640,7 +1642,7 @@ class V4L2FmtCtrls:
         try:
             ioctl(self.fd, VIDIOC_G_FMT, fmt)
         except Exception as e:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t get fmt {e}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t get fmt {e}', errs)
             return
 
         fmt.fmt.pix.pixelformat = str2pxf(pixelformat)
@@ -1648,11 +1650,11 @@ class V4L2FmtCtrls:
         try:
             ioctl(self.fd, VIDIOC_S_FMT, fmt)
         except Exception as e:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t set fmt {e}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t set fmt {e}', errs)
             return
 
         if pxf2str(fmt.fmt.pix.pixelformat) != pixelformat:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t set pixelformat to {pixelformat} using {pxf2str(fmt.fmt.pix.pixelformat)}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t set pixelformat to {pixelformat} using {pxf2str(fmt.fmt.pix.pixelformat)}', errs)
             return
 
         ctrl.value = pixelformat
@@ -1663,7 +1665,7 @@ class V4L2FmtCtrls:
         try:
             ioctl(self.fd, VIDIOC_G_FMT, fmt)
         except Exception as e:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t get fmt {e}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t get fmt {e}', errs)
             return
 
         str2wh(resolution, fmt.fmt.pix)
@@ -1671,11 +1673,11 @@ class V4L2FmtCtrls:
         try:
             ioctl(self.fd, VIDIOC_S_FMT, fmt)
         except Exception as e:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t set fmt {e}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t set fmt {e}', errs)
             return
 
         if wh2str(fmt.fmt.pix) != resolution:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t set resolution to {resolution} using {wh2str(fmt.fmt.pix)}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t set resolution to {resolution} using {wh2str(fmt.fmt.pix)}', errs)
             return
 
         ctrl.value = resolution
@@ -1704,15 +1706,15 @@ class V4L2FmtCtrls:
         try:
             ioctl(self.fd, VIDIOC_S_PARM, parm)
         except Exception as e:
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t set fps: {e}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t set fps: {e}', errs)
             return
 
         tf = parm.parm.capture.timeperframe
         if tf.denominator == 0 or tf.numerator == 0:
-            collect_warning(errs, f'V4L2FmtCtrls: VIDIOC_S_PARM: Invalid frame rate {fps}')
+            collect_warning(f'V4L2FmtCtrls: VIDIOC_S_PARM: Invalid frame rate {fps}', errs)
             return
         if int(fps) != (tf.denominator / tf.numerator):
-            collect_warning(errs, f'V4L2FmtCtrls: Can\'t set fps to {fps} using {tf.denominator / tf.numerator}')
+            collect_warning(f'V4L2FmtCtrls: Can\'t set fps to {fps} using {tf.denominator / tf.numerator}', errs)
             return
 
         ctrl.value = fps
@@ -1814,7 +1816,7 @@ class SystemdSaver:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu == None:
-                collect_warning(errs, f'SystemdSaver: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}')
+                collect_warning(f'SystemdSaver: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
             if menu.text_id == 'save':
                 self.create_systemd_service_and_path()
@@ -1931,7 +1933,7 @@ class CameraCtrls:
             c.setup_ctrls(params, errs)
         unknown_ctrls = list(set(params.keys()) - set([c.text_id for c in self.get_ctrls()]))
         if len(unknown_ctrls) > 0:
-            collect_warning(errs, f'CameraCtrls: can\'t find {unknown_ctrls} controls')
+            collect_warning(f'CameraCtrls: can\'t find {unknown_ctrls} controls', errs)
 
     def update_ctrls(self):
         for c in self.ctrls:
