@@ -115,14 +115,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         # Notification overlay widget
         self._revealer = Gtk.Revealer(valign=Gtk.Align.END, halign=Gtk.Align.CENTER)
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=18)
-        box.add_css_class('app-notification')
         self._notify_label = Gtk.Label(wrap=True, wrap_mode=Pango.WrapMode.CHAR, natural_wrap_mode=Gtk.NaturalWrapMode.NONE, halign=Gtk.Align.FILL)
-        box.append(self._notify_label)
-        button = Gtk.Button(icon_name='window-close-symbolic', halign=Gtk.Align.END, has_frame=False, receives_default=True)
-        button.connect('clicked', lambda e: self._revealer.set_reveal_child(False))
-        box.append(button)
-        self._revealer.set_child(box)
+        self._notify_label.add_css_class('app-notification')
+        self._revealer.set_child(self._notify_label)
         overlay.add_overlay(self._revealer)
 
         self.set_child(overlay)
