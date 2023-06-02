@@ -17,6 +17,7 @@ class CameraCtrlsGui:
         self.fd = 0
         self.device = None
         self.camera = None
+        self.listener = None
 
         self.window = None
         self.frame = None
@@ -31,6 +32,7 @@ class CameraCtrlsGui:
         self.window = Tk(className='hu.irl.cameractrls')
         self.window.title('Cameractrls')
         self.window.bind('<Control-q>', lambda e: self.window.quit())
+        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
 
         s = ttk.Style()
         s.configure('BorderlessShort.TButton', padding=[10,0,10,0], borderwidth=0)
@@ -46,6 +48,10 @@ class CameraCtrlsGui:
         gh = ttk.Label(head, text='GitHub★', foreground='blue', cursor='hand2')
         gh.bind('<Button-1>', lambda e: webbrowser.open(ghurl))
         gh.grid(row=0, column=1)
+
+    def close_window(self):
+        self.close_device()
+        self.window.destroy()
 
     def refresh_devices(self):
         self.devices = get_devices(v4ldirs)
@@ -76,6 +82,7 @@ class CameraCtrlsGui:
         self.window.after(300, self.check_preview_open, p)
 
     def gui_open_device(self, id):
+        logging.info('gui_open_device')
         if id == -1:
             return
 
@@ -98,16 +105,25 @@ class CameraCtrlsGui:
             logging.error(f'os.open({device.path}, os.O_RDWR, 0) failed: {e}')
 
         self.camera = CameraCtrls(device.path, self.fd)
+        self.listener = self.camera.subscribe_events(
+            lambda c: self.window.after_idle(self.update_ctrl_value, c),
+            lambda ws: self.window.after_idle(self.notify, ws),
+        )
         self.device = device
 
     def close_device(self):
         if self.fd:
-            os.close(self.fd)
-            self.fd = 0
+            logging.info('close_device')
             self.device = None
             self.camera = None
+            self.listener.stop()
+            self.listener = None
+            os.close(self.fd)
+            self.fd = 0
+
 
     def init_gui_device(self):
+        logging.info('init_gui_device')
         if self.frame:
             self.frame.grid_forget()
             self.frame.destroy()
@@ -218,10 +234,14 @@ class CameraCtrlsGui:
         self.update_ctrls_state()
 
     def update_ctrl(self, ctrl, value):
-        errs = []
-        self.camera.setup_ctrls({ctrl.text_id: value}, errs)
-        if errs:
-            messagebox.showwarning(message='\n'.join(errs))
+        # only update if out of sync (when new value comes from the gui)
+        if ctrl.value != value:
+            errs = []
+            self.camera.setup_ctrls({ctrl.text_id: value}, errs)
+            if errs:
+                self.window.after_idle(lambda errs=errs: messagebox.showwarning(message='\n'.join(errs)))
+                self.window.after_idle(self.update_ctrl_value, ctrl)
+
         if ctrl.updater:
             self.camera.update_ctrls()
         self.update_ctrls_state()
@@ -234,6 +254,9 @@ class CameraCtrlsGui:
                 state = ['disabled'] if c.inactive else ['!disabled']
                 gui_ctrl.state(state)
             self.update_default_btn(c)
+
+    def update_ctrl_value(self, c):
+        c.var.set(c.value)
 
     def update_default_btn(self, c):
         if c.default != None:
