@@ -975,7 +975,7 @@ def pop_list_by_text_ids(ctrls, text_ids):
 def pop_list_by_base_id(ctrls, base_id):
     ret = []
     while True:
-        idx = find_idx(ctrls, lambda c: hasattr(c, '_id') and c._id & V4L2_CTRL_CLASS_MASK == base_id & V4L2_CTRL_CLASS_MASK)
+        idx = find_idx(ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id & V4L2_CTRL_CLASS_MASK == base_id & V4L2_CTRL_CLASS_MASK)
         if idx != None:
             ret.append(ctrls.pop(idx))
         else:
@@ -986,7 +986,7 @@ def pop_list_by_ids(ctrls, ids):
     ret = []
     for id in ids:
         while True:
-            idx = find_idx(ctrls, lambda c: hasattr(c, '_id') and c._id == id)
+            idx = find_idx(ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id == id)
             if idx != None:
                 ret.append(ctrls.pop(idx))
             else:
@@ -1471,9 +1471,9 @@ class LogitechCtrls:
         return self.ctrls
 
 class V4L2Ctrl(BaseCtrl):
-    def __init__(self, id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
+    def __init__(self, v4l2_id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
         super().__init__(text_id, name, type, value, default, min, max, step, menu=menu)
-        self._id = id
+        self.v4l2_id = v4l2_id
 
 class V4L2Ctrls:
     to_type = {
@@ -1514,7 +1514,7 @@ class V4L2Ctrls:
                 collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} (Unsupported control type {ctrl.type})', errs)
                 continue
             try:
-                new_ctrl = v4l2_control(ctrl._id, intvalue)
+                new_ctrl = v4l2_control(ctrl.v4l2_id, intvalue)
                 ioctl(self.fd, VIDIOC_S_CTRL, new_ctrl)
                 if new_ctrl.value != intvalue:
                     collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} using {new_ctrl.value} instead of {intvalue}', errs)
@@ -1611,7 +1611,7 @@ class V4L2Ctrls:
 
     def update_ctrls(self):
         for c in self.ctrls:
-            qctrl = v4l2_queryctrl(c._id)
+            qctrl = v4l2_queryctrl(c.v4l2_id)
             try:
                 ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
             except:
@@ -1626,7 +1626,7 @@ class V4L2Ctrls:
         return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
 
     def find_by_v4l2_id(self, v4l2_id):
-        idx = find_idx(self.ctrls, lambda c: hasattr(c, '_id') and c._id == v4l2_id)
+        idx = find_idx(self.ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id == v4l2_id)
         if idx != None:
             return self.ctrls[idx]
         else:
@@ -1650,7 +1650,7 @@ class V4L2Listener(Thread):
         sub = v4l2_event_subscription()
         sub.type = V4L2_EVENT_CTRL
         for c in self.ctrls.ctrls:
-            sub.id = c._id
+            sub.id = c.v4l2_id
             ioctl(self.fd, VIDIOC_SUBSCRIBE_EVENT, sub)
 
     # thread start
