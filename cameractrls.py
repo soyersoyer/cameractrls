@@ -1623,7 +1623,10 @@ class V4L2Listener(Thread):
         sub.type = V4L2_EVENT_CTRL
         for c in self.ctrls.ctrls:
             sub.id = c.v4l2_id
-            ioctl(self.fd, VIDIOC_SUBSCRIBE_EVENT, sub)
+            try:
+                ioctl(self.fd, VIDIOC_SUBSCRIBE_EVENT, sub)
+            except Exception as e:
+                self.err_cb(collect_warning(f'VIDIOC_SUBSCRIBE_EVENT failed: {e}', []))
 
     # thread start
     def run(self):
