@@ -1127,6 +1127,73 @@ class KiyoProCtrls:
     def get_ctrls(self):
         return self.ctrls
 
+KIYO_PRO_ULTRA_NR_2D_OFF = b'\xc0\x0e\x02\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_NR_2D_ON = b'\xc0\x0e\x02\x01\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_NR_3D_OFF = b'\xc0\x0e\x01\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_NR_3D_ON = b'\xc0\x0e\x01\x01\x00\x00\x00\x00'
+
+class KiyoProUltraCtrls:
+    KIYO_PRO_ULTRA_USB_ID = '1532:0e08'
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, UVC_EU1_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids == KiyoProUltraCtrls.KIYO_PRO_ULTRA_USB_ID
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            KiyoCtrl(
+                'kiyo_pro_ultra_nr_2d',
+                '2D Noise Reduction',
+                'menu',
+                'Kiyo Pro Ultra 2D Noise Reduction',
+                [
+                    KiyoMenu('off', 'Off', KIYO_PRO_ULTRA_NR_2D_OFF),
+                    KiyoMenu('on', 'On', KIYO_PRO_ULTRA_NR_2D_ON),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_nr_3d',
+                '3D Noise Reduction',
+                'menu',
+                'Kiyo Pro Ultra 3D Noise Reduction',
+                [
+                    KiyoMenu('off', 'Off', KIYO_PRO_ULTRA_NR_3D_OFF),
+                    KiyoMenu('on', 'On', KIYO_PRO_ULTRA_NR_3D_ON),
+                ]
+            ),
+        ]
+
+    def setup_ctrls(self, params, errs=[]):
+        if not self.supported():
+            return
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl == None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu == None:
+                collect_warning(f'KiyoProUltraCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+            ctrl.value = menu.text_id
+
+            if menu._before:
+                query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu._before))
+
+            query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu.value))
+
+    def get_ctrls(self):
+        return self.ctrls
+
 # Logitech peripheral GUID ffe52d21-8030-4e2c-82d9-f587d00540bd
 LOGITECH_PERIPHERAL_GUID = b'\x21\x2d\xe5\xff\x30\x80\x2c\x4e\x82\xd9\xf5\x87\xd0\x05\x40\xbd'
 
@@ -1994,6 +2061,7 @@ class CameraCtrls:
             V4L2Ctrls(device, fd),
             V4L2FmtCtrls(device, fd),
             KiyoProCtrls(device, fd),
+            KiyoProUltraCtrls(device, fd),
             LogitechCtrls(device, fd),
             SystemdSaver(self),
         ]
@@ -2129,6 +2197,7 @@ class CameraCtrls:
                 CtrlCategory('Power Line', pop_list_by_ids(ctrls, [V4L2_CID_POWER_LINE_FREQUENCY])),
                 CtrlCategory('Privacy', pop_list_by_ids(ctrls, [V4L2_CID_PRIVACY])),
                 CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
+                CtrlCategory('Processing', pop_list_by_text_ids(ctrls, ['kiyo_pro_ultra_nr_'])),
             ]),
             CtrlPage('Compression', [
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
