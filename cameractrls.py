@@ -1030,8 +1030,13 @@ class BaseCtrlMenu:
         self.value = value
 
 class KiyoCtrl(BaseCtrl):
-    def __init__(self, text_id, name, type, tooltip, menu, ):
-        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
+    def __init__(self, text_id, name, type, tooltip, menu, value=None, default=None, scale_class=None):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu, value=value, default=default, scale_class=scale_class)
+
+class KiyoIntCtrl(BaseCtrl):
+    def __init__(self, text_id, name, type, tooltip, buf_fun, value, default, min, max, step=None, format_value=None, scale_class=None):
+        super().__init__(text_id, name, type, value=value, default=default, min=min, max=max, step=step, tooltip=tooltip, format_value=format_value, scale_class=scale_class)
+        self.buf_fun = buf_fun
 
 class KiyoMenu(BaseCtrlMenu):
     def __init__(self, text_id, name, value, before = None):
@@ -1126,6 +1131,253 @@ class KiyoProCtrls:
                 query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu._before))
 
             query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu.value))
+
+    def get_ctrls(self):
+        return self.ctrls
+
+KIYO_PRO_ULTRA_NR_2D_OFF = b'\xc0\x0e\x02\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_NR_2D_ON =  b'\xc0\x0e\x02\x01\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_NR_3D_OFF = b'\xc0\x0e\x01\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_NR_3D_ON =  b'\xc0\x0e\x01\x01\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_EXP_METERING_AVERAGE = b'\xc0\x0e\x04\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_EXP_METERING_CENTER =  b'\xc0\x0e\x04\x01\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_EXP_METERING_FACE =    b'\xc0\x0e\x04\x05\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_EXP_COMP_BASE = b'\xc0\x0e\x05\x00\x00\x00\x00\x00'
+#    -3.0: c00e050000000000
+#    -2.8: c00e050200000000
+#    -2.6: c00e050400000000
+#    ...
+#    0.0: c00e051e00000000
+#    ...
+#    +3.0: c00e053c00000000
+def kiyo_pro_ultra_exp_comp_value(v):
+    assert(v >= -30 and v <= 30)
+    ret = bytearray(KIYO_PRO_ULTRA_EXP_COMP_BASE)
+    ret[3] = v+30
+    return bytes(ret)
+
+KIYO_PRO_ULTRA_EXP_SHUTTER_BASE = b'\xc0\x09\x05\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_EXP_SHUTTER_DIVS = [
+    2000, 1600, 1280, 1000, 800, 640, 500, 400, 320, 250, 200, 160, 120, 100,
+    90, 75, 60, 50, 48, 40, 33, 30, 25, 24, 20, 17, 16, 15, 13, 12, 11, 10
+]
+#If you remove the trailing "00" byte, the last three bytes give you the shutter speed in µs.
+#Example: 0x01f4 = 500 µs = 1/2000 s
+#
+#    1/2000 s: c00905000001f400
+#    1/1600 s: c009050000027100
+#    1/1280 s: c009050000030d00
+#    1/1000 s: c00905000003e800
+#    1/800 s: c00905000004e200
+#    1/640 s: c009050000061a00
+#    500, 400, 320, 250, 200, 160, 120, 100, 90, 75, 60, 50, 40, 33, 30, 25, 24, 20, 17, 16, 15, 13, 12, 11
+#    1/10 s: c00905000186a000
+def kiyo_pro_ultra_exp_shutter_value(v):
+    assert(v >= 500 and v <= 100000)
+    ret = bytearray(KIYO_PRO_ULTRA_EXP_SHUTTER_BASE)
+    ret[4] = (v & 0xFF0000) >> 16
+    ret[5] = (v & 0xFF00) >> 8
+    ret[6] = v & 0xFF
+    return bytes(ret)
+
+KIYO_PRO_ULTRA_ISO_100 =  b'\xc0\x09\x01\x01\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_ISO_200 =  b'\xc0\x09\x01\x02\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_ISO_400 =  b'\xc0\x09\x01\x03\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_ISO_800 =  b'\xc0\x09\x01\x04\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_ISO_1600 = b'\xc0\x09\x01\x05\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_ISO_3200 = b'\xc0\x09\x01\x06\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_ISO_6400 = b'\xc0\x09\x01\x07\x00\x00\x00\x00'
+
+
+KIYO_PRO_ULTRA_AF_MODE_STANDARD = b'\xc0\x0a\x01\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_AF_MODE_FACE =     b'\xc0\x0a\x01\x01\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_AF_TRACKING_PASSIVE =    b'\xff\x06\x01\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_AF_TRACKING_RESPONSIVE = b'\xff\x06\x00\x00\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_AF_LIGHTING_STANDARD = b'\xc0\x0a\x01\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_AF_LIGHTING_STYLIZED = b'\xc0\x0a\x01\x00\x00\x00\x00\x01'
+
+KIYO_PRO_ULTRA_MIRROR_OFF = b'\xc0\x0e\x03\x00\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_MIRROR_ON =  b'\xc0\x0e\x03\x01\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_LENS_DIST_COMP_OFF = b'\xff\x01\x00\x03\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_LENS_DIST_COMP_ON =  b'\xff\x01\x01\x03\x00\x00\x00\x00'
+
+KIYO_PRO_ULTRA_SAVE = b'\xc0\x03\xa8\x00\x00\x00\x00\x00'
+
+class KiyoProUltraCtrls:
+    KIYO_PRO_ULTRA_USB_ID = '1532:0e08'
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, UVC_EU1_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids == KiyoProUltraCtrls.KIYO_PRO_ULTRA_USB_ID
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            KiyoCtrl(
+                'kiyo_pro_ultra_nr_2d',
+                '2D Noise Reduction',
+                'menu',
+                'Kiyo Pro Ultra 2D Noise Reduction',
+                [
+                    KiyoMenu('off', 'Off', KIYO_PRO_ULTRA_NR_2D_OFF),
+                    KiyoMenu('on', 'On', KIYO_PRO_ULTRA_NR_2D_ON),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_nr_3d',
+                '3D Noise Reduction',
+                'menu',
+                'Kiyo Pro Ultra 3D Noise Reduction',
+                [
+                    KiyoMenu('off', 'Off', KIYO_PRO_ULTRA_NR_3D_OFF),
+                    KiyoMenu('on', 'On', KIYO_PRO_ULTRA_NR_3D_ON),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_af_mode',
+                'AF Mode',
+                'menu',
+                'Kiyo Pro Ultra Auto Focus Mode',
+                [
+                    KiyoMenu('standard', 'Standard', KIYO_PRO_ULTRA_AF_MODE_STANDARD),
+                    KiyoMenu('face', 'Face', KIYO_PRO_ULTRA_AF_MODE_FACE),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_af_tracking',
+                'AF Tracking',
+                'menu',
+                'Kiyo Pro Ultra Auto Focus Tracking',
+                [
+                    KiyoMenu('passive', 'Passive', KIYO_PRO_ULTRA_AF_TRACKING_PASSIVE),
+                    KiyoMenu('responsive', 'Responsive', KIYO_PRO_ULTRA_AF_TRACKING_RESPONSIVE),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_af_lighting',
+                'AF Lighting',
+                'menu',
+                'Kiyo Pro Ultra Auto Focus Lighting',
+                [
+                    KiyoMenu('standard', 'Standard', KIYO_PRO_ULTRA_AF_LIGHTING_STANDARD),
+                    KiyoMenu('stylized', 'Stylized', KIYO_PRO_ULTRA_AF_LIGHTING_STYLIZED),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_exp_metering',
+                'AE Metering',
+                'menu',
+                'Kiyo Pro Ultra Auto Exposure Metering',
+                [
+                    KiyoMenu('average', 'Average', KIYO_PRO_ULTRA_EXP_METERING_AVERAGE),
+                    KiyoMenu('center', 'Center', KIYO_PRO_ULTRA_EXP_METERING_CENTER),
+                    KiyoMenu('face', 'Face', KIYO_PRO_ULTRA_EXP_METERING_FACE),
+                ]
+            ),
+            KiyoIntCtrl(
+                'kiyo_pro_ultra_exp_comp',
+                'AE Compensation',
+                'integer',
+                'Kiyo Pro Ultra Auto Exposure Compensation',
+                buf_fun=kiyo_pro_ultra_exp_comp_value,
+                value=0, default=0, min=-30, max=30, step=2,
+                format_value=lambda s,v: f'{v/10:+.1f}',
+                scale_class='dark-to-light',
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_exp_shutter',
+                'Shutter Time',
+                'menu',
+                'Kiyo Pro Ultra Shutter Time',
+                [
+                    KiyoMenu(f'1/{d}s', f'1/{d} s', kiyo_pro_ultra_exp_shutter_value(1000000//d)) for d in KIYO_PRO_ULTRA_EXP_SHUTTER_DIVS
+                ],
+                value='1/60s',
+                default='1/60s',
+                scale_class='dark-to-light',
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_iso',
+                'ISO',
+                'menu',
+                'Kiyo Pro Ultra ISO',
+                [
+                    KiyoMenu('100', '100', KIYO_PRO_ULTRA_ISO_100),
+                    KiyoMenu('200', '200', KIYO_PRO_ULTRA_ISO_200),
+                    KiyoMenu('400', '400', KIYO_PRO_ULTRA_ISO_400),
+                    KiyoMenu('800', '800', KIYO_PRO_ULTRA_ISO_800),
+                    KiyoMenu('1600', '1600', KIYO_PRO_ULTRA_ISO_1600),
+                    KiyoMenu('3200', '3200', KIYO_PRO_ULTRA_ISO_3200),
+                    KiyoMenu('6400', '6400', KIYO_PRO_ULTRA_ISO_6400),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_mirror',
+                'Mirror Image',
+                'menu',
+                'Mirror Image',
+                [
+                    KiyoMenu('off', 'Off', KIYO_PRO_ULTRA_MIRROR_OFF),
+                    KiyoMenu('on', 'On', KIYO_PRO_ULTRA_MIRROR_ON),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_lens_dist_comp',
+                'Lens Distortion Compensation',
+                'menu',
+                'Lens Distortion Compensation',
+                [
+                    KiyoMenu('off', 'Off', KIYO_PRO_ULTRA_LENS_DIST_COMP_OFF),
+                    KiyoMenu('on', 'On', KIYO_PRO_ULTRA_LENS_DIST_COMP_ON),
+                ]
+            ),
+            KiyoCtrl(
+                'kiyo_pro_ultra_save',
+                'Save settings to Kiyo Pro Ultra',
+                'button',
+                'Save the settings into the NVRAM of Kiyo Pro Ultra',
+                [
+                    KiyoMenu('save', 'Save', KIYO_PRO_ULTRA_SAVE),
+                ]
+            ),
+        ]
+
+    def setup_ctrls(self, params, errs=[]):
+        if not self.supported():
+            return
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl == None:
+                continue
+            if ctrl.type == 'integer':
+                ctrl.value = int(v)
+                query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(ctrl.buf_fun(ctrl.value)))
+            elif ctrl.type == 'menu' or ctrl.type == 'button':
+                menu = find_by_text_id(ctrl.menu, v)
+                if menu == None:
+                    collect_warning(f'KiyoProUltraCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                    continue
+                ctrl.value = menu.text_id
+
+                if menu._before:
+                    query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu._before))
+
+                query_xu_control(self.fd, self.unit_id, EU1_SET_ISP, UVC_SET_CUR, to_buf(menu.value))
 
     def get_ctrls(self):
         return self.ctrls
@@ -2128,6 +2380,7 @@ class CameraCtrls:
             self.v4l_ctrls,
             V4L2FmtCtrls(device, fd),
             KiyoProCtrls(device, fd),
+            KiyoProUltraCtrls(device, fd),
             LogitechCtrls(device, fd),
             SystemdSaver(self),
             PresetCtrls(self),
@@ -2205,30 +2458,36 @@ class CameraCtrls:
                         V4L2_CID_AUTO_FOCUS_RANGE,
                         V4L2_CID_AUTO_FOCUS_STATUS,
                     ]) +
-                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode', 'logitech_motor_focus'])
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode', 'logitech_motor_focus', 'kiyo_pro_ultra_af_'])
                 ),
             ]),
             CtrlPage('Exposure', [
-                CtrlCategory('Exposure', pop_list_by_ids(ctrls, [
-                    V4L2_CID_EXPOSURE_AUTO,
-                    V4L2_CID_EXPOSURE_ABSOLUTE,
-                    V4L2_CID_EXPOSURE_AUTO_PRIORITY,
-                    V4L2_CID_AUTOGAIN,
-                    V4L2_CID_EXPOSURE,
-                    V4L2_CID_EXPOSURE_METERING,
-                    V4L2_CID_AUTO_EXPOSURE_BIAS,
-                    V4L2_CID_GAIN,
-                    V4L2_CID_CHROMA_AGC,
-                    V4L2_CID_CHROMA_GAIN,
-                    V4L2_CID_IRIS_ABSOLUTE,
-                    V4L2_CID_IRIS_RELATIVE,
-                    V4L2_CID_IMAGE_STABILIZATION,
-                    V4L2_CID_SCENE_MODE,
-                    V4L2_CID_3A_LOCK,
-                    V4L2_CID_CAMERA_ORIENTATION,
-                    V4L2_CID_CAMERA_SENSOR_ROTATION,
-                ])),
-                CtrlCategory('ISO', pop_list_by_ids(ctrls, [V4L2_CID_ISO_SENSITIVITY, V4L2_CID_ISO_SENSITIVITY_AUTO])),
+                CtrlCategory('Exposure',
+                    pop_list_by_ids(ctrls, [
+                        V4L2_CID_EXPOSURE_AUTO,
+                        V4L2_CID_EXPOSURE_ABSOLUTE,
+                        V4L2_CID_EXPOSURE_AUTO_PRIORITY,
+                        V4L2_CID_AUTOGAIN,
+                        V4L2_CID_EXPOSURE,
+                        V4L2_CID_EXPOSURE_METERING,
+                        V4L2_CID_AUTO_EXPOSURE_BIAS,
+                        V4L2_CID_GAIN,
+                        V4L2_CID_CHROMA_AGC,
+                        V4L2_CID_CHROMA_GAIN,
+                        V4L2_CID_IRIS_ABSOLUTE,
+                        V4L2_CID_IRIS_RELATIVE,
+                        V4L2_CID_IMAGE_STABILIZATION,
+                        V4L2_CID_SCENE_MODE,
+                        V4L2_CID_3A_LOCK,
+                        V4L2_CID_CAMERA_ORIENTATION,
+                        V4L2_CID_CAMERA_SENSOR_ROTATION,
+                    ]) +
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_ultra_exp_'])
+                ),
+                CtrlCategory('ISO',
+                    pop_list_by_ids(ctrls, [V4L2_CID_ISO_SENSITIVITY, V4L2_CID_ISO_SENSITIVITY_AUTO]) +
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_ultra_iso'])
+                ),
                 CtrlCategory('Dynamic Range',
                     pop_list_by_ids(ctrls, [
                         V4L2_CID_BACKLIGHT_COMPENSATION,
@@ -2265,7 +2524,11 @@ class CameraCtrls:
             CtrlPage('Advanced', [
                 CtrlCategory('Power Line', pop_list_by_ids(ctrls, [V4L2_CID_POWER_LINE_FREQUENCY])),
                 CtrlCategory('Privacy', pop_list_by_ids(ctrls, [V4L2_CID_PRIVACY])),
-                CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
+                CtrlCategory('Rotate/Flip',
+                    pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP]) +
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_ultra_mirror'])
+                ),
+                CtrlCategory('Processing', pop_list_by_text_ids(ctrls, ['kiyo_pro_ultra_nr_', 'kiyo_pro_ultra_lens_dist_comp'])),
             ]),
             CtrlPage('Compression', [
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
@@ -2276,7 +2539,7 @@ class CameraCtrls:
                 CtrlCategory('Info', pop_list_by_text_ids(ctrls, ['card', 'driver', 'path', 'real_path'])),
             ]),
             CtrlPage('Settings', [
-                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save'])),
+                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save', 'kiyo_pro_ultra_save'])),
             ], target='footer')
         ]
         pages[3].categories += CtrlCategory('Other', ctrls), #the rest
