@@ -15,6 +15,11 @@ v4ldirs = {
 }
 
 
+def hexdump2bytes(hd: str) -> bytes:
+    assert len(hd) % 2 == 0
+    return int(hd, 16).to_bytes(len(hd)//2)
+
+
 class Device:
     def __init__(self, name, path, real_path, driver):
         self.name = name
@@ -801,32 +806,32 @@ EU1_SET_ISP = 0x01
 EU1_GET_ISP_RESULT = 0x02
 
 # UVC EU1 extension GUID 23e49ed0-1178-4f31-ae52-d2fb8a8d3b48
-UVC_EU1_GUID = b'\xd0\x9e\xe4\x23\x78\x11\x31\x4f\xae\x52\xd2\xfb\x8a\x8d\x3b\x48'
+UVC_EU1_GUID = hexdump2bytes('d09ee4237811314fae52d2fb8a8d3b48')
 
 # Razer Kiyo Pro specific registers and values
 
-AF_RESPONSIVE = b'\xff\x06\x00\x00\x00\x00\x00\x00'
-AF_PASSIVE =    b'\xff\x06\x01\x00\x00\x00\x00\x00'
+AF_RESPONSIVE = hexdump2bytes('ff06000000000000')
+AF_PASSIVE =    hexdump2bytes('ff06010000000000')
 
-HDR_OFF =       b'\xff\x02\x00\x00\x00\x00\x00\x00'
-HDR_ON =        b'\xff\x02\x01\x00\x00\x00\x00\x00'
+HDR_OFF =       hexdump2bytes('ff02000000000000')
+HDR_ON =        hexdump2bytes('ff02010000000000')
 
-HDR_DARK =      b'\xff\x07\x00\x00\x00\x00\x00\x00'
-HDR_BRIGHT =    b'\xff\x07\x01\x00\x00\x00\x00\x00'
+HDR_DARK =      hexdump2bytes('ff07000000000000')
+HDR_BRIGHT =    hexdump2bytes('ff07010000000000')
 
-FOV_WIDE =       b'\xff\x01\x00\x03\x00\x00\x00\x00'
-FOV_MEDIUM_PRE = b'\xff\x01\x00\x03\x01\x00\x00\x00'
-FOV_MEDIUM =     b'\xff\x01\x01\x03\x01\x00\x00\x00'
-FOV_NARROW_PRE = b'\xff\x01\x00\x03\x02\x00\x00\x00'
-FOV_NARROW =     b'\xff\x01\x01\x03\x02\x00\x00\x00'
+FOV_WIDE =       hexdump2bytes('ff01000300000000')
+FOV_MEDIUM_PRE = hexdump2bytes('ff01000301000000')
+FOV_MEDIUM =     hexdump2bytes('ff01010301000000')
+FOV_NARROW_PRE = hexdump2bytes('ff01000302000000')
+FOV_NARROW =     hexdump2bytes('ff01010302000000')
 
 # Unknown yet, the synapse sends it in start
-UNKNOWN =       b'\xff\x04\x00\x00\x00\x00\x00\x00'
+UNKNOWN =       hexdump2bytes('ff04000000000000')
 
 # save previous values to the camera
-SAVE =          b'\xc0\x03\xa8\x00\x00\x00\x00\x00'
+SAVE =          hexdump2bytes('c003a80000000000')
 
-LOAD =          b'\x00\x00\x00\x00\x00\x00\x00\x00'
+LOAD =          hexdump2bytes('0000000000000000')
 
 def to_buf(b):
     return ctypes.create_string_buffer(b)
@@ -1127,10 +1132,10 @@ class KiyoProCtrls:
     def get_ctrls(self):
         return self.ctrls
 
-KIYO_PRO_ULTRA_NR_2D_OFF = b'\xc0\x0e\x02\x00\x00\x00\x00\x00'
-KIYO_PRO_ULTRA_NR_2D_ON = b'\xc0\x0e\x02\x01\x00\x00\x00\x00'
-KIYO_PRO_ULTRA_NR_3D_OFF = b'\xc0\x0e\x01\x00\x00\x00\x00\x00'
-KIYO_PRO_ULTRA_NR_3D_ON = b'\xc0\x0e\x01\x01\x00\x00\x00\x00'
+KIYO_PRO_ULTRA_NR_2D_OFF = hexdump2bytes('c00e020000000000')
+KIYO_PRO_ULTRA_NR_2D_ON = hexdump2bytes('c00e020100000000')
+KIYO_PRO_ULTRA_NR_3D_OFF = hexdump2bytes('c00e010000000000')
+KIYO_PRO_ULTRA_NR_3D_ON = hexdump2bytes('c00e010100000000')
 
 class KiyoProUltraCtrls:
     KIYO_PRO_ULTRA_USB_ID = '1532:0e08'
@@ -1195,29 +1200,28 @@ class KiyoProUltraCtrls:
         return self.ctrls
 
 # Logitech peripheral GUID ffe52d21-8030-4e2c-82d9-f587d00540bd
-LOGITECH_PERIPHERAL_GUID = b'\x21\x2d\xe5\xff\x30\x80\x2c\x4e\x82\xd9\xf5\x87\xd0\x05\x40\xbd'
+LOGITECH_PERIPHERAL_GUID = hexdump2bytes('212de5ff30802c4e82d9f587d00540bd')
 
 LOGITECH_PERIPHERAL_PANTILT_REL_SEL = 0x01
 LOGITECH_PERIPHERAL_PANTILT_REL_LEN = 4
 
 LOGITECH_PERIPHERAL_PANTILT_REL_OFFSET = 0
-LOGITECH_PERIPHERAL_PANTILT_REL_LEFT1 =  b'\x00\x01\x00\x00'
-LOGITECH_PERIPHERAL_PANTILT_REL_LEFT8 =  b'\x00\x08\x00\x00'
-LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT1 = b'\xff\xfe\x00\x00'
-LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT8 = b'\xff\xf7\x00\x00'
-LOGITECH_PERIPHERAL_PANTILT_REL_DOWN1 =  b'\x00\x00\x00\x01'
-LOGITECH_PERIPHERAL_PANTILT_REL_DOWN3 =  b'\x00\x00\x00\x03'
-LOGITECH_PERIPHERAL_PANTILT_REL_UP1 =    b'\x00\x00\xff\xfe'
-LOGITECH_PERIPHERAL_PANTILT_REL_UP3 =    b'\x00\x00\xff\xfc'
-
+LOGITECH_PERIPHERAL_PANTILT_REL_LEFT1 =  hexdump2bytes('00010000')
+LOGITECH_PERIPHERAL_PANTILT_REL_LEFT8 =  hexdump2bytes('00080000')
+LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT1 = hexdump2bytes('fffe0000')
+LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT8 = hexdump2bytes('fff70000')
+LOGITECH_PERIPHERAL_PANTILT_REL_DOWN1 =  hexdump2bytes('00000001')
+LOGITECH_PERIPHERAL_PANTILT_REL_DOWN3 =  hexdump2bytes('00000003')
+LOGITECH_PERIPHERAL_PANTILT_REL_UP1 =    hexdump2bytes('0000fffe')
+LOGITECH_PERIPHERAL_PANTILT_REL_UP3 =    hexdump2bytes('0000fffc')
 
 LOGITECH_PERIPHERAL_PANTILT_RESET_SEL = 0x02
 LOGITECH_PERIPHERAL_PANTILT_RESET_LEN = 1
 
 LOGITECH_PERIPHERAL_PANTILT_RESET_OFFSET = 0
-LOGITECH_PERIPHERAL_PANTILT_RESET_PAN = b'\x01'
-LOGITECH_PERIPHERAL_PANTILT_RESET_TILT = b'\x02'
-LOGITECH_PERIPHERAL_PANTILT_RESET_BOTH = b'\x03'
+LOGITECH_PERIPHERAL_PANTILT_RESET_PAN = 0x01
+LOGITECH_PERIPHERAL_PANTILT_RESET_TILT = 0x02
+LOGITECH_PERIPHERAL_PANTILT_RESET_BOTH = 0x03
 
 
 LOGITECH_PERIPHERAL_LED1_SEL = 0x09
@@ -1235,7 +1239,7 @@ LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC = 'The frequency value only influences t
 
 
 # Logitech user hw control v1 GUID 63610682-5070-49ab-b8cc-b3855e8d221f
-LOGITECH_USER_HW_CONTROL_V1_GUID = b'\x82\x06\x61\x63\x70\x50\xab\x49\xb8\xcc\xb3\x85\x5e\x8d\x22\x1f'
+LOGITECH_USER_HW_CONTROL_V1_GUID = hexdump2bytes('820661637050ab49b8ccb3855e8d221f')
 
 LOGITECH_HW_CONTROL_LED1_SEL = 0x01
 LOGITECH_HW_CONTROL_LED1_LEN = 3
@@ -1249,7 +1253,7 @@ LOGITECH_HW_CONTROL_LED1_MODE_AUTO =  0x03
 LOGITECH_HW_CONTROL_LED1_FREQUENCY_OFFSET = 2
 
 # Logitech motor control v1 GUID 63610682-5070-49ab-b8cc-b3855e8d2256
-LOGITECH_MOTOR_CONTROL_V1_GUID = b'\x82\x06\x61\x63\x70\x50\xab\x49\xb8\xcc\xb3\x85\x5e\x8d\x22\x56'
+LOGITECH_MOTOR_CONTROL_V1_GUID = hexdump2bytes('820661637050ab49b8ccb3855e8d2256')
 
 LOGITECH_MOTOR_CONTROL_FOCUS_DEV_MATCH = [
     '046d:0809', # Webcam Pro 9000
@@ -1264,7 +1268,7 @@ LOGITECH_MOTOR_CONTROL_FOCUS_OFFSET = 0
 LOGITECH_MOTOR_CONTROL_FOCUS_DESC = 'Allows the control of focus motor movements for camera models that support mechanical focus. Bits 0 to 7 allow selection of the desired lens position. There are no physical units, instead, the focus range is spread over 256 logical units with 0 representing infinity focus and 255 being macro focus.'
 
 # Logitech BRIO GUID 49e40215-f434-47fe-b158-0e885023e51b
-LOGITECH_BRIO_GUID = b'\x15\x02\xe4\x49\x34\xf4\xfe\x47\xb1\x58\x0e\x88\x50\x23\xe5\x1b'
+LOGITECH_BRIO_GUID = hexdump2bytes('1502e44934f4fe47b1580e885023e51b')
 
 LOGITECH_BRIO_FOV_DEV_MATCH = [
     '046d:085e', # Brio
@@ -1683,9 +1687,9 @@ class V4L2Listener(Thread):
         self.ctrls = ctrls
         self.cb = cb
         self.err_cb = err_cb
-        self.epoll = select.epoll() 
+        self.epoll = select.epoll()
         self.epoll.register(self.fd, select.POLLPRI | select.POLLERR | select.POLLNVAL)
-    
+
         sub = v4l2_event_subscription()
         sub.type = V4L2_EVENT_CTRL
         for c in self.ctrls.ctrls:
