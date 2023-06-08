@@ -1502,7 +1502,7 @@ class V4L2Ctrls:
                 new_ctrl = v4l2_control(ctrl.v4l2_id, intvalue)
                 ioctl(self.fd, VIDIOC_S_CTRL, new_ctrl)
                 if new_ctrl.value != intvalue:
-                    collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} using {new_ctrl.value} instead of {intvalue}', errs)
+                    collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} using {new_ctrl.value}', errs)
                     continue
 
                 if ctrl.type == 'menu':
@@ -1647,6 +1647,7 @@ class V4L2Listener(Thread):
             ctrl.inactive = bool(event.ctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
             errs = []
             self.ctrls.set_ctrl_int_value(ctrl, int(event.ctrl.value), errs)
+            logging.info(f'VIDIOC_DQEVENT {ctrl.text_id}={ctrl.value} (pending: {event.pending})')
             if errs:
                 self.err_cb(errs)
                 continue
@@ -2025,6 +2026,7 @@ class CameraCtrls:
                     print()
 
     def setup_ctrls(self, params, errs=[]):
+        logging.info(f'CameraCtrls.setup_ctrls: {params}')
         for c in self.ctrls:
             c.setup_ctrls(params, errs)
         unknown_ctrls = list(set(params.keys()) - set([c.text_id for c in self.get_ctrls()]))
