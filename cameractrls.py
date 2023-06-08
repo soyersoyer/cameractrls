@@ -1483,8 +1483,15 @@ class V4L2Ctrls:
             if ctrl == None:
                 continue
             intvalue = 0
+            if v == 'default':
+                v = ctrl.default
             if ctrl.type == 'integer':
-                intvalue = int(v)
+                if str(v).endswith('%'):
+                    percent = float(str(v)[:-1])/100
+                    # use default value as 50%
+                    intvalue = round(ctrl.min+(ctrl.default-ctrl.min)*percent*2)
+                else:
+                    intvalue = int(v)
             elif ctrl.type == 'boolean':
                 intvalue = int(to_bool(v))
             elif ctrl.type == 'menu':
