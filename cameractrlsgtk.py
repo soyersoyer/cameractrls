@@ -292,7 +292,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(scale, False, False, 0)
-                        c.gui_value_set = adjustment.set_value
+                        c.gui_value_set = scale.set_value
                         c.gui_ctrls += [scale, refresh]
                         c.gui_default_btn = refresh
 
