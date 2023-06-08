@@ -1642,7 +1642,7 @@ class V4L2Listener(Thread):
                 ioctl(self.fd, VIDIOC_DQEVENT, event)
             except Exception as e:
                 self.err_cb(collect_warning(f'VIDIOC_DQEVENT failed: {e}', []))
-                continue
+                break
             ctrl = self.ctrls.find_by_v4l2_id(event.id)
             ctrl.inactive = bool(event.ctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
             errs = []
