@@ -309,15 +309,23 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         c.gui_default_btn = refresh
 
                     elif c.type == 'button':
-                        box = Gtk.ButtonBox(valign=Gtk.Align.CENTER)
-                        box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
+                        filtered_menu = [m for m in c.menu if m.value is not None]
+                        children_per_line = min(len(filtered_menu), 4)
+                        box = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True,
+                                        min_children_per_line=children_per_line, max_children_per_line=children_per_line,
+                                        selection_mode=Gtk.SelectionMode.NONE)
+                        refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                        ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(box, False, False, 0)
-                        for m in c.menu:
+                        for m in filtered_menu:
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
                             b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
                             box.add(b)
                             c.gui_ctrls += b
-                        c.gui_default_btn = None
+                        if c.default != None:
+                            refresh.connect('clicked', lambda e,c=c: self.update_ctrl(c, c.default))
+                        c.gui_ctrls += [refresh]
+                        c.gui_default_btn = refresh
 
                     elif c.type == 'info':
                         label = Gtk.Label(label=c.value, selectable=True, justify=Gtk.Justification.RIGHT,
@@ -418,15 +426,23 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
-            for gui_ctrl in c.gui_ctrls:
-                gui_ctrl.set_sensitive(not c.inactive)
-            if c.gui_default_btn != None:
-                c.gui_default_btn.set_opacity(0 if c.default == None or c.default == c.value else 1)
-                c.gui_default_btn.set_can_focus(0 if c.default == None or c.default == c.value else 1)
+            self.update_ctrl_state(c)
+
+    def update_ctrl_state(self, c):
+        for gui_ctrl in c.gui_ctrls:
+            gui_ctrl.set_sensitive(not c.inactive)
+        if c.gui_default_btn != None:
+            visible = not c.inactive and (
+                c.default != None and c.value != None and c.default != c.value or \
+                c.get_default != None and not c.get_default()
+            )
+            c.gui_default_btn.set_opacity(visible)
+            c.gui_default_btn.set_can_focus(visible)
 
     def update_ctrl_value(self, c):
         if c.gui_value_set:
             c.gui_value_set(c.value)
+        self.update_ctrl_state(c)
 
     def preserve_widget(self, widget):
         self.preserved_widget = widget

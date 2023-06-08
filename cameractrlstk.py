@@ -200,8 +200,11 @@ class CameraCtrlsGui:
             elif c.type == 'button':
                 buttonctrls = ttk.Frame(cframe)
                 buttonctrls.grid(row=row, column=1, sticky='NESW')
-                for column, m in enumerate(c.menu):
-                    ttk.Button(buttonctrls, text=m.name, style='Short.TButton', command=lambda c=c,m=m: self.update_ctrl(c, m.text_id)).grid(column=column, row=0, sticky='NESW', ipadx=10)
+                c.var = StringVar(buttonctrls, c.value)
+                c.var.trace_add('write', lambda v,a,b,c=c: self.update_ctrl(c, c.var.get()))
+                filtered_menu = [m for m in c.menu if m.value is not None]
+                for column, m in enumerate(filtered_menu):
+                    ttk.Button(buttonctrls, text=m.name, style='Short.TButton', command=lambda c=c,m=m: c.var.set(m.text_id)).grid(column=column%4, row=column//4, sticky='NESW')
                 c.gui_ctrls += buttonctrls.winfo_children()
 
             elif c.type == 'info':
@@ -248,21 +251,28 @@ class CameraCtrlsGui:
 
     def update_ctrls_state(self):
         for c in self.camera.get_ctrls():
-            for gui_ctrl in c.gui_ctrls:
-                state = ['disabled'] if c.inactive else ['!disabled']
-                gui_ctrl.state(state)
-            self.update_default_btn(c)
+            self.update_ctrl_state(c)
+
+    def update_ctrl_state(self, c):
+        for gui_ctrl in c.gui_ctrls:
+            state = ['disabled'] if c.inactive else ['!disabled']
+            gui_ctrl.state(state)
+        self.update_default_btn(c)
 
     def update_ctrl_value(self, c):
-        c.var.set(c.value)
+        if c.value is not None:
+            c.var.set(c.value)
+        self.update_ctrl_state(c)
 
     def update_default_btn(self, c):
         if c.default != None:
-            if c.default == c.value:
+            visible = c.value != None and c.default != c.value or \
+                c.get_default != None and not c.get_default()
+            if visible:
+                c.gui_default_btn.configure(text='«')
+            else:
                 c.gui_default_btn.configure(text='')
                 c.gui_default_btn.state(['disabled', '!focus'])
-            else:
-                c.gui_default_btn.configure(text='«')
 
     def start(self):
         self.window.mainloop()

@@ -1002,7 +1002,7 @@ def collect_warning(w, ws):
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
                 inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
-                zeroer = False, wbtemperature = False, kernel_id = None):
+                zeroer = False, wbtemperature = False, kernel_id = None, get_default = None):
         self.text_id = text_id
         self.kernel_id = kernel_id
         self.name = name
@@ -1019,6 +1019,7 @@ class BaseCtrl:
         self.tooltip = tooltip
         self.zeroer = zeroer
         self.wbtemperature = wbtemperature
+        self.get_default = get_default
 
 class BaseCtrlMenu:
     def __init__(self, text_id, name, value):
