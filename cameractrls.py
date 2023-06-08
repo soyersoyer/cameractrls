@@ -1991,8 +1991,9 @@ class CameraCtrls:
     def __init__(self, device, fd):
         self.device = device
         self.fd = fd
+        self.v4l_ctrls = V4L2Ctrls(device, fd)
         self.ctrls = [
-            V4L2Ctrls(device, fd),
+            self.v4l_ctrls,
             V4L2FmtCtrls(device, fd),
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
@@ -2154,7 +2155,7 @@ class CameraCtrls:
         return pages
 
     def subscribe_events(self, cb, err_cb):
-        return self.ctrls[0].subscribe_events(cb, err_cb)
+        return self.v4l_ctrls.subscribe_events(cb, err_cb)
 
 
 def usage():
