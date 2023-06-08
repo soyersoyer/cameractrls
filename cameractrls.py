@@ -1629,6 +1629,7 @@ class V4L2Listener(Thread):
     
         sub = v4l2_event_subscription()
         sub.type = V4L2_EVENT_CTRL
+        sub.flags = V4L2_EVENT_SUB_FL_ALLOW_FEEDBACK
         for c in self.ctrls.ctrls:
             sub.id = c.v4l2_id
             try:
@@ -1900,6 +1901,119 @@ def dn2str(dn):
     return f'{dn.denominator//dn.numerator}'
 
 
+class PresetMenu(BaseCtrlMenu):
+    def __init__(self, text_id, name, value, v4l_presets = None):
+        super().__init__(text_id, name, value)
+        self.v4l_presets = v4l_presets
+        self.presets = None
+
+def resolve_v4l_ids(v4l_ctrls, preset):
+    ret = {}
+    for k,v in preset.items():
+        c = v4l_ctrls.find_by_v4l2_id(k)
+        if c != None:
+            ret[c.text_id] = v
+    return ret
+
+class PresetCtrls:
+    def __init__(self, cam_ctrls):
+        self.ctrls = []
+        self.cam_ctrls = cam_ctrls
+        v4l_ctrls = cam_ctrls.v4l_ctrls
+
+        self.v4l_defaults = {
+            V4L2_CID_BRIGHTNESS: 'default',
+            V4L2_CID_SATURATION: 'default',
+            V4L2_CID_CONTRAST: 'default',
+            V4L2_CID_SHARPNESS: 'default',
+            V4L2_CID_AUTO_WHITE_BALANCE: 'default',
+        }
+        self.default_controls = [k for k in map(v4l_ctrls.find_by_v4l2_id, list(self.v4l_defaults)) if k != None]
+
+        self.defaults = resolve_v4l_ids(v4l_ctrls, self.v4l_defaults)
+
+        self.presets = [
+            PresetMenu('default', 'Default', None, {}),
+            PresetMenu('blossom', 'Blossom', 'blossom', {
+                V4L2_CID_AUTO_WHITE_BALANCE: 0,
+                V4L2_CID_WHITE_BALANCE_TEMPERATURE: 7500,
+                V4L2_CID_SATURATION: '40%',
+                V4L2_CID_SHARPNESS: '30%',
+            }),
+            PresetMenu('bright', 'Bright', 'bright', {
+                V4L2_CID_BRIGHTNESS: '71%',
+                V4L2_CID_CONTRAST: '59%',
+            }),
+            PresetMenu('film', 'Film', 'film', {
+                V4L2_CID_CONTRAST: '30%',
+                V4L2_CID_SATURATION: '70%',
+                V4L2_CID_SHARPNESS: '100%',
+            }),
+            PresetMenu('forest', 'Forest', 'forest', {
+                V4L2_CID_AUTO_WHITE_BALANCE: 0,
+                V4L2_CID_WHITE_BALANCE_TEMPERATURE: 2800,
+                V4L2_CID_BRIGHTNESS: '55%',
+                V4L2_CID_SATURATION: '20%',
+            }),
+            PresetMenu('glaze', 'Glaze', 'glaze', {
+                V4L2_CID_AUTO_WHITE_BALANCE: 0,
+                V4L2_CID_WHITE_BALANCE_TEMPERATURE: 2800,
+                V4L2_CID_CONTRAST: '60%',
+                V4L2_CID_SATURATION: '55%',
+                V4L2_CID_SHARPNESS: '60%',
+            }),
+            PresetMenu('gray', 'Gray', 'gray', {
+                V4L2_CID_SATURATION: '0%',
+            }),
+            PresetMenu('vibrant', 'Vibrant', 'vibrant', {
+                V4L2_CID_BRIGHTNESS: '47.5%',
+                V4L2_CID_CONTRAST: '57.25%',
+                V4L2_CID_SATURATION: '53.33%',
+            }),
+            PresetMenu('vivid', 'Vivid', 'vivid', {
+                V4L2_CID_AUTO_WHITE_BALANCE: 0,
+                V4L2_CID_WHITE_BALANCE_TEMPERATURE: 6400,
+                V4L2_CID_BRIGHTNESS: '65%',
+                V4L2_CID_CONTRAST: '75%',
+                V4L2_CID_SATURATION: '25%',
+                V4L2_CID_SHARPNESS: '60%',
+            }),
+        ]
+        for p in self.presets:
+            p.presets = resolve_v4l_ids(v4l_ctrls, p.v4l_presets)
+
+        self.presets = [p for p in self.presets if len(p.v4l_presets) == len(p.presets)]
+
+        # len([default]) == 1
+        if len(self.presets) > 1:
+            self.ctrls = [
+                BaseCtrl('color_preset', 'Preset', 'button',
+                    default = 'default',
+                    get_default = self.get_default,
+                    menu = self.presets,
+                    tooltip = 'Color preset',
+            )]
+
+    def get_default(self):
+        for c in self.default_controls:
+            if c.value != c.default and not c.inactive:
+                return False
+        return True
+
+    def get_ctrls(self):
+        return self.ctrls
+
+    def setup_ctrls(self, params, errs=[]):
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl == None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu == None:
+                collect_warning(f'PresetCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+
+            self.cam_ctrls.setup_ctrls({**self.defaults, **menu.presets}, errs)
 
 class SystemdSaver:
     def __init__(self, cam_ctrls):
@@ -2006,6 +2120,7 @@ class CameraCtrls:
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
             SystemdSaver(self),
+            PresetCtrls(self),
         ]
 
     def print_ctrls(self):
@@ -2113,6 +2228,7 @@ class CameraCtrls:
                 ),
             ]),
             CtrlPage('Color', [
+                CtrlCategory('Preset', pop_list_by_text_ids(ctrls, ['color_preset'])),
                 CtrlCategory('Balance', pop_list_by_ids(ctrls, [
                     V4L2_CID_AUTO_WHITE_BALANCE,
                     V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE,
