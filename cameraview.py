@@ -681,9 +681,8 @@ class SDLCameraWindow():
         event = self.new_image_event if self.cam.pixelformat != V4L2_PIX_FMT_GREY else self.new_grey_image_event
 
         if self.cam.pixelformat == V4L2_PIX_FMT_MJPEG or self.cam.pixelformat == V4L2_PIX_FMT_JPEG:
-            if tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, self.bytesperline, self.cam.height, TJPF_RGB, 0) != 0:
-                logging.warning(f'tj_decompress failed: {tj_get_error_str()}')
-                return
+            tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, self.bytesperline, self.cam.height, TJPF_RGB, 0)
+            # ignore decode errors, some cameras only send imperfect frames
             ptr = self.outbuffer
 
         event.user.data1 = ctypes.cast(ptr, ctypes.c_void_p)
