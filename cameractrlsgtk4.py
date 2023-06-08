@@ -179,7 +179,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.camera = CameraCtrls(device.path, self.fd)
         self.listener = self.camera.subscribe_events(
             lambda c: GLib.idle_add(self.update_ctrl_value, c),
-            lambda errs: GLib.idle_add(self.notify, errs),
+            lambda errs: GLib.idle_add(self.notify, '\n'.join(errs)),
         )
         self.device = device
         self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device.path))

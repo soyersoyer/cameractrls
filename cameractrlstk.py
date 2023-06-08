@@ -107,7 +107,7 @@ class CameraCtrlsGui:
         self.camera = CameraCtrls(device.path, self.fd)
         self.listener = self.camera.subscribe_events(
             lambda c: self.window.after_idle(self.update_ctrl_value, c),
-            lambda ws: self.window.after_idle(self.notify, ws),
+            lambda errs: self.window.after_idle(lambda errs=errs: messagebox.showwarning(message='\n'.join(errs)))
         )
         self.device = device
 
