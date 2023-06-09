@@ -15,6 +15,16 @@ class GStr(GObject.GObject):
     def __str__(self):
         return self.text
 
+class FormatScale(Gtk.Scale):
+    def __init__(self, format_value = None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.format_value = format_value
+
+    def do_format_value(self, v):
+        if self.format_value:
+            return self.format_value(self, v)
+        return f'{v:.0f}'
+
 class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, type_hint=Gdk.WindowTypeHint.DIALOG, **kwargs)
@@ -35,12 +45,20 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def init_window(self):
         css_provider = Gtk.CssProvider()
         css_provider.load_from_data(b'''
-        #white-balance-temperature trough {
+        .white-balance-temperature trough {
             background-image: linear-gradient(to right, 
                 #89F3FF, #AFF7FF, #DDFCFF, #FFF2AA, #FFDD27, #FFC500, #FFB000, #FF8D00, #FF7A00
             );
         }
-        #white-balance-temperature trough:disabled {
+        .white-balance-temperature trough:disabled {
+            background-blend-mode: color;
+        }
+        .dark-to-light trough {
+            background-image: linear-gradient(to right, 
+                #888888, #dddddd
+            );
+        }
+        .dark-to-light trough:disabled {
             background-blend-mode: color;
         }
         ''')
@@ -273,7 +291,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                     if c.type == 'integer':
                         adjustment = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=1)
                         adjustment.connect('value-changed', lambda a,c=c: self.update_ctrl(c, a.get_value()))
-                        scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL,
+                        scale = FormatScale(c.format_value, orientation=Gtk.Orientation.HORIZONTAL,
                             digits=0, has_origin=False, value_pos=Gtk.PositionType.LEFT, adjustment=adjustment, width_request=264)
                         if c.zeroer:
                             scale.connect('button-release-event', lambda sc, e: sc.set_value(0))
@@ -282,8 +300,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
                             scale.set_adjustment(adjustment_step)
-                        if c.wbtemperature:
-                            scale.set_name('white-balance-temperature')
+                        if c.scale_class:
+                            scale.get_style_context().add_class(c.scale_class)
 
                         if c.default != None:
                             scale.add_mark(value=c.default, position=Gtk.PositionType.BOTTOM, markup=None)

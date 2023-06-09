@@ -30,12 +30,20 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def init_window(self):
         css_provider = Gtk.CssProvider()
         css = '''
-        #white-balance-temperature trough {
+        .white-balance-temperature trough {
             background-image: linear-gradient(to right, 
                 #89F3FF, #AFF7FF, #DDFCFF, #FFF2AA, #FFDD27, #FFC500, #FFB000, #FF8D00, #FF7A00
             );
         }
-        #white-balance-temperature trough:disabled {
+        .white-balance-temperature trough:disabled {
+            background-blend-mode: color;
+        }
+        .dark-to-light trough {
+            background-image: linear-gradient(to right, 
+                #888888, #dddddd
+            );
+        }
+        .dark-to-light trough:disabled {
             background-blend-mode: color;
         }
         /* make page stackswitcher gtk3 size */
@@ -273,8 +281,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
                             scale.set_adjustment(adjustment_step)
-                        if c.wbtemperature:
-                            scale.set_name('white-balance-temperature')
+                        if c.scale_class:
+                            scale.add_css_class(c.scale_class)
+                        if c.format_value:
+                            scale.set_format_value_func(c.format_value)
 
                         if c.default != None:
                             scale.add_mark(value=c.default, position=Gtk.PositionType.BOTTOM, markup=None)
