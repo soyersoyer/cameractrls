@@ -1574,9 +1574,13 @@ class V4L2Ctrls:
 
                 if qctrl.id == V4L2_CID_WHITE_BALANCE_TEMPERATURE:
                     v4l2ctrl.scale_class = 'white-balance-temperature'
-                    v4l2ctrl.format_value=lambda s,v: f'{v:.0f} K'
+                    v4l2ctrl.format_value = lambda s,v: f'{v:.0f} K'
 
-                if qctrl.id == V4L2_CID_EXPOSURE_ABSOLUTE or qctrl.id == V4L2_CID_GAIN:
+                if qctrl.id == V4L2_CID_EXPOSURE_ABSOLUTE:
+                    v4l2ctrl.scale_class = 'dark-to-light'
+                    v4l2ctrl.format_value = lambda s,v: f'{v:.0f}00 µs'
+
+                if qctrl.id == V4L2_CID_GAIN:
                     v4l2ctrl.scale_class = 'dark-to-light'
 
                 if qctrl.type in [V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
