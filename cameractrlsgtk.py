@@ -381,7 +381,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             c.gui_value_set = lambda ctext, c=c: find_by_text_id(c.menu, ctext).gui_rb.set_active(True)
                             c.gui_ctrls += [m.gui_rb for m in c.menu] + [refresh]
                             c.gui_default_btn = refresh
-                        else:
+                        elif len(c.menu) < 10:
                             wb_cb = Gtk.ComboBoxText(valign=Gtk.Align.CENTER)
                             for m in c.menu:
                                 wb_cb.append_text(m.name)
@@ -408,6 +408,25 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             ctrl_box.pack_end(wb_cb, False, False, 0)
                             c.gui_value_set = lambda ctext, c=c, wb_cb=wb_cb: wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == ctext))
                             c.gui_ctrls += [wb_cb, refresh]
+                            c.gui_default_btn = refresh
+                        else:
+                            format_value = lambda s, v, c=c: c.menu[int(v)].name
+                            adjustment = Gtk.Adjustment(lower=0, upper=len(c.menu)-1, value=find_idx(c.menu, lambda m: m.text_id == c.value), step_increment=1)
+                            adjustment.connect('value-changed', lambda a,c=c: self.update_ctrl(c, c.menu[int(a.get_value())].text_id))
+                            scale = FormatScale(format_value, orientation=Gtk.Orientation.HORIZONTAL,
+                                digits=0, has_origin=False, value_pos=Gtk.PositionType.LEFT, adjustment=adjustment, width_request=264)
+
+                            if c.scale_class:
+                                scale.get_style_context().add_class(c.scale_class)
+
+                            if c.default != None:
+                                scale.add_mark(value=find_idx(c.menu, lambda m:m.text_id == c.default), position=Gtk.PositionType.BOTTOM, markup=None)
+                            refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                            refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(find_idx(c.menu, lambda m: m.text_id == c.default)))
+                            ctrl_box.pack_start(refresh, False, False, 0)
+                            ctrl_box.pack_end(scale, False, False, 0)
+                            c.gui_value_set = lambda ctext, c=c, scale=scale: scale.set_value(find_idx(c.menu, lambda m: m.text_id == ctext))
+                            c.gui_ctrls += [scale, refresh]
                             c.gui_default_btn = refresh
 
         self.update_ctrls_state()
