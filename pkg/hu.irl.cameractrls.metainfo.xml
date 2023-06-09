@@ -41,6 +41,19 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.5" date="2023-06-10">
+            <description>
+                <ul>
+                    <li>Color presets</li>
+                    <li>Listen for controls changes from other processes</li>
+                    <li>'default' or percent values can also be set</li>
+                    <li>Improved error reporting</li>
+                    <li>Exposure time now in µs in the GTK GUIs</li>
+                    <li>Exposure time, Gain scales has dark-to-light background</li>
+                    <li>Removed header buttons border</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.4" date="2023-05-21">
             <description>
                 <ul>

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.5] - 2023-06-10
+
+### Added
+ - Color presets
+ - Listen for controls changes from other processes
+ - 'default' or percent values can also be set
+ - Improved error reporting
+ - Exposure time now in µs in the GTK GUIs
+ - Exposure time, Gain scales has dark-to-light background
+
+### Changed
+ - Removed header buttons border
+
 ## [0.5.4] - 2023-05-21
 
 ### Changed
