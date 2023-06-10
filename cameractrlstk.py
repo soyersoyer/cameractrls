@@ -31,7 +31,7 @@ class CameraCtrlsGui:
     def init_window(self):
         self.window = Tk(className='hu.irl.cameractrls')
         self.window.title('Cameractrls')
-        self.window.bind('<Control-q>', lambda e: self.window.quit())
+        self.window.bind('<Control-q>', lambda e: self.close_window())
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
 
         s = ttk.Style()

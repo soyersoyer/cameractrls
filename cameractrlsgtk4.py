@@ -488,7 +488,7 @@ class CameraCtrlsApp(Gtk.Application):
         about.present()
 
     def on_quit(self, action, param):
-        self.quit()
+        self.window.close()
 
     def check_preview_open(self, p):
         # if process returned
