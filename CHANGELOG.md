@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.6] - 2023-06-15
+
+### Fixed
+ - Fixed ctrl+q quit by closing the camera before
+
 ## [0.5.5] - 2023-06-10
 
 ### Added

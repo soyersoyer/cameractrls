@@ -41,6 +41,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.6" date="2023-06-15">
+            <description>
+                <ul>
+                    <li>Fixed ctrl+q quit by closing the camera before</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.5" date="2023-06-10">
             <description>
                 <ul>
