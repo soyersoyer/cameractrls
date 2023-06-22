@@ -109,7 +109,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device_dd.get_first_child().set_has_frame(False)
         # then set the icon_factory as factory
         icon_factory = Gtk.SignalListItemFactory()
-        icon_factory.connect('setup', lambda f, item: item.set_child(Gtk.Image(icon_name='camera-switch-symbolic')))
+        icon_factory.connect('setup', lambda f, item: item.set_child(Gtk.Image(icon_name='view-more-symbolic')))
         self.device_dd.set_factory(icon_factory)
 
         self.device_dd.connect('notify::selected-item', lambda e, _: self.gui_open_device(self.device_dd.get_selected()))

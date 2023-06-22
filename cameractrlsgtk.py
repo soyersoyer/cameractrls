@@ -124,7 +124,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         self.device_sw = Gtk.MenuButton(
             popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=self.device_lb),
-            image=Gtk.Image.new_from_icon_name('camera-switch-symbolic', Gtk.IconSize.MENU),
+            image=Gtk.Image.new_from_icon_name('view-more-symbolic', Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
         )
         headerbar.pack_start(self.device_sw)
