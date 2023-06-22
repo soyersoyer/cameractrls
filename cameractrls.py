@@ -1493,6 +1493,8 @@ class V4L2Ctrls:
                     percent = float(str(v)[:-1])/100
                     # use default value as 50%
                     intvalue = round(ctrl.min+(ctrl.default-ctrl.min)*percent*2)
+                    intvalue = min(ctrl.max, intvalue)
+                    intvalue = max(ctrl.min, intvalue)
                 else:
                     intvalue = int(v)
             elif ctrl.type == 'boolean':
