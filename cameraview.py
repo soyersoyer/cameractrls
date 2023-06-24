@@ -652,9 +652,7 @@ class SDLCameraWindow():
         if self.cam.pixelformat in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
             self.tj = tj_init_decompress()
             # create rgb buffer
-            buf_size = width * height * 3
-            buf = ctypes.create_string_buffer(b"", buf_size)
-            self.outbuffer = (ctypes.c_uint8 * buf_size).from_buffer(buf)
+            self.outbuffer = (ctypes.c_uint8 * (width * height * 3))()
             self.bytesperline = width * 3
 
         if SDL_Init(SDL_INIT_VIDEO) != 0:
