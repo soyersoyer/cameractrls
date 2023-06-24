@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.7] - 2023-06-24
+
+### Fixed
+ - Fixed rotation in preview
+ - Clamp percent control values for fewer warnings when using presets
+
+### Changed
+ - Use the GTK bundled view-more icon instead of camera-switch
+
 ## [0.5.6] - 2023-06-15
 
 ### Fixed

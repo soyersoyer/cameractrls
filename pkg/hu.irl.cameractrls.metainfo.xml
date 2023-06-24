@@ -41,6 +41,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.7" date="2023-06-24">
+            <description>
+                <ul>
+                    <li>Fixed rotation in preview</li>
+                    <li>Clamp percent control values for fewer warnings when using presets</li>
+                    <li>Use the GTK bundled view-more icon instead of camera-switch</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.6" date="2023-06-15">
             <description>
                 <ul>
