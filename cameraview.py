@@ -749,7 +749,7 @@ class SDLCameraWindow():
                     return
                 if SDL_RenderClear(self.renderer) != 0:
                     logging.warning(f'SDL_RenderClear failed: {SDL_GetError()}')
-                if SDL_RenderCopyEx(self.renderer, texture, None, None, self.angle, None, self.flip) != 0:
+                if SDL_RenderCopyEx(self.renderer, texture, None, self.dstrect, self.angle, None, self.flip) != 0:
                     logging.warning(f'SDL_RenderCopy failed: {SDL_GetError()}')
                 SDL_RenderPresent(self.renderer)
                 SDL_DestroyTexture(texture)
