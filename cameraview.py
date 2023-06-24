@@ -642,6 +642,7 @@ class SDLCameraWindow():
         self.outbuffer = None
         self.bytesperline = self.cam.bytesperline
         self.surface = None
+        self.surfbuffer = None
 
         self.angle = 0
         self.flip = 0
@@ -692,10 +693,6 @@ class SDLCameraWindow():
                 logging.error(f'SDL_CreateTexture failed: {SDL_GetError()}')
                 sys.exit(1)
 
-        # create surface buffer as NV12, but use only the Y
-        surf_buf_size = width * height * 2
-        surf_buf = ctypes.create_string_buffer(b"", surf_buf_size)
-        self.surfbuffer = (ctypes.c_uint8 * surf_buf_size).from_buffer(surf_buf)
         self.surface = SDL_CreateRGBSurfaceFrom(self.surfbuffer, self.cam.width, self.cam.height, 8, self.cam.width, 0, 0, 0, 0)
         if not bool(self.surface):
             logging.error(f'SDL_CreateRGBSurfaceFrom failed: {SDL_GetError()}')
@@ -721,6 +718,9 @@ class SDLCameraWindow():
             ptr = self.outbuffer
 
         if self.cam.pixelformat != V4L2_PIX_FMT_GREY and self.colormap != 'none':
+            if self.surfbuffer is None:
+                # create surface buffer as NV12, but use only the Y
+                self.surfbuffer = (ctypes.c_uint8 * (self.cam.width * self.cam.height * 2))()
             SDL_ConvertPixels(self.cam.width, self.cam.height, V4L2Format2SDL(self.cam.pixelformat), ptr, self.bytesperline, SDL_PIXELFORMAT_NV12, self.surfbuffer, self.cam.width)
             ptr = self.surfbuffer
             event = self.new_grey_image_event
