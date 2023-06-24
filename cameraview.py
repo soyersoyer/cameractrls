@@ -106,6 +106,15 @@ SDL_CreateRGBSurfaceFrom.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int
 #SDL_Surface* SDL_CreateRGBSurfaceFrom(void *pixels, int width, int height, int depth, int pitch,
 # Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
 
+SDL_ConvertPixels = sdl2.SDL_ConvertPixels
+SDL_ConvertPixels.restype = ctypes.c_int
+SDL_ConvertPixels.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_int, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_int]
+#int SDL_ConvertPixels(int width, int height,
+#                      Uint32 src_format,
+#                      const void * src, int src_pitch,
+#                      Uint32 dst_format,
+#                      void * dst, int dst_pitch);
+
 SDL_SetPaletteColors = sdl2.SDL_SetPaletteColors
 SDL_SetPaletteColors.restype = ctypes.c_int
 SDL_SetPaletteColors.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
@@ -310,6 +319,7 @@ SDL_PAL_RAINBOW_L = b'\
 SDL_PAL_RAINBOW = (ctypes.c_uint8 * len(SDL_PAL_RAINBOW_L))(*SDL_PAL_RAINBOW_L)
 
 SDL_PALS = {
+    'none': SDL_PAL_GRAYSCALE,
     'grayscale': SDL_PAL_GRAYSCALE,
     'inferno': SDL_PAL_INFERNO,
     'viridis': SLD_PAL_VIRIDIS,
@@ -681,12 +691,21 @@ class SDLCameraWindow():
             if self.texture == None:
                 logging.error(f'SDL_CreateTexture failed: {SDL_GetError()}')
                 sys.exit(1)
-        else:
-            self.surface = SDL_CreateRGBSurfaceFrom(self.outbuffer, self.cam.width, self.cam.height, 8, self.bytesperline, 0, 0, 0, 0)
-            if self.surface == None:
-                logging.error(f'SDL_CreateRGBSurfaceFrom failed: {SDL_GetError()}')
-                sys.exit(1)
-            self.set_colormap(colormap)
+
+        # create surface buffer as NV12, but use only the Y
+        surf_buf_size = width * height * 2
+        surf_buf = ctypes.create_string_buffer(b"", surf_buf_size)
+        self.surfbuffer = (ctypes.c_uint8 * surf_buf_size).from_buffer(surf_buf)
+        self.surface = SDL_CreateRGBSurfaceFrom(self.surfbuffer, self.cam.width, self.cam.height, 8, self.cam.width, 0, 0, 0, 0)
+        if not bool(self.surface):
+            logging.error(f'SDL_CreateRGBSurfaceFrom failed: {SDL_GetError()}')
+            sys.exit(1)
+
+        self.colormaps = SDL_PALS
+        if self.cam.pixelformat == V4L2_PIX_FMT_GREY:
+            self.colormaps = {k: v for k, v in self.colormaps.items() if k != 'grayscale'}
+
+        self.set_colormap(colormap)
 
     def write_buf(self, buf):
         if buf == None:
@@ -700,6 +719,11 @@ class SDLCameraWindow():
             tj_decompress(self.tj, ptr, buf.bytesused, self.outbuffer, self.cam.width, self.bytesperline, self.cam.height, TJPF_RGB, 0)
             # ignore decode errors, some cameras only send imperfect frames
             ptr = self.outbuffer
+
+        if self.cam.pixelformat != V4L2_PIX_FMT_GREY and self.colormap != 'none':
+            SDL_ConvertPixels(self.cam.width, self.cam.height, V4L2Format2SDL(self.cam.pixelformat), ptr, self.bytesperline, SDL_PIXELFORMAT_NV12, self.surfbuffer, self.cam.width)
+            ptr = self.surfbuffer
+            event = self.new_grey_image_event
 
         event.user.data1 = ctypes.cast(ptr, ctypes.c_void_p)
         if SDL_PushEvent(ctypes.byref(event)) < 0:
@@ -784,21 +808,17 @@ class SDLCameraWindow():
         self.flip %= 4
 
     def set_colormap(self, colormap):
-        if colormap not in SDL_PALS:
-            logging.warning(f'set_colormap: invalid colormap name ({colormap}) not in {list(SDL_PALS.keys())} using grayscale')
-            colormap = 'grayscale'
+        if colormap not in self.colormaps:
+            logging.warning(f'set_colormap: invalid colormap name ({colormap}) not in {list(SDL_PALS.keys())}')
+            colormap = 'none'
 
-        pal = SDL_PALS.get(colormap)    
+        pal = self.colormaps.get(colormap)    
 
         self.colormap = colormap
         SDL_SetPaletteColors(self.surface[0].format[0].palette, pal, 0, 256)
 
     def step_colormap(self, step):
-        if self.colormap == None:
-            logging.warning(f'step_colormap: only for GREY streams')
-            return
-
-        cms = list(SDL_PALS.keys())
+        cms = list(self.colormaps.keys())
         step = (cms.index(self.colormap) + step) % len(cms)
         self.set_colormap(cms[step])
 
@@ -824,8 +844,8 @@ def usage():
     print(f'  -s SIZE            put window inside SIZE rectangle (wxh), default unset')
     print(f'  -r ANGLE           rotate the image by ANGLE, default 0')
     print(f'  -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)')
-    print(f'  -c COLORMAP        set colormap for GREY streams, default grayscale')
-    print(f'                    (grayscale, inferno, viridis, ironblack, rainbow)')
+    print(f'  -c COLORMAP        set colormap, default none')
+    print(f'                    (none, grayscale, inferno, viridis, ironblack, rainbow)')
     print()
     print(f'example:')
     print(f'  {sys.argv[0]} -d /dev/video2')
@@ -850,7 +870,7 @@ def main():
     height = 0
     angle = 0
     flip = 0
-    colormap = 'grayscale'
+    colormap = 'none'
 
     for current_argument, current_value in arguments:
         if current_argument in ('-h', '--help'):
