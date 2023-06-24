@@ -617,10 +617,16 @@ class SDLCameraWindow():
         self.cam.pipe = self
         width = self.cam.width
         height = self.cam.height
- 
-        win_width = width if win_width == 0 else min(int(win_height * (width/height)), win_width, width)
-        win_height = height if win_height == 0 else min(int(win_width * (height/width)), win_height, height)
- 
+
+        rwidth = self.cam.width
+        rheight = self.cam.height
+        if angle % 180 != 0:
+            rwidth = self.cam.height
+            rheight = self.cam.width
+
+        win_width = rwidth if win_width == 0 else min(int(win_height * (rwidth/rheight)), win_width, rwidth)
+        win_height = rheight if win_height == 0 else min(int(win_width * (rheight/rwidth)), win_height, rheight)
+
         self.fullscreen = False
         self.tj = None
         self.outbuffer = None
