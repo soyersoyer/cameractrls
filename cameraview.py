@@ -40,6 +40,14 @@ class SDL_Surface(ctypes.Structure):
         ('pixels', ctypes.c_void_p),
     ]
 
+class SDL_Rect(ctypes.Structure):
+    _fields_ = [
+        ('x', ctypes.c_int),
+        ('y', ctypes.c_int),
+        ('w', ctypes.c_int),
+        ('h', ctypes.c_int),
+    ]
+
 SDL_Init = sdl2.SDL_Init
 SDL_Init.restype = ctypes.c_int
 SDL_Init.argtypes = [ctypes.c_uint32]
@@ -87,7 +95,7 @@ SDL_RenderClear.argtypes = [ctypes.c_void_p]
 
 SDL_RenderCopyEx = sdl2.SDL_RenderCopyEx
 SDL_RenderCopyEx.restype = ctypes.c_int
-SDL_RenderCopyEx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_double, ctypes.c_void_p, ctypes.c_int]
+SDL_RenderCopyEx.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.POINTER(SDL_Rect), ctypes.POINTER(SDL_Rect), ctypes.c_double, ctypes.c_void_p, ctypes.c_int]
 #int SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_Rect * dstrect,
 #                   const double angle, const SDL_Point *center, const SDL_RendererFlip flip);
 
@@ -619,8 +627,9 @@ class SDLCameraWindow():
         self.bytesperline = self.cam.bytesperline
         self.surface = None
 
-        self.angle = angle
-        self.flip = flip
+        self.angle = 0
+        self.flip = 0
+        self.dstrect = None
         self.colormap = None
 
         if self.cam.pixelformat in [V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG]:
@@ -657,8 +666,9 @@ class SDLCameraWindow():
         if self.renderer == None:
             logging.error(f'SDL_CreateRenderer failed: {SDL_GetError()}')
             sys.exit(1)
-        if SDL_RenderSetLogicalSize(self.renderer, width, height) != 0:
-            logging.warning(f'SDL_RenderSetlogicalSize failed: {SDL_GetError()}')
+
+        self.rotate(angle)
+        self.mirror(flip)
 
         if self.cam.pixelformat != V4L2_PIX_FMT_GREY:
             self.texture = SDL_CreateTexture(self.renderer, V4L2Format2SDL(self.cam.pixelformat), SDL_TEXTUREACCESS_STREAMING, width, height)
@@ -722,7 +732,7 @@ class SDLCameraWindow():
                     logging.warning(f'SDL_UpdateTexture failed: {SDL_GetError()}')
                 if SDL_RenderClear(self.renderer) != 0:
                     logging.warning(f'SDL_RenderClear failed: {SDL_GetError()}')
-                if SDL_RenderCopyEx(self.renderer, self.texture, None, None, self.angle, None, self.flip) != 0:
+                if SDL_RenderCopyEx(self.renderer, self.texture, None, self.dstrect, self.angle, None, self.flip) != 0:
                     logging.warning(f'SDL_RenderCopy failed: {SDL_GetError()}')
                 SDL_RenderPresent(self.renderer)
             elif event.type == self.sdl_new_grey_image_event:
@@ -749,6 +759,19 @@ class SDLCameraWindow():
     def rotate(self, angle):
         self.angle += angle
         self.angle %= 360
+        if self.angle % 180 == 0:
+            self.dstrect = None
+            if SDL_RenderSetLogicalSize(self.renderer, self.cam.width, self.cam.height) != 0:
+                logging.warning(f'SDL_RenderSetlogicalSize failed: {SDL_GetError()}')
+        else:
+            self.dstrect = SDL_Rect(
+                (self.cam.height - self.cam.width)//2,
+                (self.cam.width - self.cam.height)//2,
+                self.cam.width,
+                self.cam.height
+            )
+            if SDL_RenderSetLogicalSize(self.renderer, self.cam.height, self.cam.width) != 0:
+                logging.warning(f'SDL_RenderSetlogicalSize failed: {SDL_GetError()}')
 
     def mirror(self, flip):
         self.flip += flip
