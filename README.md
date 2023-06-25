@@ -138,15 +138,16 @@ The camera viewer.
 ./cameraview.py -h
 ```
 ```
-usage: ./cameraview.py [--help] [-d DEVICE] [-r ANGLE] [-m FLIP] [-c COLORMAP]
+usage: ./cameraview.py [--help] [-d DEVICE] [-s SIZE] [-r ANGLE] [-m FLIP] [-c COLORMAP]
 
 optional arguments:
   -h, --help         show this help message and exit
   -d DEVICE          use DEVICE, default /dev/video0
+  -s SIZE            put window inside SIZE rectangle (wxh), default unset
   -r ANGLE           rotate the image by ANGLE, default 0
   -m FLIP            mirror the image by FLIP, default no, (no, h, v, hv)
-  -c COLORMAP        set colormap for GREY streams, default grayscale
-                    (grayscale, inferno, viridis, ironblack, rainbow)
+  -c COLORMAP        set colormap, default none
+                    (none, grayscale, inferno, viridis, ironblack, rainbow)
 
 example:
   ./cameraview.py -d /dev/video2
