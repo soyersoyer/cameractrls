@@ -959,7 +959,7 @@ def pop_list_by_text_ids(ctrls, text_ids):
     for text_id in text_ids:
         while True:
             idx = find_idx(ctrls, lambda c: c.text_id.startswith(text_id))
-            if idx != None:
+            if idx is not None:
                 ret.append(ctrls.pop(idx))
             else:
                 break
@@ -969,7 +969,7 @@ def pop_list_by_base_id(ctrls, base_id):
     ret = []
     while True:
         idx = find_idx(ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id & V4L2_CTRL_CLASS_MASK == base_id & V4L2_CTRL_CLASS_MASK)
-        if idx != None:
+        if idx is not None:
             ret.append(ctrls.pop(idx))
         else:
             break
@@ -980,7 +980,7 @@ def pop_list_by_ids(ctrls, ids):
     for id in ids:
         while True:
             idx = find_idx(ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id == id)
-            if idx != None:
+            if idx is not None:
                 ret.append(ctrls.pop(idx))
             else:
                 break
@@ -1114,10 +1114,10 @@ class KiyoProCtrls:
 
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
-            if ctrl == None:
+            if ctrl is None:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
-            if menu == None:
+            if menu is None:
                 collect_warning(f'KiyoProCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
             ctrl.value = menu.text_id
@@ -1417,11 +1417,11 @@ class LogitechCtrls:
 
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
-            if ctrl == None:
+            if ctrl is None:
                 continue
             if ctrl.type == 'menu' or ctrl.type == 'button':
                 menu  = find_by_text_id(ctrl.menu, v)
-                if menu == None:
+                if menu is None:
                     collect_warning(f'LogitechCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                     continue
                 desired = menu.value
@@ -1483,7 +1483,7 @@ class V4L2Ctrls:
     def setup_ctrls(self, params, errs=[]):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
-            if ctrl == None:
+            if ctrl is None:
                 continue
             intvalue = 0
             if v == 'default':
@@ -1501,7 +1501,7 @@ class V4L2Ctrls:
                 intvalue = int(to_bool(v))
             elif ctrl.type == 'menu':
                 menu = find_by_text_id(ctrl.menu, v)
-                if menu == None:
+                if menu is None:
                     collect_warning(f'V4L2Ctrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                     continue
                 intvalue = menu.value
@@ -1529,7 +1529,7 @@ class V4L2Ctrls:
             ctrl.value = intvalue
         else:
             menu = find_by_value(ctrl.menu, intvalue)
-            if menu == None:
+            if menu is None:
                 collect_warning(f'V4L2Ctrls: Can\'t find {intvalue} in {[c.value for c in ctrl.menu]}', errs)
                 return
             ctrl.value = menu.text_id
@@ -1566,7 +1566,7 @@ class V4L2Ctrls:
 
                 v4l2ctrl.inactive = bool(qctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
                 ctrl_info = V4L2_CTRL_INFO.get(qctrl.id)
-                if ctrl_info != None:
+                if ctrl_info is not None:
                     v4l2ctrl.kernel_id = ctrl_info[0]
                     v4l2ctrl.tooltip = ctrl_info[1]
 
@@ -1619,7 +1619,7 @@ class V4L2Ctrls:
 
     def find_by_v4l2_id(self, v4l2_id):
         idx = find_idx(self.ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id == v4l2_id)
-        if idx != None:
+        if idx is not None:
             return self.ctrls[idx]
         else:
             None
@@ -1697,13 +1697,13 @@ class V4L2FmtCtrls:
     def setup_ctrls(self, params, errs=[]):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
-            if ctrl == None:
+            if ctrl is None:
                 continue
             if ctrl.type == 'info':
                 collect_warning(f'V4L2FmtCtrls: info type {k} couldn\'t be set', errs)
                 continue
             menu = find_by_text_id(ctrl.menu, v)
-            if menu == None:
+            if menu is None:
                 collect_warning(f'V4L2FmtCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
             if ctrl.text_id == 'pixelformat':
@@ -1923,7 +1923,7 @@ def resolve_v4l_ids(v4l_ctrls, preset):
     ret = {}
     for k,v in preset.items():
         c = v4l_ctrls.find_by_v4l2_id(k)
-        if c != None:
+        if c is not None:
             ret[c.text_id] = v
     return ret
 
@@ -1940,7 +1940,7 @@ class PresetCtrls:
             V4L2_CID_SHARPNESS: 'default',
             V4L2_CID_AUTO_WHITE_BALANCE: 'default',
         }
-        self.default_controls = [k for k in map(v4l_ctrls.find_by_v4l2_id, list(self.v4l_defaults)) if k != None]
+        self.default_controls = [k for k in map(v4l_ctrls.find_by_v4l2_id, list(self.v4l_defaults)) if k is not None]
 
         self.defaults = resolve_v4l_ids(v4l_ctrls, self.v4l_defaults)
 
@@ -2018,10 +2018,10 @@ class PresetCtrls:
     def setup_ctrls(self, params, errs=[]):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
-            if ctrl == None:
+            if ctrl is None:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
-            if menu == None:
+            if menu is None:
                 collect_warning(f'PresetCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
 
@@ -2045,10 +2045,10 @@ class SystemdSaver:
     def setup_ctrls(self, params, errs=[]):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
-            if ctrl == None:
+            if ctrl is None:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
-            if menu == None:
+            if menu is None:
                 collect_warning(f'SystemdSaver: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
             if menu.text_id == 'save':
@@ -2083,7 +2083,7 @@ class SystemdSaver:
         ctrls = [
             f'{c.text_id}={c.value}'
             for c in self.cam_ctrls.get_ctrls()
-            if not c.inactive and c.value != None and c.value != c.default
+            if not c.inactive and c.value is not None and c.value != c.default
         ]
         return ','.join(ctrls)
 

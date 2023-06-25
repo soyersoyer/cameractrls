@@ -65,7 +65,7 @@ class CameraCtrlsGui:
 
     def check_preview_open(self, p):
         # if process returned
-        if p.poll() != None:
+        if p.poll() is not None:
             (stdout, stderr) = p.communicate()
             errstr = str(stderr, 'utf-8')
             sys.stderr.write(errstr)
@@ -228,7 +228,7 @@ class CameraCtrlsGui:
                     cb.grid(column=1, row=row, sticky='NESW')
                     c.gui_ctrls += [cb]
 
-            if c.default != None:
+            if c.default is not None:
                 btn = ttk.Button(labelframe, text='«', width=2, style='BorderlessShort.TButton', command=lambda ctrl=c: ctrl.var.set(ctrl.default))
                 btn.grid(row=0, column=1, sticky='N')
                 c.gui_ctrls += [btn]
@@ -265,9 +265,9 @@ class CameraCtrlsGui:
         self.update_ctrl_state(c)
 
     def update_default_btn(self, c):
-        if c.default != None:
-            visible = c.value != None and c.default != c.value or \
-                c.get_default != None and not c.get_default()
+        if c.default is not None:
+            visible = c.value is not None and c.default != c.value or \
+                c.get_default is not None and not c.get_default()
             if visible:
                 c.gui_default_btn.configure(text='«')
             else:

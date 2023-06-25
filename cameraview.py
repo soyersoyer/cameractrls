@@ -13,13 +13,13 @@ from cameractrls import V4L2_PIX_FMT_RGB565, V4L2_PIX_FMT_RGB24, V4L2_PIX_FMT_BG
 from cameractrls import V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG
 
 sdl2lib = ctypes.util.find_library('SDL2-2.0')
-if sdl2lib == None:
+if sdl2lib is None:
     print('libSDL2 not found, please install the libsdl2-2.0 package!')
     sys.exit(2)
 sdl2 = ctypes.CDLL(sdl2lib)
 
 turbojpeglib = ctypes.util.find_library('turbojpeg')
-if turbojpeglib == None:
+if turbojpeglib is None:
     print('libturbojpeg not found, please install the libturbojpeg package!')
     sys.exit(2)
 turbojpeg = ctypes.CDLL(turbojpeglib)
@@ -674,11 +674,11 @@ class SDLCameraWindow():
         self.camera_error_event.type = self.sdl_camera_error_event
 
         self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, win_width, win_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
-        if self.window == None:
+        if self.window is None:
             logging.error(f'SDL_CreateWindow failed: {SDL_GetError()}')
             sys.exit(1)
         self.renderer = SDL_CreateRenderer(self.window, -1, 0)
-        if self.renderer == None:
+        if self.renderer is None:
             logging.error(f'SDL_CreateRenderer failed: {SDL_GetError()}')
             sys.exit(1)
 
@@ -687,7 +687,7 @@ class SDLCameraWindow():
 
         if self.cam.pixelformat != V4L2_PIX_FMT_GREY:
             self.texture = SDL_CreateTexture(self.renderer, V4L2Format2SDL(self.cam.pixelformat), SDL_TEXTUREACCESS_STREAMING, width, height)
-            if self.texture == None:
+            if self.texture is None:
                 logging.error(f'SDL_CreateTexture failed: {SDL_GetError()}')
                 sys.exit(1)
 
@@ -703,7 +703,7 @@ class SDLCameraWindow():
         self.set_colormap(colormap)
 
     def write_buf(self, buf):
-        if buf == None:
+        if buf is None:
             SDL_PushEvent(ctypes.byref(self.camera_error_event))
             return
 
@@ -766,7 +766,7 @@ class SDLCameraWindow():
             elif event.type == self.sdl_new_grey_image_event:
                 self.surface[0].pixels = event.user.data1
                 texture = SDL_CreateTextureFromSurface(self.renderer, self.surface)
-                if texture == None:
+                if texture is None:
                     logging.warning(f'SDL_CreateTextureFromSurface failed: {SDL_GetError()}')
                     return
                 if SDL_RenderClear(self.renderer) != 0:
