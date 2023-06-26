@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.8] - 2023-06-26
+
+### Added
+ - Colormaps for all pixel formats (some thermal cameras use YUYV for thermal imaging)
+
 ## [0.5.7] - 2023-06-24
 
 ### Fixed

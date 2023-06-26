@@ -41,6 +41,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.8" date="2023-06-26">
+            <description>
+                <ul>
+                    <li>Colormaps for all pixel formats (some thermal cameras use YUYV for thermal imaging)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.7" date="2023-06-24">
             <description>
                 <ul>
