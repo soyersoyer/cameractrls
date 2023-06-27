@@ -1620,7 +1620,7 @@ class V4L2Ctrls:
                     v4l2ctrl.scale_class = 'dark-to-light'
                     v4l2ctrl.format_value = lambda s,v: f'{v:.0f}00 µs'
 
-                if qctrl.id == V4L2_CID_GAIN:
+                if qctrl.id in [V4L2_CID_GAIN, V4L2_CID_ANALOGUE_GAIN, V4L2_CID_DIGITAL_GAIN]:
                     v4l2ctrl.scale_class = 'dark-to-light'
 
                 if qctrl.type in [V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU]:
@@ -2258,6 +2258,8 @@ class CameraCtrls:
                     V4L2_CID_EXPOSURE_METERING,
                     V4L2_CID_AUTO_EXPOSURE_BIAS,
                     V4L2_CID_GAIN,
+                    V4L2_CID_ANALOGUE_GAIN,
+                    V4L2_CID_DIGITAL_GAIN,
                     V4L2_CID_CHROMA_AGC,
                     V4L2_CID_CHROMA_GAIN,
                     V4L2_CID_IRIS_ABSOLUTE,
