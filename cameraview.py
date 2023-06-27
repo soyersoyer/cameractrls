@@ -737,20 +737,15 @@ class SDLCameraWindow():
                 if event.key.keysym.sym == SDLK_q or event.key.keysym.sym == SDLK_ESCAPE:
                     self.stop_capturing()
                     break
+                shift = event.key.keysym.mod & KMOD_SHIFT
                 if event.key.keysym.sym == SDLK_f:
                     self.toggle_fullscreen()
-                elif event.key.keysym.sym == SDLK_r and event.key.keysym.mod == KMOD_NONE:
-                    self.rotate(90)
-                elif event.key.keysym.sym == SDLK_r and event.key.keysym.mod | KMOD_SHIFT:
-                    self.rotate(-90)
-                elif event.key.keysym.sym == SDLK_m and event.key.keysym.mod == KMOD_NONE:
-                    self.mirror(1)
-                elif event.key.keysym.sym == SDLK_m and event.key.keysym.mod | KMOD_SHIFT:
-                    self.mirror(-1)
-                elif event.key.keysym.sym == SDLK_c and event.key.keysym.mod == KMOD_NONE:
-                    self.step_colormap(1)
-                elif event.key.keysym.sym == SDLK_c and event.key.keysym.mod | KMOD_SHIFT:
-                    self.step_colormap(-1)
+                elif event.key.keysym.sym == SDLK_r:
+                    self.rotate(90 if not shift else -90)
+                elif event.key.keysym.sym == SDLK_m:
+                    self.mirror(1 if not shift else -1)
+                elif event.key.keysym.sym == SDLK_c:
+                    self.step_colormap(1 if not shift else -1)
             elif event.type == SDL_MOUSEBUTTONUP and \
                 event.button.button == SDL_BUTTON_LEFT and \
                 event.button.clicks == 2:
