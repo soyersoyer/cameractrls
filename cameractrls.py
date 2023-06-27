@@ -510,6 +510,8 @@ V4L2_CTRL_CLASS_USER = 0x00980000
 V4L2_CTRL_CLASS_CODEC = 0x00990000
 V4L2_CTRL_CLASS_CAMERA = 0x009a0000
 V4L2_CTRL_CLASS_JPEG = 0x009d0000
+V4L2_CTRL_CLASS_IMAGE_SOURCE = 0x9e0000
+V4L2_CTRL_CLASS_IMAGE_PROC = 0x9f0000
 
 V4L2_CID_BASE = V4L2_CTRL_CLASS_USER | 0x900
 V4L2_CID_BRIGHTNESS = V4L2_CID_BASE + 0
@@ -590,6 +592,24 @@ V4L2_CID_JPEG_CHROMA_SUBSAMPLING = V4L2_CID_JPEG_CLASS_BASE + 1
 V4L2_CID_JPEG_RESTART_INTERVAL = V4L2_CID_JPEG_CLASS_BASE + 2
 V4L2_CID_JPEG_COMPRESSION_QUALITY = V4L2_CID_JPEG_CLASS_BASE + 3
 V4L2_CID_JPEG_ACTIVE_MARKER	 = V4L2_CID_JPEG_CLASS_BASE + 4
+
+V4L2_CID_IMAGE_SOURCE_CLASS_BASE = V4L2_CTRL_CLASS_IMAGE_SOURCE | 0x900
+V4L2_CID_VBLANK = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 1
+V4L2_CID_HBLANK = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 2
+V4L2_CID_ANALOGUE_GAIN = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 3
+V4L2_CID_TEST_PATTERN_RED = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 4
+V4L2_CID_TEST_PATTERN_GREENR = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 5
+V4L2_CID_TEST_PATTERN_BLUE = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 6
+V4L2_CID_TEST_PATTERN_GREENB = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 7
+V4L2_CID_UNIT_CELL_SIZE = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 8
+V4L2_CID_NOTIFY_GAINS = V4L2_CID_IMAGE_SOURCE_CLASS_BASE + 9
+
+V4L2_CID_IMAGE_PROC_CLASS_BASE = V4L2_CTRL_CLASS_IMAGE_PROC | 0x900
+V4L2_CID_LINK_FREQ = V4L2_CID_IMAGE_PROC_CLASS_BASE + 1
+V4L2_CID_PIXEL_RATE = V4L2_CID_IMAGE_PROC_CLASS_BASE + 2
+V4L2_CID_TEST_PATTERN = V4L2_CID_IMAGE_PROC_CLASS_BASE + 3
+V4L2_CID_DEINTERLACING_MODE	= V4L2_CID_IMAGE_PROC_CLASS_BASE + 4
+V4L2_CID_DIGITAL_GAIN = V4L2_CID_IMAGE_PROC_CLASS_BASE + 5
 
 # controls value should be zero after releasing mouse button
 V4L2_CTRL_ZEROERS = [
@@ -672,6 +692,22 @@ V4L2_CTRL_INFO = {
     V4L2_CID_JPEG_RESTART_INTERVAL: ('V4L2_CID_JPEG_RESTART_INTERVAL', 'The restart interval determines an interval of inserting RSTm markers (m = 0..7). The purpose of these markers is to additionally reinitialize the encoder process, in order to process blocks of an image independently. For the lossy compression processes the restart interval unit is MCU (Minimum Coded Unit) and its value is contained in DRI (Define Restart Interval) marker. If V4L2_CID_JPEG_RESTART_INTERVAL control is set to 0, DRI and RSTm markers will not be inserted.'),
     V4L2_CID_JPEG_COMPRESSION_QUALITY: ('V4L2_CID_JPEG_COMPRESSION_QUALITY', 'Determines trade-off between image quality and size. It provides simpler method for applications to control image quality, without a need for direct reconfiguration of luminance and chrominance quantization tables. In cases where a driver uses quantization tables configured directly by an application, using interfaces defined elsewhere, V4L2_CID_JPEG_COMPRESSION_QUALITY control should be set by driver to 0. \nThe value range of this control is driver-specific. Only positive, non-zero values are meaningful. The recommended range is 1 - 100, where larger values correspond to better image quality.'),
     V4L2_CID_JPEG_ACTIVE_MARKER: ('V4L2_CID_JPEG_ACTIVE_MARKER', 'Specify which JPEG markers are included in compressed stream. This control is valid only for encoders.'),
+
+    V4L2_CID_VBLANK: ('V4L2_CID_VBLANK', 'Vertical blanking. The idle period after every frame during which no image data is produced. The unit of vertical blanking is a line. Every line has length of the image width plus horizontal blanking at the pixel rate defined by V4L2_CID_PIXEL_RATE control in the same sub-device.'),
+    V4L2_CID_HBLANK: ('V4L2_CID_HBLANK', 'Horizontal blanking. The idle period after every line of image data during which no image data is produced. The unit of horizontal blanking is pixels.'),
+    V4L2_CID_ANALOGUE_GAIN: ('V4L2_CID_ANALOGUE_GAIN', 'Analogue gain is gain affecting all colour components in the pixel matrix. The gain operation is performed in the analogue domain before A/D conversion.'),
+    V4L2_CID_TEST_PATTERN_RED: ('V4L2_CID_TEST_PATTERN_RED', 'Test pattern red colour component.'),
+    V4L2_CID_TEST_PATTERN_GREENR: ('V4L2_CID_TEST_PATTERN_GREENR', 'Test pattern green (next to red) colour component.'),
+    V4L2_CID_TEST_PATTERN_BLUE: ('V4L2_CID_TEST_PATTERN_BLUE', 'Test pattern blue colour component.'),
+    V4L2_CID_TEST_PATTERN_GREENB: ('V4L2_CID_TEST_PATTERN_GREENB', 'Test pattern green (next to blue) colour component.'),
+    V4L2_CID_UNIT_CELL_SIZE: ('V4L2_CID_UNIT_CELL_SIZE', 'This control returns the unit cell size in nanometers. The struct v4l2_area provides the width and the height in separate fields to take into consideration asymmetric pixels. This control does not take into consideration any possible hardware binning. The unit cell consists of the whole area of the pixel, sensitive and non-sensitive. This control is required for automatic calibration of sensors/cameras.'),
+    V4L2_CID_NOTIFY_GAINS: ('V4L2_CID_NOTIFY_GAINS', 'The sensor is notified what gains will be applied to the different colour channels by subsequent processing (such as by an ISP). The sensor is merely informed of these values in case it performs processing that requires them, but it does not apply them itself to the output pixels.\nCurrently it is defined only for Bayer sensors, and is an array control taking 4 gain values, being the gains for each of the Bayer channels. The gains are always in the order B, Gb, Gr and R, irrespective of the exact Bayer order of the sensor itself.\nThe use of an array allows this control to be extended to sensors with, for example, non-Bayer CFAs (colour filter arrays).\nThe units for the gain values are linear, with the default value representing a gain of exactly 1.0. For example, if this default value is reported as being (say) 128, then a value of 192 would represent a gain of exactly 1.5.\n'),
+
+    V4L2_CID_LINK_FREQ: ('V4L2_CID_LINK_FREQ', 'The frequency of the data bus (e.g. parallel or CSI-2).'),
+    V4L2_CID_PIXEL_RATE: ('V4L2_CID_PIXEL_RATE', 'Pixel sampling rate in the device\'s pixel array. This control is read-only and its unit is pixels / second.\nSome devices use horizontal and vertical balanking to configure the frame rate. The frame rate can be calculated from the pixel rate, analogue crop rectangle as well as horizontal and vertical blanking. The pixel rate control may be present in a different sub-device than the blanking controls and the analogue crop rectangle configuration.\nThe configuration of the frame rate is performed by selecting the desired horizontal and vertical blanking. The unit of this control is Hz.'),
+    V4L2_CID_TEST_PATTERN: ('V4L2_CID_TEST_PATTERN', 'Some capture/display/sensor devices have the capability to generate test pattern images. These hardware specific test patterns can be used to test if a device is working properly.'),
+    V4L2_CID_DEINTERLACING_MODE: ('V4L2_CID_DEINTERLACING_MODE', 'The video deinterlacing mode (such as Bob, Weave, ...). The menu items are driver specific and are documented in Video4Linux (V4L) driver-specific documentation.'),
+    V4L2_CID_DIGITAL_GAIN: ('V4L2_CID_DIGITAL_GAIN', 'Digital gain is the value by which all colour components are multiplied by. Typically the digital gain applied is the control value divided by e.g. 0x100, meaning that to get no digital gain the control value needs to be 0x100. The no-gain configuration is also typically the default.'),
 }
 
 class v4l2_control(ctypes.Structure):
@@ -2271,6 +2307,8 @@ class CameraCtrls:
                 CtrlCategory('Power Line', pop_list_by_ids(ctrls, [V4L2_CID_POWER_LINE_FREQUENCY])),
                 CtrlCategory('Privacy', pop_list_by_ids(ctrls, [V4L2_CID_PRIVACY])),
                 CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
+                CtrlCategory('Image Source Control', pop_list_by_base_id(ctrls, V4L2_CID_IMAGE_SOURCE_CLASS_BASE)),
+                CtrlCategory('Image Process Control', pop_list_by_base_id(ctrls, V4L2_CID_IMAGE_PROC_CLASS_BASE)),
             ]),
             CtrlPage('Compression', [
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
