@@ -583,6 +583,7 @@ V4L2_CID_PAN_SPEED = V4L2_CID_CAMERA_CLASS_BASE + 32
 V4L2_CID_TILT_SPEED = V4L2_CID_CAMERA_CLASS_BASE + 33
 V4L2_CID_CAMERA_ORIENTATION = V4L2_CID_CAMERA_CLASS_BASE + 34
 V4L2_CID_CAMERA_SENSOR_ROTATION = V4L2_CID_CAMERA_CLASS_BASE + 35
+V4L2_CID_HDR_SENSOR_MODE = V4L2_CID_CAMERA_CLASS_BASE + 36
 
 V4L2_CID_JPEG_CLASS_BASE = V4L2_CTRL_CLASS_JPEG | 0x900
 V4L2_CID_JPEG_CHROMA_SUBSAMPLING = V4L2_CID_JPEG_CLASS_BASE + 1
@@ -665,6 +666,7 @@ V4L2_CTRL_INFO = {
     V4L2_CID_TILT_SPEED: ('V4L2_CID_TILT_SPEED', 'This control turns the camera vertically at the specified speed. The unit is undefined. A positive value moves the camera up, a negative value down. A value of zero stops the motion if one is in progress and has no effect otherwise.'),
     V4L2_CID_CAMERA_ORIENTATION: ('V4L2_CID_CAMERA_ORIENTATION', 'his read-only control describes the camera orientation by reporting its mounting position on the device where the camera is installed. The control value is constant and not modifiable by software. This control is particularly meaningful for devices which have a well defined orientation, such as phones, laptops and portable devices since the control is expressed as a position relative to the device’s intended usage orientation. For example, a camera installed on the user-facing side of a phone, a tablet or a laptop device is said to be have V4L2_CAMERA_ORIENTATION_FRONT orientation, while a camera installed on the opposite side of the front one is said to be have V4L2_CAMERA_ORIENTATION_BACK orientation. Camera sensors not directly attached to the device, or attached in a way that allows them to move freely, such as webcams and digital cameras, are said to have the V4L2_CAMERA_ORIENTATION_EXTERNAL orientation.'),
     V4L2_CID_CAMERA_SENSOR_ROTATION: ('V4L2_CID_CAMERA_SENSOR_ROTATION', 'This read-only control describes the rotation correction in degrees in the counter-clockwise direction to be applied to the captured images once captured to memory to compensate for the camera sensor mounting rotation.'),
+    V4L2_CID_HDR_SENSOR_MODE : ('V4L2_CID_HDR_SENSOR_MODE', 'Change the sensor HDR mode. A HDR picture is obtained by merging two captures of the same scene using two different exposure periods. HDR mode describes the way these two captures are merged in the sensor. As modes differ for each sensor, menu items are not standardized by this control and are left to the programmer.'),
 
     V4L2_CID_JPEG_CHROMA_SUBSAMPLING: ('V4L2_CID_JPEG_CHROMA_SUBSAMPLING', 'The chroma subsampling factors describe how each component of an input image is sampled, in respect to maximum sample rate in each spatial dimension. See ITU-T.81, clause A.1.1. for more details. The V4L2_CID_JPEG_CHROMA_SUBSAMPLING control determines how Cb and Cr components are downsampled after coverting an input image from RGB to Y’CbCr color space.'),
     V4L2_CID_JPEG_RESTART_INTERVAL: ('V4L2_CID_JPEG_RESTART_INTERVAL', 'The restart interval determines an interval of inserting RSTm markers (m = 0..7). The purpose of these markers is to additionally reinitialize the encoder process, in order to process blocks of an image independently. For the lossy compression processes the restart interval unit is MCU (Minimum Coded Unit) and its value is contained in DRI (Define Restart Interval) marker. If V4L2_CID_JPEG_RESTART_INTERVAL control is set to 0, DRI and RSTm markers will not be inserted.'),
@@ -2235,6 +2237,7 @@ class CameraCtrls:
                     pop_list_by_ids(ctrls, [
                         V4L2_CID_BACKLIGHT_COMPENSATION,
                         V4L2_CID_WIDE_DYNAMIC_RANGE,
+                        V4L2_CID_HDR_SENSOR_MODE,
                     ]) +
                     pop_list_by_text_ids(ctrls, ['kiyo_pro_hdr'])
                 ),
