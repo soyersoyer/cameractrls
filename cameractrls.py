@@ -1686,6 +1686,8 @@ class V4L2Listener(Thread):
                 ioctl(self.fd, VIDIOC_SUBSCRIBE_EVENT, sub)
             except Exception as e:
                 self.err_cb(collect_warning(f'VIDIOC_SUBSCRIBE_EVENT failed: {e}', []))
+                self.epoll.close()
+                break
 
     # thread start
     def run(self):
