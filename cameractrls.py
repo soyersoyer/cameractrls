@@ -1862,8 +1862,8 @@ class V4L2FmtCtrls:
     def set_fps(self, ctrl, fps, errs):
         parm = v4l2_streamparm()
         parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
-        parm.parm.capture.timeperframe.numerator = 1
-        parm.parm.capture.timeperframe.denominator = int(fps)
+        parm.parm.capture.timeperframe.numerator = 10
+        parm.parm.capture.timeperframe.denominator = int(float(fps)*10)
         try:
             ioctl(self.fd, VIDIOC_S_PARM, parm)
         except Exception as e:
@@ -1874,7 +1874,7 @@ class V4L2FmtCtrls:
         if tf.denominator == 0 or tf.numerator == 0:
             collect_warning(f'V4L2FmtCtrls: VIDIOC_S_PARM: Invalid frame rate {fps}', errs)
             return
-        if int(fps) != (tf.denominator / tf.numerator):
+        if float(fps) != (tf.denominator / tf.numerator):
             collect_warning(f'V4L2FmtCtrls: Can\'t set fps to {fps} using {tf.denominator / tf.numerator}', errs)
             return
 
@@ -1948,7 +1948,7 @@ def str2wh(str, wh):
     wh.height = int(split[1])
 
 def dn2str(dn):
-    return f'{dn.denominator//dn.numerator}'
+    return f'{(dn.denominator/dn.numerator):.1f}'.replace('.0', '')
 
 
 class PresetMenu(BaseCtrlMenu):
