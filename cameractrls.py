@@ -842,6 +842,7 @@ EU1_GET_ISP_RESULT = 0x02
 UVC_EU1_GUID = b'\xd0\x9e\xe4\x23\x78\x11\x31\x4f\xae\x52\xd2\xfb\x8a\x8d\x3b\x48'
 
 # Razer Kiyo Pro specific registers and values
+KIYO_PRO_USB_ID = '1532:0e05'
 
 AF_RESPONSIVE = b'\xff\x06\x00\x00\x00\x00\x00\x00'
 AF_PASSIVE =    b'\xff\x06\x01\x00\x00\x00\x00\x00'
@@ -1077,7 +1078,6 @@ class KiyoMenu(BaseCtrlMenu):
         self._before = before
 
 class KiyoProCtrls:
-    KIYO_PRO_USB_ID = '1532:0e05'
     def __init__(self, device, fd):
         self.device = device
         self.fd = fd
@@ -1086,7 +1086,7 @@ class KiyoProCtrls:
         self.get_device_controls()
 
     def supported(self):
-        return self.unit_id != 0 and self.usb_ids == KiyoProCtrls.KIYO_PRO_USB_ID
+        return self.unit_id != 0 and self.usb_ids == KIYO_PRO_USB_ID
 
     def get_device_controls(self):
         if not self.supported():
