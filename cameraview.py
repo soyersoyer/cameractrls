@@ -3,6 +3,7 @@
 import os, sys, ctypes, ctypes.util, logging, mmap, struct, getopt, select
 from fcntl import ioctl
 from threading import Thread
+from operator import lt, gt
 
 from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
 from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_S_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
@@ -78,6 +79,16 @@ SDL_RenderSetLogicalSize = sdl2.SDL_RenderSetLogicalSize
 SDL_RenderSetLogicalSize.restype = ctypes.c_int
 SDL_RenderSetLogicalSize.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
 # int SDL_RenderSetLogicalSize(SDL_Renderer * renderer, int w, int h);
+
+SDL_GetWindowSize = sdl2.SDL_GetWindowSize
+SDL_GetWindowSize.restype = None
+SDL_GetWindowSize.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+#void SDL_GetWindowSize(SDL_Window * window, int *w, int *h);
+
+SDL_SetWindowSize = sdl2.SDL_SetWindowSize
+SDL_SetWindowSize.restype = None
+SDL_SetWindowSize.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+#void SDL_SetWindowSize(SDL_Window * window, int w, int h);
 
 SDL_CreateTexture = sdl2.SDL_CreateTexture
 SDL_CreateTexture.restype = ctypes.c_void_p
@@ -780,6 +791,7 @@ class SDLCameraWindow():
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
         SDL_SetWindowFullscreen(self.window, SDL_WINDOW_FULLSCREEN_DESKTOP if self.fullscreen else 0)
+        self.match_window_to_rotation()
 
     def rotate(self, angle):
         self.angle += angle
@@ -797,6 +809,23 @@ class SDLCameraWindow():
             )
             if SDL_RenderSetLogicalSize(self.renderer, self.cam.height, self.cam.width) != 0:
                 logging.warning(f'SDL_RenderSetlogicalSize failed: {SDL_GetError()}')
+        self.match_window_to_rotation()
+    
+    def match_window_to_rotation(self):
+        if self.fullscreen:
+            return
+
+        w = ctypes.c_int()
+        h = ctypes.c_int()
+        SDL_GetWindowSize(self.window, w, h)
+
+        op = gt if self.cam.width > self.cam.height else lt
+        if self.angle in [0, 180] and op(w.value, h.value):
+            return
+        if self.angle in [90, 270] and op(h.value, w.value):
+            return
+
+        SDL_SetWindowSize(self.window, h, w)
 
     def mirror(self, flip):
         self.flip += flip
