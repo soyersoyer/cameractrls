@@ -75,6 +75,11 @@ SDL_CreateRenderer.restype = ctypes.c_void_p
 SDL_CreateRenderer.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_uint32]
 # SDL_Renderer * SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags);
 
+SDL_RenderGetLogicalSize = sdl2.SDL_RenderGetLogicalSize
+SDL_RenderGetLogicalSize.restype = None
+SDL_RenderGetLogicalSize.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+# void SDL_RenderGetLogicalSize(SDL_Renderer * renderer, int *w, int *h);
+
 SDL_RenderSetLogicalSize = sdl2.SDL_RenderSetLogicalSize
 SDL_RenderSetLogicalSize.restype = ctypes.c_int
 SDL_RenderSetLogicalSize.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
@@ -791,7 +796,7 @@ class SDLCameraWindow():
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen
         SDL_SetWindowFullscreen(self.window, SDL_WINDOW_FULLSCREEN_DESKTOP if self.fullscreen else 0)
-        self.match_window_to_rotation()
+        self.match_window_to_logical()
 
     def rotate(self, angle):
         self.angle += angle
@@ -809,23 +814,26 @@ class SDLCameraWindow():
             )
             if SDL_RenderSetLogicalSize(self.renderer, self.cam.height, self.cam.width) != 0:
                 logging.warning(f'SDL_RenderSetlogicalSize failed: {SDL_GetError()}')
-        self.match_window_to_rotation()
+        self.match_window_to_logical()
     
-    def match_window_to_rotation(self):
+    def match_window_to_logical(self):
         if self.fullscreen:
             return
 
-        w = ctypes.c_int()
-        h = ctypes.c_int()
-        SDL_GetWindowSize(self.window, w, h)
+        win_w = ctypes.c_int()
+        win_h = ctypes.c_int()
+        SDL_GetWindowSize(self.window, win_w, win_h)
 
-        op = gt if self.cam.width > self.cam.height else lt
-        if self.angle in [0, 180] and op(w.value, h.value):
-            return
-        if self.angle in [90, 270] and op(h.value, w.value):
-            return
+        logical_w = ctypes.c_int()
+        logical_h = ctypes.c_int()
+        SDL_RenderGetLogicalSize(self.renderer, logical_w, logical_h)
 
-        SDL_SetWindowSize(self.window, h, w)
+        if logical_w.value < logical_h.value and win_w.value < win_h.value:
+            return
+        if logical_w.value > logical_h.value and win_w.value > win_h.value:
+            return
+        
+        SDL_SetWindowSize(self.window, win_h, win_w)
 
     def mirror(self, flip):
         self.flip += flip
