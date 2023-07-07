@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.9] - 2023-07-07
+
+### Added
+ - V4L2_CID_HDR_SENSOR_MODE, V4L2_CID_IMAGE_[SOURCE|PROC]_CLASS descriptions
+
+### Fixed
+ - Shortcuts in cameraview
+ - Float FPS handling
+
+### Changed
+ - Adjust the window size based on rotation
+ - cameraview calls VIDIOC_S_FMT only for Kiyo Pro (it doesn't work without)
+
 ## [0.5.8] - 2023-06-26
 
 ### Added

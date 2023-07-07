@@ -41,6 +41,17 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.9" date="2023-07-07">
+            <description>
+                <ul>
+                    <li>Added V4L2_CID_HDR_SENSOR_MODE, V4L2_CID_IMAGE_[SOURCE|PROC]_CLASS descriptions</li>
+                    <li>Fixed shortcuts in cameraview</li>
+                    <li>Fixed float FPS handling</li>
+                    <li>Adjust the window size based on rotation</li>
+                    <li>preview calls VIDIOC_S_FMT only for Kiyo Pro (it doesn't work without)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.8" date="2023-06-26">
             <description>
                 <ul>
