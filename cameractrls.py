@@ -1146,7 +1146,7 @@ class KiyoProCtrls:
             ),
         ]
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         if not self.supported():
             return
 
@@ -1449,7 +1449,7 @@ class LogitechCtrls:
                     c.value = valmenu.text_id
 
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         if not self.supported():
             return
 
@@ -1518,7 +1518,7 @@ class V4L2Ctrls:
         self.get_device_controls()
 
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl is None:
@@ -1562,7 +1562,7 @@ class V4L2Ctrls:
             except Exception as e:
                 collect_warning(f'V4L2Ctrls: Can\'t set {k} to {v} ({e})', errs)
 
-    def set_ctrl_int_value(self, ctrl, intvalue, errs=[]):
+    def set_ctrl_int_value(self, ctrl, intvalue, errs):
         if ctrl.type != 'menu':
             ctrl.value = intvalue
         else:
@@ -1734,7 +1734,7 @@ class V4L2FmtCtrls:
     def get_ctrls(self):
         return self.ctrls
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl is None:
@@ -2055,7 +2055,7 @@ class PresetCtrls:
     def get_ctrls(self):
         return self.ctrls
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl is None:
@@ -2082,7 +2082,7 @@ class SystemdSaver:
     def get_ctrls(self):
         return self.ctrls
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         for k, v in params.items():
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl is None:
@@ -2201,7 +2201,7 @@ class CameraCtrls:
                         print(' | inactive', end = '')
                     print()
 
-    def setup_ctrls(self, params, errs=[]):
+    def setup_ctrls(self, params, errs):
         logging.info(f'CameraCtrls.setup_ctrls: {params}')
         for c in self.ctrls:
             c.setup_ctrls(params, errs)
@@ -2406,7 +2406,7 @@ def main():
                 continue
             ctrlsmap[kv[0]]=kv[1]
 
-        camera_ctrls.setup_ctrls(ctrlsmap)
+        camera_ctrls.setup_ctrls(ctrlsmap, [])
 
 if __name__ == '__main__':
     main()
