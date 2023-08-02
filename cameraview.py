@@ -479,18 +479,7 @@ class V4L2Camera(Thread):
 
     def init_device(self):
         cap = v4l2_capability()
-        fmt = v4l2_format()
-        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
-        parm = v4l2_streamparm()
-        parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
-
         ioctl(self.fd, VIDIOC_QUERYCAP, cap)
-        ioctl(self.fd, VIDIOC_G_FMT, fmt)
-
-        # Razer Kiyo Pro and Microsoft Lifecam HD-3000 need
-        # to set FPS before first streaming
-        ioctl(self.fd, VIDIOC_G_PARM, parm)
-        ioctl(self.fd, VIDIOC_S_PARM, parm)
 
         if not (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE):
             logging.error(f'{self.device} is not a video capture device')
@@ -499,6 +488,18 @@ class V4L2Camera(Thread):
         if not (cap.capabilities & V4L2_CAP_STREAMING):
             logging.error(f'{self.device} does not support streaming i/o')
             sys.exit(3)
+    
+        fmt = v4l2_format()
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        ioctl(self.fd, VIDIOC_G_FMT, fmt)
+    
+        parm = v4l2_streamparm()
+        parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+
+        # Razer Kiyo Pro and Microsoft Lifecam HD-3000 need
+        # to set FPS before first streaming
+        ioctl(self.fd, VIDIOC_G_PARM, parm)
+        ioctl(self.fd, VIDIOC_S_PARM, parm)
 
         self.width = fmt.fmt.pix.width
         self.height = fmt.fmt.pix.height
