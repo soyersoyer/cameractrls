@@ -499,7 +499,12 @@ class V4L2Camera(Thread):
         # Razer Kiyo Pro and Microsoft Lifecam HD-3000 need
         # to set FPS before first streaming
         ioctl(self.fd, VIDIOC_G_PARM, parm)
-        ioctl(self.fd, VIDIOC_S_PARM, parm)
+
+        try:
+            ioctl(self.fd, VIDIOC_S_PARM, parm)
+        except Exception as e:
+            logging.error(f'VIDIOC_S_PARM failed {self.device}: {e}')
+            sys.exit(3)
 
         self.width = fmt.fmt.pix.width
         self.height = fmt.fmt.pix.height
