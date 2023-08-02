@@ -369,6 +369,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 if idx is not None:
                                     wb_dd.set_selected(idx)
                                 else:
+                                    wb_dd.set_selected(Gtk.INVALID_LIST_POSITION)
                                     err = f'Control {c.text_id}: Can\'t find {c.value} in {[m.text_id for m in c.menu]}'
                                     logging.warning(err)
                                     self.notify(err)
