@@ -390,7 +390,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 if idx is not None:
                                     wb_cb.set_active(idx)
                                 else:
-                                    logging.warning(f'Control {c.text_id}: Can\'t find {c.value} in {[m.text_id for m in c.menu]}')
+                                    err = f'Control {c.text_id}: Can\'t find {c.value} in {[m.text_id for m in c.menu]}'
+                                    logging.warning(err)
+                                    self.notify(err)
                             wb_cb.connect('changed', lambda e,c=c: [
                                 self.update_ctrl(c, c.menu[e.get_active()].text_id),
                                 # XXX: Workaround: GTK emits a signal or calls something later on the ComboBox widget,
