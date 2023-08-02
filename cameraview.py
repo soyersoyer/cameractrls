@@ -5,14 +5,14 @@ from fcntl import ioctl
 from threading import Thread
 from operator import lt, gt
 
-from cameractrls import v4l2_capability, v4l2_format, v4l2_requestbuffers, v4l2_buffer
-from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_S_FMT, VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
+from cameractrls import v4l2_capability, v4l2_format, v4l2_streamparm, v4l2_requestbuffers, v4l2_buffer
+from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_G_PARM, VIDIOC_S_PARM
+from cameractrls import VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
 from cameractrls import V4L2_CAP_VIDEO_CAPTURE, V4L2_CAP_STREAMING, V4L2_MEMORY_MMAP, V4L2_BUF_TYPE_VIDEO_CAPTURE
 from cameractrls import V4L2_PIX_FMT_YUYV, V4L2_PIX_FMT_YVYU, V4L2_PIX_FMT_UYVY, V4L2_PIX_FMT_YU12, V4L2_PIX_FMT_YV12
 from cameractrls import V4L2_PIX_FMT_NV12, V4L2_PIX_FMT_NV21, V4L2_PIX_FMT_GREY
 from cameractrls import V4L2_PIX_FMT_RGB565, V4L2_PIX_FMT_RGB24, V4L2_PIX_FMT_BGR24, V4L2_PIX_FMT_RX24
 from cameractrls import V4L2_PIX_FMT_MJPEG, V4L2_PIX_FMT_JPEG
-from cameractrls import find_usb_ids_in_sysfs, KIYO_PRO_USB_ID
 
 sdl2lib = ctypes.util.find_library('SDL2-2.0')
 if sdl2lib is None:
@@ -481,16 +481,16 @@ class V4L2Camera(Thread):
         cap = v4l2_capability()
         fmt = v4l2_format()
         fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        parm = v4l2_streamparm()
+        parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
 
         ioctl(self.fd, VIDIOC_QUERYCAP, cap)
         ioctl(self.fd, VIDIOC_G_FMT, fmt)
 
-        # Razer Kiyo Pro needs an S_FMT to work
-        if find_usb_ids_in_sysfs(self.device) == KIYO_PRO_USB_ID:
-            try:
-                ioctl(self.fd, VIDIOC_S_FMT, fmt)
-            except Exception as e:
-                logging.warning(f'V4L2Camera: Can\'t set fmt: {e}')
+        # Razer Kiyo Pro and Microsoft Lifecam HD-3000 need
+        # to set FPS before first streaming
+        ioctl(self.fd, VIDIOC_G_PARM, parm)
+        ioctl(self.fd, VIDIOC_S_PARM, parm)
 
         if not (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE):
             logging.error(f'{self.device} is not a video capture device')
