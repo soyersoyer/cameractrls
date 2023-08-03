@@ -1662,16 +1662,13 @@ class V4L2Ctrls:
         else:
             None
 
-    def subscribe_events(self, cb, err_cb):
-        thread = V4L2Listener(self, cb, err_cb)
-        thread.start()
-        return thread
 
 class V4L2Listener(Thread):
-    def __init__(self, ctrls, cb, err_cb):
+    def __init__(self, ctrls, fmt_ctrls, cb, err_cb):
         super().__init__()
         self.fd = ctrls.fd
         self.ctrls = ctrls
+        self.fmt_ctrls = fmt_ctrls
         self.cb = cb
         self.err_cb = err_cb
         self.epoll = select.epoll() 
@@ -1689,12 +1686,34 @@ class V4L2Listener(Thread):
                 self.epoll.close()
                 break
 
+    def update_ctrl(self, ctrl, value, updates):
+        if ctrl is not None and ctrl.value != value:
+            ctrl.value = value
+            updates.append(ctrl)
+
+    def query_fmt_changes(self):
+        updates = []
+        fmt = self.fmt_ctrls.get_fmt()
+        if fmt is not None:
+            self.update_ctrl(self.fmt_ctrls.pxf_ctrl, pxf2str(fmt.fmt.pix.pixelformat), updates)
+            self.update_ctrl(self.fmt_ctrls.res_ctrl, wh2str(fmt.fmt.pix), updates)
+
+        self.update_ctrl(self.fmt_ctrls.fps_ctrl, self.fmt_ctrls.get_fps(), updates)
+
+        # these are reopener controls, use only the first to avoid multiple reopenings
+        if len(updates):
+            ctrl = updates[0]
+            logging.info(f'V4L2Listener: {ctrl.text_id}={ctrl.value}')
+            self.cb(ctrl)
+
     # thread start
     def run(self):
         event = v4l2_event()
         while not self.epoll.closed:
             p = self.epoll.poll(1)
             if len(p) == 0:
+                if not self.epoll.closed:
+                    self.query_fmt_changes()
                 continue
             (fd , v) = p[0]
             if v == select.POLLNVAL or v == select.POLLERR:
@@ -1729,6 +1748,9 @@ class V4L2FmtCtrls:
         self.device = device
         self.fd = fd
         self.ctrls = []
+        self.pxf_ctrl = None
+        self.res_ctrl = None
+        self.fps_ctrl = None
         self.get_format_ctrls()
 
     def get_ctrls(self):
@@ -1754,12 +1776,8 @@ class V4L2FmtCtrls:
                 self.set_fps(ctrl, v, errs)
 
     def get_format_ctrls(self):
-        fmt = v4l2_format()
-        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
-        try:
-            ioctl(self.fd, VIDIOC_G_FMT, fmt)
-        except Exception as e:
-            logging.warning(f'V4L2FmtCtrls: Can\'t get fmt {e}')
+        fmt = self.get_fmt()
+        if fmt is None:
             return
 
         pixelformat = pxf2str(fmt.fmt.pix.pixelformat)
@@ -1776,28 +1794,28 @@ class V4L2FmtCtrls:
         path = self.device
         real_path = os.path.abspath(os.path.join(os.path.dirname(path), os.readlink(path))) if os.path.islink(path) else path
 
+        # must reopen the fd, because changing these lock the device, and can't be open by another processes
+        self.pxf_ctrl = BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, tooltip='Output pixel format', menu=[
+            BaseCtrlMenu(fmt, fmt, None) for fmt in fmts
+        ])
+
         self.ctrls = [
-            # must reopen the fd, because changing these lock the device, and can't be open by another processes
-            BaseCtrl('pixelformat', 'Pixel format', 'menu', pixelformat, reopener=True, tooltip='Output pixel format', menu=[
-                BaseCtrlMenu(fmt, fmt, None) for fmt in fmts
-            ]),
+            self.pxf_ctrl,
             BaseCtrl('card', 'Card', 'info', card, tooltip=V4L2_CAP_CARD_DESC),
             BaseCtrl('driver', 'Driver', 'info', driver, tooltip=V4L2_CAP_DRIVER_DESC),
             BaseCtrl('path', 'Path', 'info', path, tooltip=V4L2_PATH_DESC),
             BaseCtrl('real_path', 'Real Path', 'info', real_path, tooltip=V4L2_REAL_PATH_DESC),
         ]
         if len(resolutions) > 0:
-            self.ctrls.append(
-                BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, tooltip='Resolution in pixels', menu=[
-                    BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
-                ]),
-            )
+            self.res_ctrl = BaseCtrl('resolution', 'Resolution', 'menu', resolution, reopener=True, tooltip='Resolution in pixels', menu=[
+                BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
+            ])
+            self.ctrls.append(self.res_ctrl)
         if len(framerates) > 0:
-            self.ctrls.append(
-                BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, tooltip='Frame per second', menu=[
-                    BaseCtrlMenu(fps, fps, None) for fps in framerates
-                ]), # fps menu should be dropdown
-            )
+            self.fps_ctrl = BaseCtrl('fps', 'FPS', 'menu', fps, reopener=True, menu_dd=True, tooltip='Frame per second', menu=[
+                BaseCtrlMenu(fps, fps, None) for fps in framerates
+            ]) # fps menu should be dropdown
+            self.ctrls.append(self.fps_ctrl)
 
     def set_pixelformat(self, ctrl, pixelformat, errs):
         fmt = v4l2_format()
@@ -1844,6 +1862,17 @@ class V4L2FmtCtrls:
             return
 
         ctrl.value = resolution
+
+    def get_fmt(self):
+        fmt = v4l2_format()
+        fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
+        try:
+            ioctl(self.fd, VIDIOC_G_FMT, fmt)
+        except Exception as e:
+            logging.warning(f'V4L2FmtCtrls: Can\'t get fmt {e}')
+            return None
+        
+        return fmt
 
     def get_fps(self):
         parm = v4l2_streamparm()
@@ -2166,9 +2195,10 @@ class CameraCtrls:
         self.device = device
         self.fd = fd
         self.v4l_ctrls = V4L2Ctrls(device, fd)
+        self.fmt_ctrls = V4L2FmtCtrls(device, fd)
         self.ctrls = [
             self.v4l_ctrls,
-            V4L2FmtCtrls(device, fd),
+            self.fmt_ctrls,
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
             SystemdSaver(self),
@@ -2336,7 +2366,9 @@ class CameraCtrls:
         return pages
 
     def subscribe_events(self, cb, err_cb):
-        return self.v4l_ctrls.subscribe_events(cb, err_cb)
+        thread = V4L2Listener(self.v4l_ctrls, self.fmt_ctrls, cb, err_cb)
+        thread.start()
+        return thread
 
 
 def usage():
