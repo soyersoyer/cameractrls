@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.10] - 2023-08-03
+
+### Added
+ - Listen for pixelformat, resolution, FPS changes from other processes
+ - Show warnings about invalid FPS values
+
+### Changed
+ - Preview calls S_PARM to make uninitialized cameras work
+
 ## [0.5.9] - 2023-07-07
 
 ### Added
