@@ -373,16 +373,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                     err = f'Control {c.text_id}: Can\'t find {c.value} in {[m.text_id for m in c.menu]}'
                                     logging.warning(err)
                                     self.notify(err)
-                            wb_dd.connect('notify::selected', lambda e,_,c=c: [
-                                self.update_ctrl(c, c.menu[e.get_selected()].text_id),
-                                # XXX: Workaround: GTK emits a signal or calls something later on the ComboBox widget,
-                                # it can cause GTK assert warnings or a silent exit in some environments
-                                #
-                                # preserve_widget saves it to prevent to be destroyed by the GC
-                                # it can be fixed properly with updating only the underlying model
-                                # not to recreate everything in case the ctrl is a reopener
-                                self.preserve_widget(e),
-                                ])
+                            wb_dd.connect('notify::selected', lambda e,_,c=c: GLib.idle_add(self.update_ctrl, c, c.menu[e.get_selected()].text_id))
                             refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                             if c.default is not None:
                                 refresh.connect('clicked', lambda e,c=c,wb_dd=wb_dd: wb_dd.set_selected(find_idx(c.menu, lambda m: m.text_id == c.default)))
@@ -445,9 +436,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         if c.gui_value_set:
             c.gui_value_set(c.value)
         self.update_ctrl_state(c)
-
-    def preserve_widget(self, widget):
-        self.preserved_widget = widget
 
 class CameraCtrlsApp(Gtk.Application):
     def __init__(self, *args, **kwargs):
