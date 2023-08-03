@@ -77,19 +77,19 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         hamburger_button = Gtk.MenuButton(
             popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=hambuger_menu),
-            image=Gtk.Image.new_from_icon_name('open-menu-symbolic', Gtk.IconSize.MENU),
+            image=Gtk.Image(icon_name='open-menu-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
         )
 
         self.open_cam_button = Gtk.Button(
             action_name='app.open_camera_window',
             action_target=GLib.Variant('s', ''),
-            image=Gtk.Image.new_from_icon_name('camera-video-symbolic', Gtk.IconSize.MENU),
+            image=Gtk.Image(icon_name='camera-video-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
         )
 
         refresh_button = Gtk.Button(
-            image=Gtk.Image.new_from_icon_name('view-refresh-symbolic', Gtk.IconSize.MENU),
+            image=Gtk.Image(icon_name='view-refresh-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
         )
         refresh_button.connect('clicked', lambda e: self.refresh_devices())
@@ -124,7 +124,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         self.device_sw = Gtk.MenuButton(
             popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=self.device_lb),
-            image=Gtk.Image.new_from_icon_name('view-more-symbolic', Gtk.IconSize.MENU),
+            image=Gtk.Image(icon_name='view-more-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
         )
         headerbar.pack_start(self.device_sw)
@@ -306,7 +306,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         if c.default is not None:
                             scale.add_mark(value=c.default, position=Gtk.PositionType.BOTTOM, markup=None)
                         
-                        refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                        refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(scale, False, False, 0)
@@ -317,7 +317,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                     elif c.type == 'boolean':
                         switch = Gtk.Switch(valign=Gtk.Align.CENTER, active=c.value, margin_right=5)
                         switch.connect('state-set', lambda w,state,c=c: self.update_ctrl(c, state))
-                        refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                        refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         if c.default is not None:
                             refresh.connect('clicked', lambda e,switch=switch,c=c: switch.set_active(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
@@ -332,7 +332,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         box = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True,
                                         min_children_per_line=children_per_line, max_children_per_line=children_per_line,
                                         selection_mode=Gtk.SelectionMode.NONE)
-                        refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                        refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(box, False, False, 0)
                         for m in filtered_menu:
@@ -360,20 +360,20 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             box.set_homogeneous(False)
                             rb = None
                             for m in c.menu:
-                                rb = Gtk.RadioButton.new_with_label_from_widget(radio_group_member=rb, label=m.name)
+                                rb = Gtk.RadioButton(group=rb, label=m.name)
                                 rb.set_mode(False)
                                 rb.set_active(m.text_id == c.value)
                                 rb.connect('toggled', lambda b, c=c, m=m: self.update_ctrl(c, m.text_id) if b.get_active() else None)
                                 box.add(rb)
                                 m.gui_rb = rb
                             if c.value is None:
-                                rb = Gtk.RadioButton.new_with_label_from_widget(radio_group_member=rb, label='Undefined')
+                                rb = Gtk.RadioButton(group=rb, label='Undefined')
                                 rb.set_mode(False)
                                 rb.set_active(True)
                                 rb.set_no_show_all(True)
                                 box.add(rb)
 
-                            refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                            refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                             if c.default is not None:
                                 refresh.connect('clicked', lambda e,c=c: find_by_text_id(c.menu, c.default).gui_rb.set_active(True))
                             ctrl_box.pack_start(refresh, False, False, 0)
@@ -394,7 +394,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                     logging.warning(err)
                                     self.notify(err)
                             wb_cb.connect('changed', lambda e,c=c: GLib.idle_add(self.update_ctrl, c, c.menu[e.get_active()].text_id))
-                            refresh = Gtk.Button(image=Gtk.Image.new_from_icon_name('edit-undo-symbolic', Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
+                            refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                             if c.default is not None:
                                 refresh.connect('clicked', lambda e,c=c,wb_cb=wb_cb: wb_cb.set_active(find_idx(c.menu, lambda m: m.text_id == c.default)))
                             ctrl_box.pack_start(refresh, False, False, 0)
