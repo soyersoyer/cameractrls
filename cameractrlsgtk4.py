@@ -439,6 +439,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             c.gui_default_btn.set_can_focus(visible)
 
     def update_ctrl_value(self, c):
+        if c.reopener:
+            self.reopen_device()
+            return
         if c.gui_value_set:
             c.gui_value_set(c.value)
         self.update_ctrl_state(c)

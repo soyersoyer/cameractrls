@@ -260,6 +260,9 @@ class CameraCtrlsGui:
         self.update_default_btn(c)
 
     def update_ctrl_value(self, c):
+        if c.reopener:
+            self.reopen_device()
+            return
         if c.value is not None:
             c.var.set(c.value)
         self.update_ctrl_state(c)
