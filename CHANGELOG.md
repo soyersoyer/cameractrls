@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.11] - 2023-10-13
+
+### Fixed
+ - Handle invalid menu control value
+
 ## [0.5.10] - 2023-08-03
 
 ### Added

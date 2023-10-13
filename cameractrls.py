@@ -5,7 +5,7 @@ from fcntl import ioctl
 from threading import Thread
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
-version = 'v0.5.10'
+version = 'v0.5.11'
 
 
 v4ldirs = {
