@@ -1644,6 +1644,13 @@ class V4L2Ctrls:
                         if v4l2ctrl.default == qmenu.index:
                             v4l2ctrl.default = menu_text_id
 
+                    # when there is no menu item for the value
+                    # it should be None
+                    if isinstance(v4l2ctrl.value, int):
+                        v4l2ctrl.value = None
+                    if isinstance(v4l2ctrl.default, int):
+                        v4l2ctrl.default = None
+
                 ctrls.append(v4l2ctrl)
             qctrl = v4l2_queryctrl(qctrl.id | next_flag)
 
