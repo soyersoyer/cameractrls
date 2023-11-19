@@ -103,7 +103,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.zero_box.append(Gtk.Label(label='Please permit access with', max_width_chars=30, wrap=True, margin_top=10))
             self.zero_box.append(Gtk.Label(label='snap connect cameractrls:camera', selectable=True, margin_bottom=10))
 
-        self.device_dd = Gtk.DropDown(model=Gtk.StringList(), hexpand=True, show_arrow=False)
+        self.device_dd = Gtk.DropDown(model=Gtk.StringList(), hexpand=True, halign=Gtk.Align.START, show_arrow=False)
         # use the default factory as list_factory
         self.device_dd.set_list_factory(self.device_dd.get_factory())
         self.device_dd.get_first_child().set_has_frame(False)
