@@ -41,6 +41,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.12" date="2023-12-08">
+            <description>
+                <ul>
+                    <li>Brio 505 FoV support (thx squiddity)</li>
+                    <li>fixed 'list more' button size in the GTK4 app</li>
+                    <li>fixed release events of scale widget in the GTK4 app</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.11" date="2023-10-13">
             <description>
                 <ul>

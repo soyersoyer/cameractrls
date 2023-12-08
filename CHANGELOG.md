@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.5.12] - 2023-12-08
+
+### Added
+ - Brio 505 FoV support (thx squiddity)
+
+### Fixed
+ - fixed 'list more' button size in the GTK4 app
+ - fixed release events of scale widget in the GTK4 app
+
 ## [0.5.11] - 2023-10-13
 
 ### Fixed
