@@ -313,7 +313,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         c.gui_default_btn = refresh
 
                     elif c.type == 'button':
-                        filtered_menu = [m for m in c.menu if m.value is not None]
+                        filtered_menu = [m for m in c.menu if m.value is not None and not m.gui_hidden]
                         children_per_line = min(len(filtered_menu), 4)
                         box = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True,
                                         min_children_per_line=children_per_line, max_children_per_line=children_per_line,
@@ -326,7 +326,19 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         ctrl_box.append(box)
                         for m in filtered_menu:
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
-                            b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
+                            for controller in b.observe_controllers():
+                                if isinstance(controller, gi.repository.Gtk.GestureClick):
+                                    controller.connect('released', lambda gc, n, x, y, c=c, m=m: [
+                                        gc.set_state(Gtk.EventSequenceState.DENIED),
+                                        self.update_ctrl(c, m.text_id)
+                                    ])
+                            if m.lp_text_id is not None:
+                                lp = Gtk.GestureLongPress()
+                                lp.connect('pressed', lambda lp, x, y, c=c, m=m, b=b: [
+                                    lp.set_state(Gtk.EventSequenceState.CLAIMED),
+                                    self.update_ctrl(c, m.lp_text_id)
+                                ])
+                                b.add_controller(lp)
                             box.append(b)
                             c.gui_ctrls += b
                         if c.default is not None:

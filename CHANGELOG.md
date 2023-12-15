@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased] - 2023-xx-xx
+
+### Added
+ - Logitech PTZ presets
+
 ## [0.5.12] - 2023-12-08
 
 ### Added

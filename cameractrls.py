@@ -1063,10 +1063,12 @@ class BaseCtrl:
         self.format_value = format_value
 
 class BaseCtrlMenu:
-    def __init__(self, text_id, name, value):
+    def __init__(self, text_id, name, value, gui_hidden=False, lp_text_id=None):
         self.text_id = text_id
         self.name = name
         self.value = value
+        self.gui_hidden = gui_hidden
+        self.lp_text_id = lp_text_id
 
 class KiyoCtrl(BaseCtrl):
     def __init__(self, text_id, name, type, tooltip, menu, ):
@@ -1192,6 +1194,37 @@ LOGITECH_PERIPHERAL_PANTILT_RESET_OFFSET = 0
 LOGITECH_PERIPHERAL_PANTILT_RESET_PAN = b'\x01'
 LOGITECH_PERIPHERAL_PANTILT_RESET_TILT = b'\x02'
 LOGITECH_PERIPHERAL_PANTILT_RESET_BOTH = b'\x03'
+
+LOGITECH_PRESET_DEV_MATCH = [
+    '046d:0853', # PTZ Pro
+    '046d:0858', # Group camera
+    '046d:085f', # PTZ Pro 2
+    '046d:0866', # Meetup camera
+    '046d:0881', # Rally camera
+    '046d:0888', # Rally camera
+    '046d:0889', # Rally camera
+]
+
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SEL = 0x02
+LOGITECH_PERIPHERAL_PANTILT_PRESET_LEN = 1
+LOGITECH_PERIPHERAL_PANTILT_PRESET_OFFSET = 0
+
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_1 = b'\x04'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_2 = b'\x05'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_3 = b'\x06'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_4 = b'\x07'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_5 = b'\x08'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_6 = b'\x09'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_7 = b'\x0a'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_8 = b'\x0b'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_1 = b'\x0c'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_2 = b'\x0d'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_3 = b'\x0e'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_4 = b'\x0f'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_5 = b'\x10'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_6 = b'\x11'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_7 = b'\x12'
+LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_8 = b'\x13'
 
 
 LOGITECH_PERIPHERAL_LED1_SEL = 0x09
@@ -1358,6 +1391,38 @@ class LogitechCtrls:
                             BaseCtrlMenu('pan', 'Pan', LOGITECH_PERIPHERAL_PANTILT_RESET_PAN),
                             BaseCtrlMenu('tilt', 'Tilt', LOGITECH_PERIPHERAL_PANTILT_RESET_TILT),
                             BaseCtrlMenu('both', 'Both', LOGITECH_PERIPHERAL_PANTILT_RESET_BOTH),
+                        ],
+                    ),
+                ])
+            if try_xu_control(self.fd, peripheral_unit_id, LOGITECH_PERIPHERAL_PANTILT_PRESET_SEL)\
+                and self.usb_ids in LOGITECH_PRESET_DEV_MATCH:
+                self.ctrls.extend([
+                    LogitechCtrl(
+                        'logitech_pantilt_preset',
+                        'Pan/Tilt, Preset',
+                        'button',
+                        'Pan/Tilt, Preset\nClick goes to the preset\nLong press saves it',
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_PANTILT_PRESET_SEL,
+                        LOGITECH_PERIPHERAL_PANTILT_PRESET_LEN,
+                        LOGITECH_PERIPHERAL_PANTILT_PRESET_OFFSET,
+                        [
+                            BaseCtrlMenu('goto_1', '1', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_1, lp_text_id='save_1'),
+                            BaseCtrlMenu('goto_2', '2', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_2, lp_text_id='save_2'),
+                            BaseCtrlMenu('goto_3', '3', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_3, lp_text_id='save_3'),
+                            BaseCtrlMenu('goto_4', '4', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_4, lp_text_id='save_4'),
+                            BaseCtrlMenu('goto_5', '5', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_5, lp_text_id='save_5'),
+                            BaseCtrlMenu('goto_6', '6', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_6, lp_text_id='save_6'),
+                            BaseCtrlMenu('goto_7', '7', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_7, lp_text_id='save_7'),
+                            BaseCtrlMenu('goto_8', '8', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_8, lp_text_id='save_8'),
+                            BaseCtrlMenu('save_1', 'Save 1', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_1, gui_hidden=True),
+                            BaseCtrlMenu('save_2', 'Save 2', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_2, gui_hidden=True),
+                            BaseCtrlMenu('save_3', 'Save 3', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_3, gui_hidden=True),
+                            BaseCtrlMenu('save_4', 'Save 4', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_4, gui_hidden=True),
+                            BaseCtrlMenu('save_5', 'Save 5', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_5, gui_hidden=True),
+                            BaseCtrlMenu('save_6', 'Save 6', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_6, gui_hidden=True),
+                            BaseCtrlMenu('save_7', 'Save 7', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_7, gui_hidden=True),
+                            BaseCtrlMenu('save_8', 'Save 8', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_8, gui_hidden=True),                            
                         ],
                     ),
                 ])
