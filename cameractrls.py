@@ -1353,10 +1353,10 @@ class LogitechCtrls:
                         LOGITECH_PERIPHERAL_PANTILT_REL_LEN,
                         LOGITECH_PERIPHERAL_PANTILT_REL_OFFSET,
                         [
-                            BaseCtrlMenu('-8', '↞', LOGITECH_PERIPHERAL_PANTILT_REL_LEFT8),
-                            BaseCtrlMenu('-1', '←', LOGITECH_PERIPHERAL_PANTILT_REL_LEFT1),
-                            BaseCtrlMenu('1', '→', LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT1),
-                            BaseCtrlMenu('8', '↠', LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT8),
+                            BaseCtrlMenu('-8', '-8', LOGITECH_PERIPHERAL_PANTILT_REL_LEFT8),
+                            BaseCtrlMenu('-1', '-1', LOGITECH_PERIPHERAL_PANTILT_REL_LEFT1),
+                            BaseCtrlMenu('1', '+1', LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT1),
+                            BaseCtrlMenu('8', '+8', LOGITECH_PERIPHERAL_PANTILT_REL_RIGHT8),
                         ],
                     ),
                     LogitechCtrl(
@@ -1369,10 +1369,10 @@ class LogitechCtrls:
                         LOGITECH_PERIPHERAL_PANTILT_REL_LEN,
                         LOGITECH_PERIPHERAL_PANTILT_REL_OFFSET,
                         [
-                            BaseCtrlMenu('-3', '↡', LOGITECH_PERIPHERAL_PANTILT_REL_DOWN3),
-                            BaseCtrlMenu('-1', '↓', LOGITECH_PERIPHERAL_PANTILT_REL_DOWN1),
-                            BaseCtrlMenu('1', '↑', LOGITECH_PERIPHERAL_PANTILT_REL_UP1),
-                            BaseCtrlMenu('3', '↟', LOGITECH_PERIPHERAL_PANTILT_REL_UP3),
+                            BaseCtrlMenu('-3', '-3', LOGITECH_PERIPHERAL_PANTILT_REL_DOWN3),
+                            BaseCtrlMenu('-1', '-1', LOGITECH_PERIPHERAL_PANTILT_REL_DOWN1),
+                            BaseCtrlMenu('1', '+1', LOGITECH_PERIPHERAL_PANTILT_REL_UP1),
+                            BaseCtrlMenu('3', '+3', LOGITECH_PERIPHERAL_PANTILT_REL_UP3),
                         ],
                     ),
                 ])
