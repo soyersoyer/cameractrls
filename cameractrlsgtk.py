@@ -332,6 +332,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         box = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True,
                                         min_children_per_line=children_per_line, max_children_per_line=children_per_line,
                                         selection_mode=Gtk.SelectionMode.NONE)
+                        box.set_filter_func(lambda child: child.set_can_focus(False) or True)
                         refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         ctrl_box.pack_start(refresh, False, False, 0)
                         ctrl_box.pack_end(box, False, False, 0)

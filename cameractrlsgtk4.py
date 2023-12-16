@@ -321,6 +321,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                         # halign=Gtk.Align.END
                                         # GTK4 workaround
                                         halign=Gtk.Align.FILL if len(filtered_menu) > 4 else Gtk.Align.END)
+                        box.set_filter_func(lambda child: child.set_focusable(False) or True)
                         refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         ctrl_box.append(refresh)
                         ctrl_box.append(box)
