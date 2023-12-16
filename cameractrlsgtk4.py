@@ -327,14 +327,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         ctrl_box.append(box)
                         for m in filtered_menu:
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
-                            for controller in b.observe_controllers():
-                                if isinstance(controller, gi.repository.Gtk.GestureClick):
-                                    controller.connect('released', lambda gc, n, x, y, c=c, m=m: [
-                                        gc.set_state(Gtk.EventSequenceState.DENIED),
-                                        self.update_ctrl(c, m.text_id)
-                                    ])
+                            b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
                             if m.lp_text_id is not None:
-                                lp = Gtk.GestureLongPress()
+                                lp = Gtk.GestureLongPress(propagation_phase=Gtk.PropagationPhase.CAPTURE)
                                 lp.connect('pressed', lambda lp, x, y, c=c, m=m, b=b: [
                                     lp.set_state(Gtk.EventSequenceState.CLAIMED),
                                     self.update_ctrl(c, m.lp_text_id)
