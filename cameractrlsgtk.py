@@ -300,6 +300,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
                             scale.set_adjustment(adjustment_step)
+                        if c.step_big:
+                            scale.get_adjustment().set_page_increment(c.step_big)
                         if c.scale_class:
                             scale.get_style_context().add_class(c.scale_class)
 

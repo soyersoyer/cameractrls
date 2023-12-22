@@ -1042,7 +1042,7 @@ class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
                 inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
                 zeroer = False, scale_class = None, kernel_id = None, get_default = None,
-                format_value = None):
+                format_value = None, step_big = None):
         self.text_id = text_id
         self.kernel_id = kernel_id
         self.name = name
@@ -1061,6 +1061,7 @@ class BaseCtrl:
         self.scale_class = scale_class
         self.get_default = get_default
         self.format_value = format_value
+        self.step_big = step_big
 
 class BaseCtrlMenu:
     def __init__(self, text_id, name, value, gui_hidden=False, lp_text_id=None):
@@ -1677,6 +1678,9 @@ class V4L2Ctrls:
                 if qctrl.id in V4L2_CTRL_ZEROERS:
                     v4l2ctrl.zeroer = True
                     v4l2ctrl.default = 0
+                
+                if qctrl.id == V4L2_CID_ZOOM_ABSOLUTE:
+                    v4l2ctrl.step_big = 20
 
                 if qctrl.id == V4L2_CID_WHITE_BALANCE_TEMPERATURE:
                     v4l2ctrl.scale_class = 'white-balance-temperature'
