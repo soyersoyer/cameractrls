@@ -511,6 +511,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                 self.zoom_absolute_sc.set_value(zoom_lower)
             elif keyval in [Gdk.KEY_End]:
                 self.zoom_absolute_sc.set_value(zoom_upper)
+            elif keyval in [Gdk.KEY_Page_Up]:
+                self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
+            elif keyval in [Gdk.KEY_Page_Down]:
+                self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
             else:
                 return False
         else:
