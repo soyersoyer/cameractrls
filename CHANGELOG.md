@@ -1,9 +1,11 @@
 # Changelog
 
-## [Unreleased] - 2023-xx-xx
+## [0.5.13] - 2023-12-22
 
 ### Added
  - Logitech PTZ presets
+ - Better keyboard control for PTZ
+ - Bigger steps for Zoom with Ctrl+Dir, Page Up/Page Down
 
 ## [0.5.12] - 2023-12-08
 

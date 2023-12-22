@@ -41,6 +41,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.13" date="2023-12-22">
+            <description>
+                <ul>
+                    <li>Logitech PTZ presets</li>
+                    <li>Better keyboard control for PTZ</li>
+                    <li>Bigger steps for Zoom with Ctrl+Dir, Page Up/Page Down</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.12" date="2023-12-08">
             <description>
                 <ul>
