@@ -24,6 +24,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.frame = None
         self.device_dd = None
 
+        self.zoom_absolute = None
+        self.pan_speed_sc = None
+        self.tilt_speed_sc = None
+
         self.init_window()
         self.refresh_devices()
 
@@ -278,8 +282,11 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             for controller in scale.observe_controllers():
                                 if isinstance(controller, gi.repository.Gtk.GestureClick):
                                     controller.connect('released', lambda c, n, x, y, sc=scale: sc.set_value(0))
+                                if isinstance(controller, gi.repository.Gtk.ShortcutController):
+                                    scale.remove_controller(controller)
                                 if isinstance(controller, gi.repository.Gtk.EventControllerKey):
-                                    controller.connect('key-released', lambda c, keyval, keycode, state, sc=scale: sc.set_value(0))
+                                    controller.connect('key-pressed', self.handle_ptz_key_pressed)
+                                    controller.connect('key-released', self.handle_ptz_key_released)
                         if c.step and c.step != 1:
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
@@ -293,7 +300,16 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
                         if c.default is not None:
                             scale.add_mark(value=c.default, position=Gtk.PositionType.BOTTOM, markup=None)
-                        
+
+                        if c.text_id == 'zoom_absolute':
+                            self.zoom_absolute_sc = scale
+
+                        if c.text_id == 'pan_speed':
+                            self.pan_speed_sc = scale
+
+                        if c.text_id == 'tilt_speed':
+                            self.tilt_speed_sc = scale
+
                         refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.append(refresh)
@@ -449,6 +465,69 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         if c.gui_value_set:
             c.gui_value_set(c.value)
         self.update_ctrl_state(c)
+
+    def handle_ptz_key_pressed(self, c, keyval, keycode, state):
+        pan_lower = self.pan_speed_sc.get_adjustment().get_lower()
+        pan_upper =self.pan_speed_sc.get_adjustment().get_upper()
+        tilt_lower = self.tilt_speed_sc.get_adjustment().get_lower()
+        tilt_upper = self.tilt_speed_sc.get_adjustment().get_upper()
+
+        if keyval in [Gdk.KEY_Left, Gdk.KEY_KP_Left, Gdk.KEY_a]:
+            self.pan_speed_sc.set_value(pan_lower)
+        elif keyval in [Gdk.KEY_Right, Gdk.KEY_KP_Right, Gdk.KEY_d]:
+            self.pan_speed_sc.set_value(pan_upper)
+        elif keyval in [Gdk.KEY_Up, Gdk.KEY_KP_Up, Gdk.KEY_w]:
+            self.tilt_speed_sc.set_value(tilt_upper)
+        elif keyval in [Gdk.KEY_Down, Gdk.KEY_KP_Down, Gdk.KEY_s]:
+            self.tilt_speed_sc.set_value(tilt_lower)
+        elif keyval == Gdk.KEY_KP_End:
+            self.pan_speed_sc.set_value(pan_lower)
+            self.tilt_speed_sc.set_value(tilt_lower)
+        elif keyval == Gdk.KEY_KP_Page_Down:
+            self.pan_speed_sc.set_value(pan_upper)
+            self.tilt_speed_sc.set_value(tilt_lower)
+        elif keyval == Gdk.KEY_KP_Home:
+            self.pan_speed_sc.set_value(pan_lower)
+            self.tilt_speed_sc.set_value(tilt_upper)
+        elif keyval == Gdk.KEY_KP_Page_Up:
+            self.pan_speed_sc.set_value(pan_upper)
+            self.tilt_speed_sc.set_value(tilt_upper)
+        elif self.zoom_absolute_sc is not None:
+            zoom_value = self.zoom_absolute_sc.get_value()
+            zoom_step = self.zoom_absolute_sc.get_adjustment().get_step_increment()
+            zoom_page = self.zoom_absolute_sc.get_adjustment().get_page_increment()
+            zoom_lower = self.zoom_absolute_sc.get_adjustment().get_lower()
+            zoom_upper = self.zoom_absolute_sc.get_adjustment().get_upper()
+
+            if keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add] and state == Gdk.ModifierType.CONTROL_MASK:
+                self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
+            elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract] and state == Gdk.ModifierType.CONTROL_MASK:
+                self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
+            elif keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add]:
+                self.zoom_absolute_sc.set_value(zoom_value + zoom_step)
+            elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract]:
+                self.zoom_absolute_sc.set_value(zoom_value - zoom_step)
+            elif keyval in [Gdk.KEY_Home]:
+                self.zoom_absolute_sc.set_value(zoom_lower)
+            elif keyval in [Gdk.KEY_End]:
+                self.zoom_absolute_sc.set_value(zoom_upper)
+            else:
+                return False
+        else:
+            return False
+        return True
+
+    def handle_ptz_key_released(self, c, keyval, keycode, state):
+        if keyval in [Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_KP_Left, Gdk.KEY_KP_Right, Gdk.KEY_a, Gdk.KEY_d]:
+            self.pan_speed_sc.set_value(0)
+        elif keyval in [Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_KP_Up, Gdk.KEY_KP_Down, Gdk.KEY_w, Gdk.KEY_s]:
+            self.tilt_speed_sc.set_value(0)
+        elif keyval in [Gdk.KEY_KP_End, Gdk.KEY_KP_Page_Down, Gdk.KEY_KP_Home, Gdk.KEY_KP_Page_Up]:
+            self.pan_speed_sc.set_value(0)
+            self.tilt_speed_sc.set_value(0)
+        else:
+            return False
+        return True
 
 class CameraCtrlsApp(Gtk.Application):
     def __init__(self, *args, **kwargs):
