@@ -516,9 +516,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             zoom_lower = self.zoom_absolute_sc.get_adjustment().get_lower()
             zoom_upper = self.zoom_absolute_sc.get_adjustment().get_upper()
 
-            if keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add] and state == Gdk.ModifierType.CONTROL_MASK:
+            if keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add] and state & Gdk.ModifierType.CONTROL_MASK:
                 self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
-            elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract] and state == Gdk.ModifierType.CONTROL_MASK:
+            elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract] and state & Gdk.ModifierType.CONTROL_MASK:
                 self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
             elif keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add]:
                 self.zoom_absolute_sc.set_value(zoom_value + zoom_step)
