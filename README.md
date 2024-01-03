@@ -194,5 +194,6 @@ advantage of the true potential of each camera.
 
 If you want happy Linux customers and if your camera has custom controls that
 are missing from this app, just send me a camera and I'll add them.
+[Contact](mailto:soyer@irl.hu?subject=Partnership)
 
 Or of course, you can create a PR.
