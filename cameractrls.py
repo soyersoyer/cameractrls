@@ -1241,6 +1241,12 @@ LOGITECH_PERIPHERAL_LED1_MODE_DESC = 'Off. The LED is never illuminated, whether
 LOGITECH_PERIPHERAL_LED1_FREQUENCY_OFFSET = 3
 LOGITECH_PERIPHERAL_LED1_FREQUENCY_DESC = 'The frequency value only influences the \'Blinking\' mode.\nIt is expressed in units of 0.05 Hz and sets the blink frequency f.\nThe blink interval T = 1/f is defined as the time between two adjoining rising edges (or two adjoining falling edges).'
 
+LOGITECH_PERIPHERAL_MIC_SEL = 0x10
+LOGITECH_PERIPHERAL_MIC_LEN = 1
+LOGITECH_PERIPHERAL_MIC_OFFSET = 0
+
+LOGITECH_PERIPHERAL_MIC_OFF =   0x00
+LOGITECH_PERIPHERAL_MIC_ON =    0x01
 
 # Logitech user hw control v1 GUID 63610682-5070-49ab-b8cc-b3855e8d221f
 LOGITECH_USER_HW_CONTROL_V1_GUID = b'\x82\x06\x61\x63\x70\x50\xab\x49\xb8\xcc\xb3\x85\x5e\x8d\x22\x1f'
@@ -1425,6 +1431,23 @@ class LogitechCtrls:
                             BaseCtrlMenu('save_7', 'Save 7', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_7, gui_hidden=True),
                             BaseCtrlMenu('save_8', 'Save 8', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_8, gui_hidden=True),                            
                         ],
+                    ),
+                ])
+            if try_xu_control(self.fd, peripheral_unit_id, LOGITECH_PERIPHERAL_MIC_SEL):
+                self.ctrls.extend([
+                    LogitechCtrl(
+                        'logitech_mic',
+                        'Enable built-in mic',
+                        'menu',
+                        'Enable built-in mic',
+                        peripheral_unit_id,
+                        LOGITECH_PERIPHERAL_MIC_SEL,
+                        LOGITECH_PERIPHERAL_MIC_LEN,
+                        LOGITECH_PERIPHERAL_MIC_OFFSET,
+                        [
+                            BaseCtrlMenu('off', 'Off', LOGITECH_PERIPHERAL_MIC_OFF),
+                            BaseCtrlMenu('on', 'On', LOGITECH_PERIPHERAL_MIC_ON),
+                        ]
                     ),
                 ])
 
