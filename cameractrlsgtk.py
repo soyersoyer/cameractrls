@@ -357,7 +357,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
                             if m.lp_text_id is not None:
                                 m.gui_lp = Gtk.GestureLongPress(widget=b)
-                                m.gui_lp.connect('pressed', lambda lp, x, y, c=c, m=m, b=b: [
+                                m.gui_lp.connect('pressed', lambda lp, x, y, c=c, m=m: [
                                     lp.set_state(Gtk.EventSequenceState.CLAIMED),
                                     self.update_ctrl(c, m.lp_text_id)
                                 ])

@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+ - Eliminating GLib warnings on app closing
+
 ## [0.5.13] - 2023-12-22
 
 ### Added
