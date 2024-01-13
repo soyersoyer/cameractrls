@@ -34,6 +34,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device = None
         self.camera = None
         self.listener = None
+        self.spnav = None
 
         self.grid = None
         self.frame = None
@@ -213,6 +214,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             lambda c: GLib.idle_add(self.update_ctrl_value, c),
             lambda errs: GLib.idle_add(self.notify, '\n'.join(errs)),
         )
+        self.spnav = self.camera.start_spnav(
+            lambda errs: GLib.idle_add(self.notify, '\n'.join(errs)),
+        )
         self.device = device
         self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device.path))
 
@@ -223,6 +227,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.camera = None
             self.listener.stop()
             self.listener = None
+            self.spnav.stop()
+            self.spnav = None
             os.close(self.fd)
             self.fd = 0
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ctypes, logging, os.path, getopt, sys, subprocess, select
+import ctypes, ctypes.util, logging, os.path, getopt, sys, subprocess, select, time, math
 from fcntl import ioctl
 from threading import Thread
 
@@ -1567,6 +1567,8 @@ class V4L2Ctrl(BaseCtrl):
     def __init__(self, v4l2_id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
         super().__init__(text_id, name, type, value, default, min, max, step, menu=menu)
         self.v4l2_id = v4l2_id
+        self.last_set = 0
+        self.repeat = None
 
 class V4L2Ctrls:
     to_type = {
@@ -2256,6 +2258,177 @@ PathExists={device}
 WantedBy=paths.target
 """
 
+spnav_event_type = enum
+(
+    SPNAV_EVENT_ANY,	# used by spnav_remove_events()
+    SPNAV_EVENT_MOTION,
+    SPNAV_EVENT_BUTTON,	# includes both press and release
+) = range(3)
+
+class spnav_event_motion(ctypes.Structure):
+    _fields_ = [
+        ('type', ctypes.c_int),
+        ('x', ctypes.c_int),
+        ('y', ctypes.c_int),
+        ('z', ctypes.c_int),
+        ('rx', ctypes.c_int),
+        ('ry', ctypes.c_int),
+        ('rz', ctypes.c_int),
+        ('period', ctypes.c_uint),
+        ('data', ctypes.POINTER(ctypes.c_int)),
+    ]
+
+class spnav_event_button(ctypes.Structure):
+    _fields_ = [
+        ('type', ctypes.c_int),
+        ('press', ctypes.c_int),
+        ('bnum', ctypes.c_int),
+    ]
+
+class spnav_event(ctypes.Union):
+    _fields_ = [
+        ('type', ctypes.c_int),
+        ('motion', spnav_event_motion),
+        ('button', spnav_event_button),
+    ]
+
+def set_repeat_interval(ctrl):
+    e2e_ns = 4000000000
+
+    if ctrl:
+        ctrl.repeat = e2e_ns / ((ctrl.max - ctrl.min) / ctrl.step)
+
+class SPNavListener(Thread):
+    def __init__(self, ctrls, v4l_ctrls, err_cb):
+        super().__init__()
+
+        self.ctrls = ctrls
+        self.err_cb = err_cb
+        self.epoll = select.epoll() 
+
+        self.zoom_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_ZOOM_ABSOLUTE)
+        self.pan_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_ABSOLUTE)
+        self.tilt_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_TILT_ABSOLUTE)
+        self.pan_speed = v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_SPEED)
+        self.tilt_speed = v4l_ctrls.find_by_v4l2_id(V4L2_CID_TILT_SPEED)
+
+        set_repeat_interval(self.zoom_absolute)
+        set_repeat_interval(self.pan_absolute)
+        set_repeat_interval(self.tilt_absolute)
+
+        if not any([self.zoom_absolute, self.pan_absolute, self.tilt_absolute, self.pan_speed, self.tilt_speed]):
+            self.epoll.close()
+            return
+
+        spnavlib = ctypes.util.find_library('spnav')
+        spnav = ctypes.CDLL(spnavlib) if spnavlib is not None else None
+        if spnav is None:
+            logging.info(f'SPNavListener: Failed to open spnav library')
+            self.epoll.close()
+            return
+
+        self.spnav_open = spnav.spnav_open
+        self.spnav_open.restype = ctypes.c_int
+        self.spnav_open.argtypes = []
+        # int spnav_open(void);
+
+        self.spnav_fd = spnav.spnav_fd
+        self.spnav_fd.restype = ctypes.c_int
+        self.spnav_fd.argtypes = []
+        # int spnav_fd(void);
+
+        self.spnav_poll_event = spnav.spnav_poll_event
+        self.spnav_poll_event.restype = ctypes.c_int
+        self.spnav_poll_event.argtypes = [ctypes.POINTER(spnav_event)]
+        # int spnav_poll_event(spnav_event *event);
+
+        self.spnav_close = spnav.spnav_close
+        self.spnav_close.restype = ctypes.c_int
+        self.spnav_close.argtypes = []
+        # int spnav_close(void);
+
+        if self.spnav_open() == -1:
+            self.err_cb(collect_warning(f'SPNavListener: Failed to open device', []))
+            self.epoll.close()
+            return
+
+        self.fd = self.spnav_fd()
+        self.epoll.register(self.fd, select.POLLIN | select.POLLERR)
+
+    # thread start
+    def run(self):
+        th = 200
+
+        if self.epoll.closed:
+            return
+
+        event = spnav_event()
+        while not self.epoll.closed:
+            p = self.epoll.poll(1)
+            if len(p) == 0:
+                continue
+            (fd , v) = p[0]
+            if v == select.POLLERR:
+                self.err_cb(collect_warning(f'SPNavListener POLLERR', []))
+                break
+
+            if self.spnav_poll_event(event) == 0:
+                self.err_cb(collect_warning(f'SPNavListener spnav_poll_event failed', []))
+                break
+
+            errs = []
+            now = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+            if event.type == SPNAV_EVENT_MOTION:
+                if self.zoom_absolute and not -th < event.motion.z < th and self.zoom_absolute.last_set + self.zoom_absolute.repeat < now:
+                    step = math.copysign(self.zoom_absolute.step or 1, event.motion.z)
+                    value = self.zoom_absolute.value + step
+                    if self.zoom_absolute.min <= value <= self.zoom_absolute.max:
+                        self.ctrls.setup_ctrls({self.zoom_absolute.text_id: value}, errs)
+                        self.zoom_absolute.last_set = now
+
+                if self.pan_absolute and not -th < event.motion.x < th and self.pan_absolute.last_set + self.pan_absolute.repeat < now:
+                    step = math.copysign(self.pan_absolute.step or 1, event.motion.x)
+                    value = self.pan_absolute.value + step
+                    if self.pan_absolute.min <= value <= self.pan_absolute.max:
+                        self.ctrls.setup_ctrls({self.pan_absolute.text_id: value}, errs)
+                        self.pan_absolute.last_set = now
+
+                if self.tilt_absolute and not -th < event.motion.y < th and self.tilt_absolute.last_set + self.tilt_absolute.repeat < now:
+                    step = math.copysign(self.tilt_absolute.step or 1, event.motion.y)
+                    value = self.tilt_absolute.value + step
+                    if self.tilt_absolute.min <= value <= self.tilt_absolute.max:
+                        self.ctrls.setup_ctrls({self.tilt_absolute.text_id: value}, errs)
+                        self.tilt_absolute.last_set = now
+
+                if self.pan_speed:
+                    step = math.copysign(self.pan_speed.step or 1, -event.motion.ry)
+                    value = 0 if -th < event.motion.ry < th else step
+                    if value != self.pan_speed.value:
+                        self.ctrls.setup_ctrls({self.pan_speed.text_id: value}, errs)
+
+                if self.tilt_speed:
+                    step = math.copysign(self.tilt_speed.step or 1, event.motion.rx)
+                    value = 0 if -th < event.motion.rx < th else step
+                    if value != self.tilt_speed.value:
+                        self.ctrls.setup_ctrls({self.tilt_speed.text_id: value}, errs)
+
+            if event.type == SPNAV_EVENT_BUTTON:
+                if event.button.bnum == 1 and event.button.press == 0:
+                    if self.zoom_absolute:
+                        self.ctrls.setup_ctrls({self.zoom_absolute.text_id: self.zoom_absolute.default}, errs)
+                    if self.pan_absolute:
+                        self.ctrls.setup_ctrls({self.pan_absolute.text_id: self.pan_absolute.default}, errs)
+                    if self.tilt_absolute:
+                        self.ctrls.setup_ctrls({self.tilt_absolute.text_id: self.tilt_absolute.default}, errs)
+            
+            if errs:
+                self.err_cb(errs)
+
+        self.spnav_close()
+
+    def stop(self):
+        self.epoll.close()
+
 class CtrlPage:
     def __init__(self, title, categories, target='main'):
         self.title = title
@@ -2444,6 +2617,11 @@ class CameraCtrls:
 
     def subscribe_events(self, cb, err_cb):
         thread = V4L2Listener(self.v4l_ctrls, self.fmt_ctrls, cb, err_cb)
+        thread.start()
+        return thread
+
+    def start_spnav(self, err_cb):
+        thread = SPNavListener(self, self.v4l_ctrls, err_cb)
         thread.start()
         return thread
 

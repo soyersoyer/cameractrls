@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+ - 3DConnexion SpaceMouse support to control PTZ cameras
+
 ### Fixed
  - Eliminating GLib warnings on app closing
 
