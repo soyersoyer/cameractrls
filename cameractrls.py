@@ -2357,7 +2357,7 @@ class SPNavListener(Thread):
 
     # thread start
     def run(self):
-        th = 200
+        th = 133
 
         if self.epoll.closed:
             return
