@@ -2304,7 +2304,7 @@ class SPNavListener(Thread):
 
         self.ctrls = ctrls
         self.err_cb = err_cb
-        self.epoll = select.epoll() 
+        self.epoll = select.epoll()
 
         self.zoom_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_ZOOM_ABSOLUTE)
         self.pan_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_ABSOLUTE)
@@ -2420,7 +2420,7 @@ class SPNavListener(Thread):
                         self.ctrls.setup_ctrls({self.pan_absolute.text_id: self.pan_absolute.default}, errs)
                     if self.tilt_absolute:
                         self.ctrls.setup_ctrls({self.tilt_absolute.text_id: self.tilt_absolute.default}, errs)
-            
+
             if errs:
                 self.err_cb(errs)
 
