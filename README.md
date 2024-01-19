@@ -167,7 +167,7 @@ Control your PTZ camera with the arrow keys of your keyboard while one of the PT
 
 ## - 3Dconnexion SpaceMouse
 
-Control your camera with your 6DoF [SpaceMouse](https://3dconnexion.com/hu/product/spacemouse-compact/).
+Control your camera with your 6DoF [SpaceMouse](https://3dconnexion.com/product/spacemouse-compact/).
 
 Z => zoom_absolute, X => pan_absolute, Y => tilt_absolute, RY => pan_speed, RX => tilt_speed
 
