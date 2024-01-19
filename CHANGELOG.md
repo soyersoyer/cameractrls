@@ -4,8 +4,10 @@
 
 ### Added
  - 3DConnexion SpaceMouse support to control PTZ cameras
+ - Use Page Up/Page Down for Zoom also (PTZ)
 
 ### Fixed
+ - Fix Ctrl detection in PTZ controls
  - Eliminating GLib warnings on app closing
 
 ## [0.5.13] - 2023-12-22
