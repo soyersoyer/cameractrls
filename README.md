@@ -159,6 +159,33 @@ shortcuts:
   c: COLORMAP next (shift+c prev)
 ```
 
+# PTZ controls
+
+## - Arrow keys
+
+Control your PTZ camera with the arrow keys of your keyboard while one of the PTZ control is in focus.
+
+## - 3Dconnexion SpaceMouse
+
+Control your camera with your 6DoF [SpaceMouse](https://3dconnexion.com/hu/product/spacemouse-compact/).
+
+Z => zoom_absolute, X => pan_absolute, Y => tilt_absolute, RY => pan_speed, RX => tilt_speed
+
+It requires spacenavd and libspnav. (optional, only if you have a SpaceMouse)
+
+```shell
+sudo apt install spacenavd libspnav0
+sudo cp /usr/share/doc/spacenavd/examples/example-spnavrc /etc/spnavrc
+```
+
+or via dnf:
+```shell
+sudo dnf install spacenavd libspnav
+sudo cp /usr/share/doc/spacenavd/example-spnavrc /etc/spnavrc
+```
+
+tip: set `led = auto` in /etc/spnavrc
+
 # Updating the cameractrls
 
 ```shell
