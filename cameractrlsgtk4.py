@@ -290,8 +290,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             for controller in scale.observe_controllers():
                                 if isinstance(controller, gi.repository.Gtk.GestureClick):
                                     controller.connect('released', lambda c, n, x, y, sc=scale: sc.set_value(0))
-                                if isinstance(controller, gi.repository.Gtk.ShortcutController):
-                                    scale.remove_controller(controller)
                                 if isinstance(controller, gi.repository.Gtk.EventControllerKey):
                                     controller.connect('key-pressed', self.handle_ptz_speed_key_pressed)
                                     controller.connect('key-released', self.handle_ptz_speed_key_released)
