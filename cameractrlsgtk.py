@@ -516,30 +516,34 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.pan_speed_sc.set_value(pan_upper)
             self.tilt_speed_sc.set_value(tilt_upper)
         elif self.zoom_absolute_sc is not None:
-            zoom_value = self.zoom_absolute_sc.get_value()
-            zoom_step = self.zoom_absolute_sc.get_adjustment().get_step_increment()
-            zoom_page = self.zoom_absolute_sc.get_adjustment().get_page_increment()
-            zoom_lower = self.zoom_absolute_sc.get_adjustment().get_lower()
-            zoom_upper = self.zoom_absolute_sc.get_adjustment().get_upper()
+            return self.handle_ptz_key_pressed_zoom(keyval, state)
+        else:
+            return False
+        return True
 
-            if keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add] and state & Gdk.ModifierType.CONTROL_MASK:
-                self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
-            elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract] and state & Gdk.ModifierType.CONTROL_MASK:
-                self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
-            elif keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add]:
-                self.zoom_absolute_sc.set_value(zoom_value + zoom_step)
-            elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract]:
-                self.zoom_absolute_sc.set_value(zoom_value - zoom_step)
-            elif keyval in [Gdk.KEY_Home]:
-                self.zoom_absolute_sc.set_value(zoom_lower)
-            elif keyval in [Gdk.KEY_End]:
-                self.zoom_absolute_sc.set_value(zoom_upper)
-            elif keyval in [Gdk.KEY_Page_Up]:
-                self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
-            elif keyval in [Gdk.KEY_Page_Down]:
-                self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
-            else:
-                return False
+    def handle_ptz_key_pressed_zoom(self, keyval, state):
+        zoom_value = self.zoom_absolute_sc.get_value()
+        zoom_step = self.zoom_absolute_sc.get_adjustment().get_step_increment()
+        zoom_page = self.zoom_absolute_sc.get_adjustment().get_page_increment()
+        zoom_lower = self.zoom_absolute_sc.get_adjustment().get_lower()
+        zoom_upper = self.zoom_absolute_sc.get_adjustment().get_upper()
+
+        if keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add] and state & Gdk.ModifierType.CONTROL_MASK:
+            self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
+        elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract] and state & Gdk.ModifierType.CONTROL_MASK:
+            self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
+        elif keyval in [Gdk.KEY_plus, Gdk.KEY_KP_Add]:
+            self.zoom_absolute_sc.set_value(zoom_value + zoom_step)
+        elif keyval in [Gdk.KEY_minus, Gdk.KEY_KP_Subtract]:
+            self.zoom_absolute_sc.set_value(zoom_value - zoom_step)
+        elif keyval in [Gdk.KEY_Home]:
+            self.zoom_absolute_sc.set_value(zoom_lower)
+        elif keyval in [Gdk.KEY_End]:
+            self.zoom_absolute_sc.set_value(zoom_upper)
+        elif keyval in [Gdk.KEY_Page_Up]:
+            self.zoom_absolute_sc.set_value(zoom_value + zoom_page)
+        elif keyval in [Gdk.KEY_Page_Down]:
+            self.zoom_absolute_sc.set_value(zoom_value - zoom_page)
         else:
             return False
         return True
