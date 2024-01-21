@@ -25,7 +25,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.frame = None
         self.device_dd = None
 
-        self.zoom_absolute = None
+        self.zoom_absolute_sc = None
         self.pan_speed_sc = None
         self.tilt_speed_sc = None
 
