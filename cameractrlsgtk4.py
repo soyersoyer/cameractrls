@@ -28,6 +28,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.zoom_absolute_sc = None
         self.pan_speed_sc = None
         self.tilt_speed_sc = None
+        self.pan_absolute_sc = None
+        self.tilt_absolute_sc = None
 
         self.init_window()
         self.refresh_devices()
@@ -316,6 +318,17 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         if c.text_id == 'tilt_speed':
                             self.tilt_speed_sc = scale
 
+                        if c.text_id == 'pan_absolute':
+                            self.pan_absolute_sc = scale
+
+                        if c.text_id == 'tilt_absolute':
+                            self.tilt_absolute_sc = scale
+
+                        if c.text_id in ['pan_absolute', 'tilt_absolute']:
+                            for controller in scale.observe_controllers():
+                                if isinstance(controller, gi.repository.Gtk.EventControllerKey):
+                                    controller.connect('key-pressed', self.handle_ptz_absolute_key_pressed)
+
                         refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.append(refresh)
@@ -498,6 +511,41 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         elif keyval == Gdk.KEY_KP_Page_Up:
             self.pan_speed_sc.set_value(pan_upper)
             self.tilt_speed_sc.set_value(tilt_upper)
+        elif self.zoom_absolute_sc is not None:
+            return self.handle_ptz_key_pressed_zoom(keyval, state)
+        else:
+            return False
+        return True
+
+    def handle_ptz_absolute_key_pressed(self, c, keyval, keycode, state):
+        pan_value = self.pan_absolute_sc.get_value()
+        pan_step = self.pan_absolute_sc.get_adjustment().get_step_increment()
+        tilt_value = self.tilt_absolute_sc.get_value()
+        tilt_step = self.tilt_absolute_sc.get_adjustment().get_step_increment()
+    
+        if keyval in [Gdk.KEY_Left, Gdk.KEY_KP_Left, Gdk.KEY_a]:
+            self.pan_absolute_sc.set_value(pan_value - pan_step)
+        elif keyval in [Gdk.KEY_Right, Gdk.KEY_KP_Right, Gdk.KEY_d]:
+            self.pan_absolute_sc.set_value(pan_value + pan_step)
+        elif keyval in [Gdk.KEY_Up, Gdk.KEY_KP_Up, Gdk.KEY_w]:
+            self.tilt_absolute_sc.set_value(tilt_value + tilt_step)
+        elif keyval in [Gdk.KEY_Down, Gdk.KEY_KP_Down, Gdk.KEY_s]:
+            self.tilt_absolute_sc.set_value(tilt_value - tilt_step)
+        elif keyval == Gdk.KEY_KP_End:
+            self.pan_absolute_sc.set_value(pan_value - pan_step)
+            self.tilt_absolute_sc.set_value(tilt_value - tilt_step)
+        elif keyval == Gdk.KEY_KP_Page_Down:
+            self.pan_absolute_sc.set_value(pan_value + pan_step)
+            self.tilt_absolute_sc.set_value(tilt_value - tilt_step)
+        elif keyval == Gdk.KEY_KP_Home:
+            self.pan_absolute_sc.set_value(pan_value - pan_step)
+            self.tilt_absolute_sc.set_value(tilt_value + tilt_step)
+        elif keyval == Gdk.KEY_KP_Page_Up:
+            self.pan_absolute_sc.set_value(pan_value + pan_step)
+            self.tilt_absolute_sc.set_value(tilt_value + tilt_step)
+        elif keyval == Gdk.KEY_KP_Insert:
+            self.pan_absolute_sc.set_value(0)
+            self.tilt_absolute_sc.set_value(0)
         elif self.zoom_absolute_sc is not None:
             return self.handle_ptz_key_pressed_zoom(keyval, state)
         else:

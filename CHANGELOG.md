@@ -5,6 +5,7 @@
 ### Added
  - 3DConnexion SpaceMouse support to control PTZ cameras
  - Use Page Up/Page Down for Zoom also (PTZ)
+ - Keyboard controls for Absolute PTZ
 
 ### Fixed
  - Fix Ctrl detection in PTZ controls
