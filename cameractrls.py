@@ -1064,12 +1064,13 @@ class BaseCtrl:
         self.step_big = step_big
 
 class BaseCtrlMenu:
-    def __init__(self, text_id, name, value, gui_hidden=False, lp_text_id=None):
+    def __init__(self, text_id, name, value, gui_hidden=False, lp_text_id=None, use_shortcut=False):
         self.text_id = text_id
         self.name = name
         self.value = value
         self.gui_hidden = gui_hidden
         self.lp_text_id = lp_text_id
+        self.use_shortcut = use_shortcut
 
 class KiyoCtrl(BaseCtrl):
     def __init__(self, text_id, name, type, tooltip, menu, ):
@@ -1408,14 +1409,14 @@ class LogitechCtrls:
                         LOGITECH_PERIPHERAL_PANTILT_PRESET_LEN,
                         LOGITECH_PERIPHERAL_PANTILT_PRESET_OFFSET,
                         [
-                            BaseCtrlMenu('goto_1', '1', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_1, lp_text_id='save_1'),
-                            BaseCtrlMenu('goto_2', '2', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_2, lp_text_id='save_2'),
-                            BaseCtrlMenu('goto_3', '3', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_3, lp_text_id='save_3'),
-                            BaseCtrlMenu('goto_4', '4', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_4, lp_text_id='save_4'),
-                            BaseCtrlMenu('goto_5', '5', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_5, lp_text_id='save_5'),
-                            BaseCtrlMenu('goto_6', '6', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_6, lp_text_id='save_6'),
-                            BaseCtrlMenu('goto_7', '7', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_7, lp_text_id='save_7'),
-                            BaseCtrlMenu('goto_8', '8', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_8, lp_text_id='save_8'),
+                            BaseCtrlMenu('goto_1', '1', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_1, lp_text_id='save_1', use_shortcut=True),
+                            BaseCtrlMenu('goto_2', '2', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_2, lp_text_id='save_2', use_shortcut=True),
+                            BaseCtrlMenu('goto_3', '3', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_3, lp_text_id='save_3', use_shortcut=True),
+                            BaseCtrlMenu('goto_4', '4', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_4, lp_text_id='save_4', use_shortcut=True),
+                            BaseCtrlMenu('goto_5', '5', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_5, lp_text_id='save_5', use_shortcut=True),
+                            BaseCtrlMenu('goto_6', '6', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_6, lp_text_id='save_6', use_shortcut=True),
+                            BaseCtrlMenu('goto_7', '7', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_7, lp_text_id='save_7', use_shortcut=True),
+                            BaseCtrlMenu('goto_8', '8', LOGITECH_PERIPHERAL_PANTILT_PRESET_GOTO_8, lp_text_id='save_8', use_shortcut=True),
                             BaseCtrlMenu('save_1', 'Save 1', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_1, gui_hidden=True),
                             BaseCtrlMenu('save_2', 'Save 2', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_2, gui_hidden=True),
                             BaseCtrlMenu('save_3', 'Save 3', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_3, gui_hidden=True),

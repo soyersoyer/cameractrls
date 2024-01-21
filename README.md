@@ -161,9 +161,11 @@ shortcuts:
 
 # PTZ controls
 
-## - Arrow keys
+## - Keyboard
 
-Control your PTZ camera with the arrow keys of your keyboard while one of the PTZ control is in focus.
+Control your PTZ camera with the arrow keys/keypad/wasd of your keyboard while one of the PTZ control is in focus.
+
+Use Alt+PresetNum to select a preset for logitech_pantilt_preset.
 
 ## - 3Dconnexion SpaceMouse
 
