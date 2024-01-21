@@ -305,8 +305,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             digits=0, has_origin=False, value_pos=Gtk.PositionType.LEFT, adjustment=adjustment, width_request=264)
                         if c.zeroer:
                             scale.connect('button-release-event', lambda sc, e: sc.set_value(0))
-                            scale.connect('key-press-event', self.handle_ptz_key_pressed)
-                            scale.connect('key-release-event', self.handle_ptz_key_released)
+                            scale.connect('key-press-event', self.handle_ptz_speed_key_pressed)
+                            scale.connect('key-release-event', self.handle_ptz_speed_key_released)
                         if c.step and c.step != 1:
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
@@ -487,7 +487,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             c.gui_value_set(c.value)
         self.update_ctrl_state(c)
 
-    def handle_ptz_key_pressed(self, w, e):
+    def handle_ptz_speed_key_pressed(self, w, e):
         keyval = e.keyval
         state = e.state
         pan_lower = self.pan_speed_sc.get_adjustment().get_lower()
@@ -548,7 +548,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             return False
         return True
 
-    def handle_ptz_key_released(self, w, e):
+    def handle_ptz_speed_key_released(self, w, e):
         keyval = e.keyval
 
         if keyval in [Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_KP_Left, Gdk.KEY_KP_Right, Gdk.KEY_a, Gdk.KEY_d]:

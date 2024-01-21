@@ -291,8 +291,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                 if isinstance(controller, gi.repository.Gtk.ShortcutController):
                                     scale.remove_controller(controller)
                                 if isinstance(controller, gi.repository.Gtk.EventControllerKey):
-                                    controller.connect('key-pressed', self.handle_ptz_key_pressed)
-                                    controller.connect('key-released', self.handle_ptz_key_released)
+                                    controller.connect('key-pressed', self.handle_ptz_speed_key_pressed)
+                                    controller.connect('key-released', self.handle_ptz_speed_key_released)
                         if c.step and c.step != 1:
                             adjustment_step = Gtk.Adjustment(lower=c.min, upper=c.max, value=c.value, step_increment=c.step)
                             adjustment_step.connect('value-changed', lambda a,c=c,a1=adjustment: [a.set_value(a.get_value() - a.get_value() % c.step),a1.set_value(a.get_value())])
@@ -472,7 +472,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             c.gui_value_set(c.value)
         self.update_ctrl_state(c)
 
-    def handle_ptz_key_pressed(self, c, keyval, keycode, state):
+    def handle_ptz_speed_key_pressed(self, c, keyval, keycode, state):
         pan_lower = self.pan_speed_sc.get_adjustment().get_lower()
         pan_upper =self.pan_speed_sc.get_adjustment().get_upper()
         tilt_lower = self.tilt_speed_sc.get_adjustment().get_lower()
@@ -531,7 +531,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             return False
         return True
 
-    def handle_ptz_key_released(self, c, keyval, keycode, state):
+    def handle_ptz_speed_key_released(self, c, keyval, keycode, state):
         if keyval in [Gdk.KEY_Left, Gdk.KEY_Right, Gdk.KEY_KP_Left, Gdk.KEY_KP_Right, Gdk.KEY_a, Gdk.KEY_d]:
             self.pan_speed_sc.set_value(0)
         elif keyval in [Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_KP_Up, Gdk.KEY_KP_Down, Gdk.KEY_w, Gdk.KEY_s]:
