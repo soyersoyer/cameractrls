@@ -127,7 +127,8 @@ def main():
         if spnav_dev_name(name, 64) < 0:
             logging.warning(f'spnav_dev_name failed')
         else:
-            print(f'{name.raw.decode().strip('\x00')}:0')
+            n = name.raw.decode().strip('\0')
+            print(f'{n}:0')
         sys.exit(0)
 
     try:
