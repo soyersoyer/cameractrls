@@ -44,6 +44,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.15" date="2024-02-17">
+            <description>
+                <ul>
+                    <li>Do not use PEP-701 as older pythons do not support it</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.14" date="2024-02-17">
             <description>
                 <ul>

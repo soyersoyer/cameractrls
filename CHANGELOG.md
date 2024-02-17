@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.15] - 2024-02-17
+
+### Fixed
+ - Do not use PEP-701 as older pythons do not support it
 
 ## [0.5.14] - 2024-02-17
 
