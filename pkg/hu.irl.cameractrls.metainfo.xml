@@ -3,6 +3,7 @@
     <id>hu.irl.cameractrls</id>
     <launchable type="desktop-id">hu.irl.cameractrls.desktop</launchable>
     <name>Cameractrls</name>
+    <developer_name>Gergo Koteles</developer_name>
     <summary>Camera controls for Linux</summary>
     <description>
         <p>
