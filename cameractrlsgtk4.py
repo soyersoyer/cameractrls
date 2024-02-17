@@ -2,7 +2,7 @@
 
 import os, sys, logging, subprocess
 import gi
-from cameractrls import CameraCtrls, find_by_text_id, get_devices, v4ldirs, find_idx
+from cameractrls import CameraCtrls, PTZHWControllers, find_by_text_id, get_devices, v4ldirs, find_idx
 from cameractrls import version, ghurl
 
 gi.require_version('Gtk', '4.0')
@@ -19,7 +19,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.device = None
         self.camera = None
         self.listener = None
-        self.spnav = None
+        self.ptz_controllers = None
 
         self.grid = None
         self.frame = None
@@ -90,6 +90,17 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             tooltip_text='Show preview window',
         )
 
+        self.ptz_model = Gtk.StringList()
+        self.ptz_lb = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
+        self.ptz_lb.bind_model(self.ptz_model, lambda name: Gtk.ToggleButton(label=name.get_string()))
+
+        self.ptz_sw = Gtk.MenuButton(
+            popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=self.ptz_lb),
+            icon_name='input-gaming-symbolic',
+            has_frame=False,
+            tooltip_text='PTZ hardware controls',
+        )
+
         refresh_button = Gtk.Button(icon_name='view-refresh-symbolic', has_frame=False, tooltip_text='Refresh')
         refresh_button.connect('clicked', lambda e: self.refresh_devices())
 
@@ -97,6 +108,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         headerbar.pack_start(refresh_button)
         headerbar.pack_end(about_button)
         headerbar.pack_end(self.open_cam_button)
+        headerbar.pack_end(self.ptz_sw)
         self.set_titlebar(headerbar)
 
         self.grid = Gtk.Grid()
@@ -199,10 +211,20 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             lambda c: GLib.idle_add(self.update_ctrl_value, c),
             lambda errs: GLib.idle_add(self.notify, '\n'.join(errs)),
         )
-        self.spnav = self.camera.start_spnav(
-            lambda errs: GLib.idle_add(self.notify, '\n'.join(errs)),
-        )
         self.device = device
+        self.ptz_controllers = PTZHWControllers(self.device.path,
+            lambda check, p, i: GLib.timeout_add(300, check, p, i),
+            lambda err: self.notify(err),
+            lambda i: self.ptz_lb.get_row_at_index(i).get_child().set_active(False),
+        )
+        self.ptz_model.splice(0, self.ptz_model.get_n_items(), self.ptz_controllers.get_names())
+        for i in range(self.ptz_model.get_n_items()):
+            row = self.ptz_lb.get_row_at_index(i)
+            row.set_activatable(False)
+            row.set_focusable(False)
+            row.get_child().connect('toggled', lambda c, i=i: self.ptz_controllers.set_active(i, c.get_active()))
+        self.ptz_sw.set_visible(self.camera.has_ptz())
+        self.ptz_sw.set_sensitive(self.ptz_model.get_n_items() != 0)
         self.open_cam_button.set_action_target_value(GLib.Variant('s', self.device.path))
 
     def close_device(self):
@@ -212,8 +234,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.camera = None
             self.listener.stop()
             self.listener = None
-            self.spnav.stop()
-            self.spnav = None
+            self.ptz_controllers.terminate_all()
+            self.ptz_controllers = None
             os.close(self.fd)
             self.fd = 0
 

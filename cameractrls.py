@@ -60,6 +60,81 @@ def get_devices(dirs):
     devices.sort()
     return devices
 
+ptz_spnav_cmd = f'{sys.path[0]}/cameraptzspnav.py'
+
+def get_ptz_hw_controllers():
+    return [
+        *[
+            PTZHWController('spnav', ptz_spnav_cmd, c.decode())
+            for c in subprocess.run([ptz_spnav_cmd, '-l'], capture_output=True).stdout.splitlines()
+        ],
+    ]
+
+class PTZHWControllers():
+    def __init__(self, video_device, toggle_cb, notify_err, notify_end):
+        self.controllers = get_ptz_hw_controllers()
+        self.video_device = video_device
+        self.toggle_cb = toggle_cb
+        self.notify_err = notify_err
+        self.notify_end = notify_end
+    
+    def get_names(self):
+        return [c.id for c in self.controllers]
+
+    def start(self, i):
+        c = self.controllers[i]
+        if c.is_running():
+            c.terminate()
+        p = c.run(self.video_device)
+        self.toggle_cb(self.check_ptz_open, p, i)
+
+    def stop(self, i):
+        c = self.controllers[i]
+        if c.is_running():
+            c.terminate()
+
+    def set_active(self, i, state):
+        if state:
+            self.start(i)
+        else:
+            self.stop(i)
+
+    def check_ptz_open(self, p, i):
+        # if process returned
+        if p.poll() is not None:
+            (stdout, stderr) = p.communicate()
+            errstr = stderr.decode()
+            sys.stderr.write(errstr)
+            if p.returncode != 0 and p.returncode != -15:
+                self.notify_err(errstr.strip())
+            self.notify_end(i)
+            # False removes the timeout
+            return False
+        return True
+
+    def terminate_all(self):
+        for c in self.controllers:
+            c.terminate()
+
+class PTZHWController():
+    def __init__(self, type, command, id):
+        self.type = type
+        self.command = command
+        self.id = id
+        self.process = None
+    
+    def run(self, video_device):
+        self.process = subprocess.Popen([self.command, '-c', self.id, '-d', video_device], stderr=subprocess.PIPE)
+        return self.process
+    
+    def is_running(self):
+        return self.process and self.process.poll() is None
+
+    def terminate(self):
+        if self.process:
+            self.process.terminate()
+
+
 # ioctl
 
 _IOC_NRBITS = 8
@@ -2259,176 +2334,101 @@ PathExists={device}
 WantedBy=paths.target
 """
 
-spnav_event_type = enum
-(
-    SPNAV_EVENT_ANY,	# used by spnav_remove_events()
-    SPNAV_EVENT_MOTION,
-    SPNAV_EVENT_BUTTON,	# includes both press and release
-) = range(3)
-
-class spnav_event_motion(ctypes.Structure):
-    _fields_ = [
-        ('type', ctypes.c_int),
-        ('x', ctypes.c_int),
-        ('y', ctypes.c_int),
-        ('z', ctypes.c_int),
-        ('rx', ctypes.c_int),
-        ('ry', ctypes.c_int),
-        ('rz', ctypes.c_int),
-        ('period', ctypes.c_uint),
-        ('data', ctypes.POINTER(ctypes.c_int)),
-    ]
-
-class spnav_event_button(ctypes.Structure):
-    _fields_ = [
-        ('type', ctypes.c_int),
-        ('press', ctypes.c_int),
-        ('bnum', ctypes.c_int),
-    ]
-
-class spnav_event(ctypes.Union):
-    _fields_ = [
-        ('type', ctypes.c_int),
-        ('motion', spnav_event_motion),
-        ('button', spnav_event_button),
-    ]
-
-def set_repeat_interval(ctrl):
-    e2e_ns = 4000000000
-
+def set_repeat_interval(ctrl, e2e_ns):
     if ctrl:
         ctrl.repeat = e2e_ns / ((ctrl.max - ctrl.min) / ctrl.step)
 
-class SPNavListener(Thread):
-    def __init__(self, ctrls, v4l_ctrls, err_cb):
-        super().__init__()
-
+class PTZController():
+    def __init__(self, ctrls):
         self.ctrls = ctrls
-        self.err_cb = err_cb
-        self.epoll = select.epoll()
+        v4l_ctrls = ctrls.v4l_ctrls
 
         self.zoom_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_ZOOM_ABSOLUTE)
         self.pan_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_ABSOLUTE)
         self.tilt_absolute = v4l_ctrls.find_by_v4l2_id(V4L2_CID_TILT_ABSOLUTE)
         self.pan_speed = v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_SPEED)
         self.tilt_speed = v4l_ctrls.find_by_v4l2_id(V4L2_CID_TILT_SPEED)
+        self.pantilt_reset = ctrls.get_ctrl_by_text_id('logitech_pantilt_reset')
+        self.pantilt_preset = ctrls.get_ctrl_by_text_id('logitech_pantilt_preset')
 
-        set_repeat_interval(self.zoom_absolute)
-        set_repeat_interval(self.pan_absolute)
-        set_repeat_interval(self.tilt_absolute)
 
-        if not any([self.zoom_absolute, self.pan_absolute, self.tilt_absolute, self.pan_speed, self.tilt_speed]):
-            self.epoll.close()
-            return
+        e2e_ns = 2_000_000_000 # 2s end to end interval
+        set_repeat_interval(self.zoom_absolute, e2e_ns)
+        set_repeat_interval(self.pan_absolute, e2e_ns)
+        set_repeat_interval(self.tilt_absolute, e2e_ns)
 
-        spnavlib = ctypes.util.find_library('spnav')
-        spnav = ctypes.CDLL(spnavlib) if spnavlib is not None else None
-        if spnav is None:
-            logging.info(f'SPNavListener: Failed to open spnav library')
-            self.epoll.close()
-            return
+        self.has_zoom_absolute = self.zoom_absolute != None
+        self.has_pantilt_speed = self.pan_speed != None and self.tilt_speed != None
+        self.has_pantilt_absolute = self.pan_absolute != None and self.tilt_absolute != None
 
-        self.spnav_open = spnav.spnav_open
-        self.spnav_open.restype = ctypes.c_int
-        self.spnav_open.argtypes = []
-        # int spnav_open(void);
+    def do_percent(self, percent, errs, control):
+        if control is not None:
+            control_size = (control.max - control.min) // control.step
+            value = control.min + round(percent * control_size) * control.step
+            if value != control.value:
+                self.ctrls.setup_ctrls({control.text_id: value}, errs)
+        return 0
 
-        self.spnav_fd = spnav.spnav_fd
-        self.spnav_fd.restype = ctypes.c_int
-        self.spnav_fd.argtypes = []
-        # int spnav_fd(void);
+    def do_step(self, step, errs, control):
+        now = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+        if control is not None and control.last_set + control.repeat < now:
+            act_step = (control.step or 1) * step
+            des_value = control.value + act_step
+            value = min(max(des_value, control.min), control.max)
+            if value != control.value:
+                self.ctrls.setup_ctrls({control.text_id: value}, errs)
+                control.last_set = now
+            if des_value != value:
+                return 1
+        return 0
 
-        self.spnav_poll_event = spnav.spnav_poll_event
-        self.spnav_poll_event.restype = ctypes.c_int
-        self.spnav_poll_event.argtypes = [ctypes.POINTER(spnav_event)]
-        # int spnav_poll_event(spnav_event *event);
+    def do_speed(self, step, errs, control):
+        if control is not None:
+            cur_step = (control.step or 1) * step
+            value = min(max(cur_step, control.min), control.max)
+            if value != control.value:
+                self.ctrls.setup_ctrls({control.text_id: value}, errs)
+        return 0
 
-        self.spnav_close = spnav.spnav_close
-        self.spnav_close.restype = ctypes.c_int
-        self.spnav_close.argtypes = []
-        # int spnav_close(void);
+    def do_zoom_percent(self, percent, errs):
+        return self.do_percent(percent, errs, self.zoom_absolute)
 
-        if self.spnav_open() == -1:
-            self.err_cb(collect_warning(f'SPNavListener: Failed to open device', []))
-            self.epoll.close()
-            return
+    def do_pan_percent(self, percent, errs):
+        return self.do_percent(percent, errs, self.pan_absolute)
 
-        self.fd = self.spnav_fd()
-        self.epoll.register(self.fd, select.POLLIN | select.POLLERR)
+    def do_tilt_percent(self, percent, errs):
+        return self.do_percent(percent, errs, self.tilt_absolute)
 
-    # thread start
-    def run(self):
-        th = 133
+    def do_zoom_step(self, step, errs):
+        return self.do_step(step, errs, self.zoom_absolute)
 
-        if self.epoll.closed:
-            return
+    def do_pan_step(self, step, errs):
+        return self.do_step(step, errs, self.pan_absolute)
 
-        event = spnav_event()
-        while not self.epoll.closed:
-            p = self.epoll.poll(1)
-            if len(p) == 0:
-                continue
-            (fd , v) = p[0]
-            if v == select.POLLERR:
-                self.err_cb(collect_warning(f'SPNavListener POLLERR', []))
-                break
+    def do_tilt_step(self, step, errs):
+        return self.do_step(step, errs, self.tilt_absolute)
 
-            if self.spnav_poll_event(event) == 0:
-                self.err_cb(collect_warning(f'SPNavListener spnav_poll_event failed', []))
-                break
+    def do_pan_speed(self, step, errs):
+        return self.do_speed(step, errs, self.pan_speed)
 
-            errs = []
-            now = time.clock_gettime_ns(time.CLOCK_MONOTONIC)
-            if event.type == SPNAV_EVENT_MOTION:
-                if self.zoom_absolute and not -th < event.motion.z < th and self.zoom_absolute.last_set + self.zoom_absolute.repeat < now:
-                    step = math.copysign(self.zoom_absolute.step or 1, event.motion.z)
-                    value = self.zoom_absolute.value + step
-                    if self.zoom_absolute.min <= value <= self.zoom_absolute.max:
-                        self.ctrls.setup_ctrls({self.zoom_absolute.text_id: value}, errs)
-                        self.zoom_absolute.last_set = now
+    def do_tilt_speed(self, step, errs):
+        return self.do_speed(step, errs, self.tilt_speed)
 
-                if self.pan_absolute and not -th < event.motion.x < th and self.pan_absolute.last_set + self.pan_absolute.repeat < now:
-                    step = math.copysign(self.pan_absolute.step or 1, event.motion.x)
-                    value = self.pan_absolute.value + step
-                    if self.pan_absolute.min <= value <= self.pan_absolute.max:
-                        self.ctrls.setup_ctrls({self.pan_absolute.text_id: value}, errs)
-                        self.pan_absolute.last_set = now
+    def do_reset(self, errs):
+        if self.zoom_absolute:
+            self.ctrls.setup_ctrls({self.zoom_absolute.text_id: self.zoom_absolute.default}, errs)
+        if self.pan_absolute:
+            self.ctrls.setup_ctrls({self.pan_absolute.text_id: self.pan_absolute.default}, errs)
+        if self.tilt_absolute:
+            self.ctrls.setup_ctrls({self.tilt_absolute.text_id: self.tilt_absolute.default}, errs)
+        if self.pantilt_reset:
+            self.ctrls.setup_ctrls({self.pantilt_reset.text_id: 'both'}, errs)
+        return 0
 
-                if self.tilt_absolute and not -th < event.motion.y < th and self.tilt_absolute.last_set + self.tilt_absolute.repeat < now:
-                    step = math.copysign(self.tilt_absolute.step or 1, event.motion.y)
-                    value = self.tilt_absolute.value + step
-                    if self.tilt_absolute.min <= value <= self.tilt_absolute.max:
-                        self.ctrls.setup_ctrls({self.tilt_absolute.text_id: value}, errs)
-                        self.tilt_absolute.last_set = now
-
-                if self.pan_speed:
-                    step = math.copysign(self.pan_speed.step or 1, -event.motion.ry)
-                    value = 0 if -th < event.motion.ry < th else step
-                    if value != self.pan_speed.value:
-                        self.ctrls.setup_ctrls({self.pan_speed.text_id: value}, errs)
-
-                if self.tilt_speed:
-                    step = math.copysign(self.tilt_speed.step or 1, event.motion.rx)
-                    value = 0 if -th < event.motion.rx < th else step
-                    if value != self.tilt_speed.value:
-                        self.ctrls.setup_ctrls({self.tilt_speed.text_id: value}, errs)
-
-            if event.type == SPNAV_EVENT_BUTTON:
-                if event.button.bnum == 1 and event.button.press == 0:
-                    if self.zoom_absolute:
-                        self.ctrls.setup_ctrls({self.zoom_absolute.text_id: self.zoom_absolute.default}, errs)
-                    if self.pan_absolute:
-                        self.ctrls.setup_ctrls({self.pan_absolute.text_id: self.pan_absolute.default}, errs)
-                    if self.tilt_absolute:
-                        self.ctrls.setup_ctrls({self.tilt_absolute.text_id: self.tilt_absolute.default}, errs)
-
-            if errs:
-                self.err_cb(errs)
-
-        self.spnav_close()
-
-    def stop(self):
-        self.epoll.close()
+    def do_preset(self, preset_num, errs):
+        if self.pantilt_preset:
+            self.ctrls.setup_ctrls({self.pantilt_preset.text_id: f'goto_{preset_num}'}, errs)
+        return 0
 
 class CtrlPage:
     def __init__(self, title, categories, target='main'):
@@ -2455,6 +2455,15 @@ class CameraCtrls:
             SystemdSaver(self),
             PresetCtrls(self),
         ]
+
+    def has_ptz(self):
+        return any([
+            self.v4l_ctrls.find_by_v4l2_id(V4L2_CID_ZOOM_ABSOLUTE),
+            self.v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_ABSOLUTE),
+            self.v4l_ctrls.find_by_v4l2_id(V4L2_CID_TILT_ABSOLUTE),
+            self.v4l_ctrls.find_by_v4l2_id(V4L2_CID_PAN_SPEED),
+            self.v4l_ctrls.find_by_v4l2_id(V4L2_CID_TILT_SPEED),
+        ])
 
     def print_ctrls(self):
         for page in self.get_ctrl_pages():
@@ -2495,6 +2504,9 @@ class CameraCtrls:
         for c in self.ctrls:
             ctrls += c.get_ctrls()
         return ctrls
+
+    def get_ctrl_by_text_id(self, text_id):
+        return find_by_text_id(self.get_ctrls(), text_id)
 
     def get_ctrl_pages(self):
         ctrls = self.get_ctrls()
@@ -2618,11 +2630,6 @@ class CameraCtrls:
 
     def subscribe_events(self, cb, err_cb):
         thread = V4L2Listener(self.v4l_ctrls, self.fmt_ctrls, cb, err_cb)
-        thread.start()
-        return thread
-
-    def start_spnav(self, err_cb):
-        thread = SPNavListener(self, self.v4l_ctrls, err_cb)
         thread.start()
         return thread
 
