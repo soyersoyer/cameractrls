@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.14] - 2024-02-17
+
 ### Added
  - 3DConnexion SpaceMouse support to control PTZ cameras
  - Game Controllers (PS DualSense/Xbox/etc) support to control PTZ cameras

@@ -25,22 +25,41 @@
     <url type="bugtracker">https://github.com/soyersoyer/cameractrls/issues</url>
     <screenshots>
         <screenshot type="default">
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_1.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_1.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_2.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_2.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_3.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_3.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_4.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_4.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_5.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_5.png</image>
+        </screenshot>
+        <screenshot>
+            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_6.png</image>
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.5.14" date="2024-02-17">
+            <description>
+                <ul>
+                    <li>3DConnexion SpaceMouse support to control PTZ cameras</li>
+                    <li>Game Controllers (PS DualSense/Xbox/etc) support to control PTZ cameras</li>
+                    <li>MIDI Controllers (MPK Mini or any configurable) support to control PTZ cameras</li>
+                    <li>Use Page Up/Page Down for Zoom also (PTZ)</li>
+                    <li>Keyboard controls for Absolute PTZ</li>
+                    <li>Alt+PresetNum shortcuts for PTZ presets</li>
+                    <li>Tooltips for headerbar icons</li>
+                    <li>Replaced Hamburger menu with About icon</li>
+                    <li>Fix Ctrl detection in PTZ controls</li>
+                    <li>Eliminating GLib warnings on app closing</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.13" date="2023-12-22">
             <description>
                 <ul>
