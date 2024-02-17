@@ -171,7 +171,13 @@ Use Alt+PresetNum to select a preset for logitech_pantilt_preset.
 
 Control your camera with your 6DoF [SpaceMouse](https://3dconnexion.com/product/spacemouse-compact/).
 
-Z => zoom_absolute, X => pan_absolute, Y => tilt_absolute, RY => pan_speed, RX => tilt_speed
+```
+Z => zoom_absolute
+X => pan_absolute
+Y => tilt_absolute
+RY => pan_speed
+RX => tilt_speed
+```
 
 It requires spacenavd and libspnav. (optional, only if you have a SpaceMouse)
 
@@ -187,6 +193,43 @@ sudo cp /usr/share/doc/spacenavd/example-spnavrc /etc/spnavrc
 ```
 
 tip: set `led = auto` in /etc/spnavrc
+
+## - Game Controllers
+
+Control you camera with your Game Controller (PS5 DualSense/Xbox/etc)
+
+```
+Left Stick => pan_speed/tilt_speed or pan_absolute/tilt_absolute
+Right Stick => pan_absolute/tilt_absolute
+DPAD => pan/tilt_absolute
+Left/Right Trigger => zoom_absolute
+South/East/West/North/Left Shoulder/Right Shoulder/Back/Start => PTZ Presets 1-8
+Guide => PTZ Reset
+```
+
+## - MIDI Controllers
+
+Control you camera with your MIDI Controller (MPK Mini or any with configurable knobs/joys)
+
+Configure your MIDI Controller as follows:
+
+```
+With joystick:
+CC78 => pan_speed/pan_absolute
+CC79 => tilt_speed/tilt_absolute
+
+With absolute knobs (knob values: 0-127):
+CC71 => pan_absolute
+CC72 => tilt_absolute
+CC73 => zoom_absolute
+
+With relative knobs (knob values: INC:1 DEC:127):
+CC70 => pan_speed
+CC74 => tilt_speed
+CC75 => pan_absolute
+CC76 => tilt_absolute
+CC77 => zoom_absolute
+```
 
 # Updating the cameractrls
 
