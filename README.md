@@ -41,6 +41,7 @@ GTK3 GUI for the Camera controls
 <img alt="cameractrls exposure screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_3.png" width="380">
 <img alt="cameractrls advanced screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_4.png" width="380">
 <img alt="cameractrls capture screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_5.png" width="380">
+<img alt="cameractrls PTZ controls" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_6.png" width="380">
 </div>
 
 ### GTK3 GUI install
