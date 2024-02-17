@@ -93,11 +93,13 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             action_target=GLib.Variant('s', ''),
             image=Gtk.Image(icon_name='camera-video-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
+            tooltip_text='Show preview window',
         )
 
         refresh_button = Gtk.Button(
             image=Gtk.Image(icon_name='view-refresh-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
+            tooltip_text='Refresh',
         )
         refresh_button.connect('clicked', lambda e: self.refresh_devices())
 
@@ -133,6 +135,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=self.device_lb),
             image=Gtk.Image(icon_name='view-more-symbolic', icon_size=Gtk.IconSize.MENU),
             relief=Gtk.ReliefStyle.NONE,
+            tooltip_text='Select other camera'
         )
         headerbar.pack_start(self.device_sw)
 

@@ -88,9 +88,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             action_name='app.open_camera_window',
             action_target=GLib.Variant('s', ''),
             icon_name='camera-video-symbolic', has_frame=False,
+            tooltip_text='Show preview window',
         )
 
-        refresh_button = Gtk.Button(icon_name='view-refresh-symbolic', has_frame=False)
+        refresh_button = Gtk.Button(icon_name='view-refresh-symbolic', has_frame=False, tooltip_text='Refresh')
         refresh_button.connect('clicked', lambda e: self.refresh_devices())
 
         headerbar = Gtk.HeaderBar(show_title_buttons=True)
@@ -110,7 +111,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             self.zero_box.append(Gtk.Label(label='Please permit access with', max_width_chars=30, wrap=True, margin_top=10))
             self.zero_box.append(Gtk.Label(label='snap connect cameractrls:camera', selectable=True, margin_bottom=10))
 
-        self.device_dd = Gtk.DropDown(model=Gtk.StringList(), hexpand=True, halign=Gtk.Align.START, show_arrow=False)
+        self.device_dd = Gtk.DropDown(
+            model=Gtk.StringList(), hexpand=True, halign=Gtk.Align.START, show_arrow=False,
+            tooltip_text='Select other camera',
+        )
         # use the default factory as list_factory
         self.device_dd.set_list_factory(self.device_dd.get_factory())
         self.device_dd.get_first_child().set_has_frame(False)
