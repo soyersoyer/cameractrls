@@ -76,12 +76,11 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        hambuger_menu = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        hambuger_menu.append(Gtk.Button(action_name='app.about', label='About', has_frame=False))
-
-        hamburger_button = Gtk.MenuButton(
-            popover=Gtk.Popover(position=Gtk.PositionType.BOTTOM, child=hambuger_menu),
-            icon_name='open-menu-symbolic', has_frame=False,
+        about_button = Gtk.Button(
+            action_name='app.about',
+            icon_name='info-symbolic',
+            has_frame=False,
+            tooltip_text='About',
         )
 
         self.open_cam_button = Gtk.Button(
@@ -96,7 +95,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         headerbar = Gtk.HeaderBar(show_title_buttons=True)
         headerbar.pack_start(refresh_button)
-        headerbar.pack_end(hamburger_button)
+        headerbar.pack_end(about_button)
         headerbar.pack_end(self.open_cam_button)
         self.set_titlebar(headerbar)
 
