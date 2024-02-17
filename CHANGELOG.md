@@ -4,9 +4,15 @@
 
 ### Added
  - 3DConnexion SpaceMouse support to control PTZ cameras
+ - Game Controllers (PS DualSense/Xbox/etc) support to control PTZ cameras
+ - MIDI Controllers (MPK Mini or any configurable) support to control PTZ cameras
  - Use Page Up/Page Down for Zoom also (PTZ)
  - Keyboard controls for Absolute PTZ
  - Alt+PresetNum shortcuts for PTZ presets
+ - Tooltips for headerbar icons
+
+### Changed
+ - Replaced Hamburger menu with About icon
 
 ### Fixed
  - Fix Ctrl detection in PTZ controls
