@@ -178,6 +178,7 @@ X => pan_absolute
 Y => tilt_absolute
 RY => pan_speed
 RX => tilt_speed
+BTN1 => PTZ reset
 ```
 
 It requires spacenavd and libspnav. (optional, only if you have a SpaceMouse)
@@ -230,6 +231,9 @@ CC74 => tilt_speed
 CC75 => pan_absolute
 CC76 => tilt_absolute
 CC77 => zoom_absolute
+
+CC121 => PTZ reset
+PGM0-7 => PTZ presets 1-8
 ```
 
 # Updating the cameractrls
