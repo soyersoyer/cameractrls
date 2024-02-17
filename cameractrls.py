@@ -61,12 +61,17 @@ def get_devices(dirs):
     return devices
 
 ptz_spnav_cmd = f'{sys.path[0]}/cameraptzspnav.py'
+ptz_game_cmd = f'{sys.path[0]}/cameraptzgame.py'
 
 def get_ptz_hw_controllers():
     return [
         *[
             PTZHWController('spnav', ptz_spnav_cmd, c.decode())
             for c in subprocess.run([ptz_spnav_cmd, '-l'], capture_output=True).stdout.splitlines()
+        ],
+        *[
+            PTZHWController('game', ptz_game_cmd, c.decode())
+            for c in subprocess.run([ptz_game_cmd, '-l'], capture_output=True).stdout.splitlines()
         ],
     ]
 
