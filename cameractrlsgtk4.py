@@ -8,7 +8,7 @@ from cameractrls import version, ghurl
 gi.require_version('Gtk', '4.0')
 from gi.repository import Gtk, Gio, GLib, Pango, Gdk
 
-logging.getLogger().setLevel(logging.INFO)
+#logging.getLogger().setLevel(logging.INFO)
 
 class CameraCtrlsWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
