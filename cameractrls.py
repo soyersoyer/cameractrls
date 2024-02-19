@@ -60,29 +60,30 @@ def get_devices(dirs):
     devices.sort()
     return devices
 
-ptz_spnav_cmd = f'{sys.path[0]}/cameraptzspnav.py'
-ptz_game_cmd = f'{sys.path[0]}/cameraptzgame.py'
-ptz_midi_cmd = f'{sys.path[0]}/cameraptzmidi.py'
+ptz_hw_executables = [
+    f'{sys.path[0]}/cameraptzspnav.py',
+    f'{sys.path[0]}/cameraptzgame.py',
+    f'{sys.path[0]}/cameraptzmidi.py',
+]
 
-def get_ptz_hw_controllers():
-    return [
-        *[
-            PTZHWController('spnav', ptz_spnav_cmd, c.decode())
-            for c in subprocess.run([ptz_spnav_cmd, '-l'], capture_output=True).stdout.splitlines()
-        ],
-        *[
-            PTZHWController('game', ptz_game_cmd, c.decode())
-            for c in subprocess.run([ptz_game_cmd, '-l'], capture_output=True).stdout.splitlines()
-        ],
-        *[
-            PTZHWController('midi', ptz_midi_cmd, c.decode())
-            for c in subprocess.run([ptz_midi_cmd, '-l'], capture_output=True).stdout.splitlines()
-        ],
-    ]
+def exec_and_get_lines(params):
+    return subprocess.run(params, capture_output=True).stdout.splitlines()
+
+def get_ptz_hw_controllers(executables):
+    controllers = []
+    for cmd in executables:
+        if not os.access(cmd, os.X_OK):
+            logging.warning(f'{cmd} is not an executable')
+            continue
+        controllers += [
+            PTZHWController(cmd, c.decode())
+            for c in exec_and_get_lines([cmd, '-l'])
+        ]
+    return controllers
 
 class PTZHWControllers():
     def __init__(self, video_device, toggle_cb, notify_err, notify_end):
-        self.controllers = get_ptz_hw_controllers()
+        self.controllers = get_ptz_hw_controllers(ptz_hw_executables)
         self.video_device = video_device
         self.toggle_cb = toggle_cb
         self.notify_err = notify_err
@@ -127,8 +128,7 @@ class PTZHWControllers():
             c.terminate()
 
 class PTZHWController():
-    def __init__(self, type, command, id):
-        self.type = type
+    def __init__(self, command, id):
         self.command = command
         self.id = id
         self.process = None
