@@ -64,9 +64,11 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             margin-bottom: -7px;
         }
         '''
-        # XXX: remove workaround when merged
+        if (Gtk.get_major_version(), Gtk.get_minor_version()) >= (4, 12):
+            css_provider.load_from_string(css)
+        # XXX: remove workaround when merged and pygobject 3.46 is widespread
         # https://gitlab.gnome.org/GNOME/pygobject/-/merge_requests/231/
-        if (Gtk.get_major_version(), Gtk.get_minor_version()) >= (4, 9):
+        elif (Gtk.get_major_version(), Gtk.get_minor_version()) >= (4, 9):
             css_provider.load_from_data(css, -1)
         else:
             css_provider.load_from_data(css.encode())
