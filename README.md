@@ -214,7 +214,7 @@ tip: set `led = auto` in /etc/spnavrc
 
 ## Game Controllers
 
-Control you camera with your Game Controller (PS5 DualSense/Xbox/etc)
+Control you camera with your Game Controller ([PS5 DualSense](https://www.playstation.com/accessories/dualsense-wireless-controller/)/[Xbox controller](https://www.xbox.com/accessories/controllers/xbox-wireless-controller)/etc)
 
 ```
 Left Stick => pan_speed/tilt_speed or pan_absolute/tilt_absolute
@@ -227,9 +227,9 @@ Guide => PTZ Reset
 
 ## MIDI Controllers
 
-Control you camera with your MIDI Controller (MPK Mini or any with configurable knobs/joys)
+Control you camera with your MIDI Controller (e.g. [MPK Mini](https://www.akaipro.com/mpk-mini-mk3.html) or any with configurable knobs/joys)
 
-Configure your MIDI Controller as follows:
+[Configure](https://github.com/tsmetana/mpk3-settings) your MIDI Controller as follows:
 
 ```
 With joystick:
