@@ -22,7 +22,7 @@ flatpak install flathub hu.irl.cameractrls
 pacman -S cameractrls
 ```
 
-### From Manjaro package repository
+## From Manjaro package repository
 
 ```
 pamac install cameractrls
