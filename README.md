@@ -8,7 +8,6 @@ It's a standalone Python CLI and GUI (GTK3, GTK4, TK) and camera Viewer (SDL) to
 
 # Install
 <a href='https://flathub.org/apps/details/hu.irl.cameractrls'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
-<a href='https://snapcraft.io/cameractrls'><img height='80' alt='Get it from the Snap Store' src='https://snapcraft.io/static/images/badges/en/snap-store-black.svg'/></a>
 
 On Arch `pacman -S cameractrls`
 
