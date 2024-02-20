@@ -258,13 +258,19 @@ def check_rel_knob(ev, cc, cb, loop=None):
     if ev.data.control.param != cc:
         return
 
-    value = -1 if ev.data.control.value == 127 else 1
-    cb(value, [])
+    if ev.data.control.value in [127, 126, 125]:
+        step = ev.data.control.value - 128 #-1, -2, -3
+    elif ev.data.control.value in [1, 2, 3]:
+        step = ev.data.control.value
+    else:
+        return
+
+    cb(step, [])
 
     if loop is None:
         return
 
-    # rel knobs emit 1 or 127 only, set to 0 after a while
+    # rel knobs emit 1, 2, 3 or 127, 126, 125 only, set to 0 after a while
     if cc in loop.ctx:
         loop.ctx[cc].cancel()
     loop.ctx[cc] = loop.call_later(0.1, cb, 0, [])
