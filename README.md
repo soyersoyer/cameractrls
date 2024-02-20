@@ -178,13 +178,13 @@ shortcuts:
 
 # PTZ controls
 
-## - Keyboard
+## Keyboard
 
 Control your PTZ camera with the arrow keys/keypad keys/wasd/Home/End/PageUp/PageDown/+/-/Ctrl++/Ctrl+- of your keyboard while one of the PTZ control is in focus.
 
 Use Alt+PresetNum to select a preset for logitech_pantilt_preset.
 
-## - 3Dconnexion SpaceMouse
+## 3Dconnexion SpaceMouse
 
 Control your camera with your 6DoF [SpaceMouse](https://3dconnexion.com/product/spacemouse-compact/).
 
@@ -212,7 +212,7 @@ sudo cp /usr/share/doc/spacenavd/example-spnavrc /etc/spnavrc
 
 tip: set `led = auto` in /etc/spnavrc
 
-## - Game Controllers
+## Game Controllers
 
 Control you camera with your Game Controller (PS5 DualSense/Xbox/etc)
 
@@ -225,7 +225,7 @@ South/East/West/North/Left Shoulder/Right Shoulder/Back/Start => PTZ Presets 1-8
 Guide => PTZ Reset
 ```
 
-## - MIDI Controllers
+## MIDI Controllers
 
 Control you camera with your MIDI Controller (MPK Mini or any with configurable knobs/joys)
 
