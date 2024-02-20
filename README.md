@@ -219,7 +219,7 @@ Control you camera with your Game Controller ([PS5 DualSense](https://www.playst
 ```
 Left Stick => pan_speed/tilt_speed or pan_absolute/tilt_absolute
 Right Stick => pan_absolute/tilt_absolute
-DPAD => pan/tilt_absolute
+DPAD => pan_absolute/tilt_absolute
 Left/Right Trigger => zoom_absolute
 South/East/West/North/Left Shoulder/Right Shoulder/Back/Start => PTZ Presets 1-8
 Guide => PTZ Reset
