@@ -167,8 +167,8 @@ def main():
             break
 
         if spnav_poll_event(event) == 0:
-            logging_warning(f'spnav_poll_event failed')
-            break
+            logging.warning(f'spnav_poll_event failed')
+            continue
 
         if event.type == SPNAV_EVENT_MOTION:            
             check_step(ptz.do_zoom_step, event.motion.z)
