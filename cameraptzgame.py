@@ -139,39 +139,43 @@ def usage():
 
 th = 4096
 
-def rumble(controller, cbret):
-    if cbret:
-        SDL_GameControllerRumble(controller, 0x0a00, 0x0aff, 50)
+def rumble_simple(controller):
+    SDL_GameControllerRumble(controller, 0x0a00, 0x0aff, 50)
 
-def check_zoom(controller, axis, cb, scale=1, rumble=rumble):
+def check_zoom(controller, axis, cb, scale=1, rumble=rumble_simple):
     value = SDL_GameControllerGetAxis(controller, axis)
     if value == 0:
         return 0
-    rumble(controller, cb(round(value / 2048) * scale, []))
+    if cb(round(value / 2048) * scale, []):
+        rumble(controller)
 
-def check_axis(controller, axis, cb, scale=1, rumble=rumble):
+def check_axis(controller, axis, cb, scale=1, rumble=rumble_simple):
     value = SDL_GameControllerGetAxis(controller, axis)
     if -th < value < th:
         return cb(0, [])
-    rumble(controller, cb(round(value / 8192) * scale, []))
+    if cb(round(value / 8192) * scale, []):
+        rumble(controller)
 
-def check_axis_abs(controller, axis, cb, scale=1, rumble=rumble):
+def check_axis_abs(controller, axis, cb, scale=1, rumble=rumble_simple):
     value = SDL_GameControllerGetAxis(controller, axis)
     if -th < value < th:
         return 0
-    rumble(controller, cb(round(value / 8192) * scale, []))
+    if cb(round(value / 8192) * scale, []):
+        rumble(controller)
 
-def check_button_v(controller, button, cb, scale=1, rumble=rumble):
+def check_button_v(controller, button, cb, scale=1, rumble=rumble_simple):
     value = SDL_GameControllerGetButton(controller, button)
     if value == 0:
         return 0
-    rumble(controller, cb(value * scale, []))
+    if cb(value * scale, []):
+        rumble(controller)
 
-def check_button(controller, button, cb, rumble=rumble):
+def check_button(controller, button, cb, rumble=rumble_simple):
     value = SDL_GameControllerGetButton(controller, button)
     if value == 0:
         return 0
-    rumble(controller, cb([]))
+    if cb([]):
+        rumble(controller)
 
 def main():
     try:
