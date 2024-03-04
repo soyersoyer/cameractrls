@@ -23,6 +23,9 @@
         <control>tablet</control>
         <control>gamepad</control>
     </supports>
+    <recommends>
+        <display_length compare="ge">550</display_length>
+    </recommends>
     <content_rating type="oars-1.0"/>
     <url type="homepage">https://github.com/soyersoyer/cameractrls</url>
     <url type="bugtracker">https://github.com/soyersoyer/cameractrls/issues</url>
