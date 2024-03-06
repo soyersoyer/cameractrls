@@ -2412,6 +2412,9 @@ class PTZController():
     def do_zoom_step(self, step, errs):
         return self.do_step(step, errs, self.zoom_absolute)
 
+    def do_zoom_step_big(self, step, errs):
+        return self.do_step(step * self.zoom_absolute.step_big, errs, self.zoom_absolute)
+
     def do_pan_step(self, step, errs):
         return self.do_step(step, errs, self.pan_absolute)
 

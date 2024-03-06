@@ -5,6 +5,7 @@ from fcntl import ioctl
 from threading import Thread
 from operator import lt, gt
 
+from cameractrls import CameraCtrls, PTZController
 from cameractrls import v4l2_capability, v4l2_format, v4l2_streamparm, v4l2_requestbuffers, v4l2_buffer
 from cameractrls import VIDIOC_QUERYCAP, VIDIOC_G_FMT, VIDIOC_G_PARM, VIDIOC_S_PARM
 from cameractrls import VIDIOC_REQBUFS, VIDIOC_QUERYBUF, VIDIOC_QBUF, VIDIOC_DQBUF, VIDIOC_STREAMON, VIDIOC_STREAMOFF
@@ -182,18 +183,59 @@ SDL_ShowSimpleMessageBox.argtypes = [ctypes.c_uint32, ctypes.c_char_p, ctypes.c_
 SDL_INIT_VIDEO = 0x00000020
 SDL_QUIT = 0x100
 SDL_KEYDOWN = 0x300
+SDL_KEYUP = 0x301
 SDL_MOUSEBUTTONUP = 0x402
 SDL_BUTTON_LEFT = 1
+SDLK_1 = ord('1')
+SDLK_2 = ord('2')
+SDLK_3 = ord('3')
+SDLK_4 = ord('4')
+SDLK_5 = ord('5')
+SDLK_6 = ord('6')
+SDLK_7 = ord('7')
+SDLK_8 = ord('8')
 SDLK_c = ord('c')
 SDLK_f = ord('f')
 SDLK_m = ord('m')
 SDLK_q = ord('q')
 SDLK_r = ord('r')
+SDLK_w = ord('w')
+SDLK_a = ord('a')
+SDLK_s = ord('s')
+SDLK_d = ord('d')
+SDLK_PLUS = ord('+')
+SDLK_MINUS = ord('-')
 SDLK_ESCAPE = 27
+SDLK_SCANCODE_MASK = 1<<30
+
+SDLK_HOME = 74 | SDLK_SCANCODE_MASK
+SDLK_PAGEUP = 75 | SDLK_SCANCODE_MASK
+SDLK_END = 77 | SDLK_SCANCODE_MASK
+SDLK_PAGEDOWN = 78 | SDLK_SCANCODE_MASK
+SDLK_RIGHT = 79 | SDLK_SCANCODE_MASK
+SDLK_LEFT = 80 | SDLK_SCANCODE_MASK
+SDLK_DOWN = 81 | SDLK_SCANCODE_MASK
+SDLK_UP = 82 | SDLK_SCANCODE_MASK
+SDLK_KP_MINUS = 86 | SDLK_SCANCODE_MASK
+SDLK_KP_PLUS = 87 | SDLK_SCANCODE_MASK
+SDLK_KP_1 = 89 | SDLK_SCANCODE_MASK
+SDLK_KP_2 = 90 | SDLK_SCANCODE_MASK
+SDLK_KP_3 = 91 | SDLK_SCANCODE_MASK
+SDLK_KP_4 = 92 | SDLK_SCANCODE_MASK
+SDLK_KP_5 = 93 | SDLK_SCANCODE_MASK
+SDLK_KP_6 = 94 | SDLK_SCANCODE_MASK
+SDLK_KP_7 = 95 | SDLK_SCANCODE_MASK
+SDLK_KP_8 = 96 | SDLK_SCANCODE_MASK
+SDLK_KP_9 = 97 | SDLK_SCANCODE_MASK
+SDLK_KP_0 = 98 | SDLK_SCANCODE_MASK
+
 KMOD_NONE = 0x0000
 KMOD_LSHIFT = 0x0001
 KMOD_RSHIFT = 0x0002
+KMOD_LCTRL = 0x0040
+KMOD_RCTRL = 0x0080
 KMOD_SHIFT = KMOD_LSHIFT | KMOD_RSHIFT
+KMOD_CTRL = KMOD_LCTRL | KMOD_RCTRL
 
 
 SDL_PAL_GRAYSCALE_L = b'\
@@ -649,6 +691,8 @@ class SDLCameraWindow():
         self.returncode = 0
         self.cam = V4L2Camera(device)
         self.cam.pipe = self
+        self.ctrls = CameraCtrls(device, self.cam.fd)
+        self.ptz = PTZController(self.ctrls)
         width = self.cam.width
         height = self.cam.height
 
@@ -798,6 +842,74 @@ class SDLCameraWindow():
                 self.stop_capturing()
                 self.returncode = 4
                 break
+
+            if event.type == SDL_KEYDOWN:
+                if self.ptz.has_pantilt_speed:
+                    if event.key.keysym.sym in [SDLK_LEFT, SDLK_KP_4, SDLK_KP_7, SDLK_KP_1, SDLK_a]:
+                        self.ptz.do_pan_speed(-1, [])
+                    if event.key.keysym.sym in [SDLK_RIGHT, SDLK_KP_6, SDLK_KP_9, SDLK_KP_3, SDLK_d]:
+                        self.ptz.do_pan_speed(1, [])
+                    if event.key.keysym.sym in [SDLK_UP, SDLK_KP_8, SDLK_KP_7, SDLK_KP_9, SDLK_w]:
+                        self.ptz.do_tilt_speed(1, [])
+                    if event.key.keysym.sym in [SDLK_DOWN, SDLK_KP_2, SDLK_KP_1, SDLK_KP_3, SDLK_s]:
+                        self.ptz.do_tilt_speed(-1, [])
+                    if event.key.keysym.sym == SDLK_KP_0:
+                        self.ptz.do_reset([])
+                elif self.ptz.has_pantilt_absolute:
+                    if event.key.keysym.sym in [SDLK_LEFT, SDLK_KP_4, SDLK_KP_7, SDLK_KP_1, SDLK_a]:
+                        self.ptz.do_pan_step(-1, [])
+                    if event.key.keysym.sym in [SDLK_RIGHT, SDLK_KP_6, SDLK_KP_9, SDLK_KP_3, SDLK_d]:
+                        self.ptz.do_pan_step(1, [])
+                    if event.key.keysym.sym in [SDLK_UP, SDLK_KP_8, SDLK_KP_7, SDLK_KP_9, SDLK_w]:
+                        self.ptz.do_tilt_step(1, [])
+                    if event.key.keysym.sym in [SDLK_DOWN, SDLK_KP_2, SDLK_KP_1, SDLK_KP_3, SDLK_s]:
+                        self.ptz.do_tilt_step(-1, [])
+                    if event.key.keysym.sym == SDLK_KP_0:
+                        self.ptz.do_reset([])
+                if self.ptz.has_zoom_absolute:
+                    ctrl = event.key.keysym.mod & KMOD_CTRL
+                    if event.key.keysym.sym in [SDLK_KP_PLUS, SDLK_PLUS] and ctrl:
+                        self.ptz.do_zoom_step_big(1, [])
+                    elif event.key.keysym.sym in [SDLK_KP_MINUS, SDLK_MINUS] and ctrl:
+                        self.ptz.do_zoom_step_big(-1, [])
+                    elif event.key.keysym.sym in [SDLK_KP_PLUS, SDLK_PLUS]:
+                        self.ptz.do_zoom_step(1, [])
+                    elif event.key.keysym.sym in [SDLK_KP_MINUS, SDLK_MINUS]:
+                        self.ptz.do_zoom_step(-1, [])
+                    elif event.key.keysym.sym == SDLK_PAGEUP:
+                        self.ptz.do_zoom_step_big(1, [])
+                    elif event.key.keysym.sym == SDLK_PAGEDOWN:
+                        self.ptz.do_zoom_step_big(-1, [])
+                    elif event.key.keysym.sym == SDLK_HOME:
+                        self.ptz.do_zoom_percent(0, [])
+                    elif event.key.keysym.sym == SDLK_END:
+                        self.ptz.do_zoom_percent(1, [])
+                if event.key.keysym.sym == SDLK_1:
+                    self.ptz.do_preset(1, [])
+                elif event.key.keysym.sym == SDLK_2:
+                    self.ptz.do_preset(2, [])
+                elif event.key.keysym.sym == SDLK_3:
+                    self.ptz.do_preset(3, [])
+                elif event.key.keysym.sym == SDLK_4:
+                    self.ptz.do_preset(4, [])
+                elif event.key.keysym.sym == SDLK_5:
+                    self.ptz.do_preset(5, [])
+                elif event.key.keysym.sym == SDLK_6:
+                    self.ptz.do_preset(6, [])
+                elif event.key.keysym.sym == SDLK_7:
+                    self.ptz.do_preset(7, [])
+                elif event.key.keysym.sym == SDLK_8:
+                    self.ptz.do_preset(8, [])
+            elif event.type == SDL_KEYUP:
+                if self.ptz.has_pantilt_speed:
+                    if event.key.keysym.sym in [SDLK_LEFT, SDLK_KP_4, SDLK_KP_7, SDLK_KP_1, SDLK_a]:
+                        self.ptz.do_pan_speed(0, [])
+                    if event.key.keysym.sym in [SDLK_RIGHT, SDLK_KP_6, SDLK_KP_9, SDLK_KP_3, SDLK_d]:
+                        self.ptz.do_pan_speed(0, [])
+                    if event.key.keysym.sym in [SDLK_UP, SDLK_KP_8, SDLK_KP_7, SDLK_KP_9, SDLK_w]:
+                        self.ptz.do_tilt_speed(0, [])
+                    if event.key.keysym.sym in [SDLK_DOWN, SDLK_KP_2, SDLK_KP_1, SDLK_KP_3, SDLK_s]:
+                        self.ptz.do_tilt_speed(0, [])
 
     def toggle_fullscreen(self):
         self.fullscreen = not self.fullscreen

@@ -180,7 +180,7 @@ shortcuts:
 
 ## Keyboard
 
-Control your PTZ camera with the arrow keys/keypad keys/wasd/Home/End/PageUp/PageDown/+/-/Ctrl++/Ctrl+- of your keyboard while one of the PTZ control is in focus.
+Control your PTZ camera with the arrow keys/keypad keys/wasd/Home/End/PageUp/PageDown/+/-/Ctrl++/Ctrl+- of your keyboard while one of the PTZ control is in focus or in the cameraview window.
 
 Use Alt+PresetNum to select a preset for logitech_pantilt_preset.
 
