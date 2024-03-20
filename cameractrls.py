@@ -1563,7 +1563,6 @@ class LogitechCtrls:
 
         brio_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_BRIO_GUID)
         if brio_unit_id != 0 and self.usb_ids in LOGITECH_BRIO_FOV_DEV_MATCH:
-        #if self.usb_ids in LOGITECH_BRIO_FOV_DEV_MATCH:
             self.ctrls.extend([
                 LogitechCtrl(
                     'logitech_brio_fov',
