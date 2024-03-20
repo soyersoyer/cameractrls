@@ -1366,6 +1366,7 @@ LOGITECH_BRIO_FOV_DEV_MATCH = [
     '046d:0946', # Brio 501
     '046d:0919', # Brio 505
     '046d:086b', # Brio 4K Stream Edition
+    '046d:0944', # MX Brio
 ]
 LOGITECH_BRIO_FOV_SEL = 0x05
 LOGITECH_BRIO_FOV_LEN = 1
