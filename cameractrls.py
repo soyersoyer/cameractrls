@@ -1366,6 +1366,7 @@ LOGITECH_BRIO_FOV_DEV_MATCH = [
     '046d:0946', # Brio 501
     '046d:0919', # Brio 505
     '046d:086b', # Brio 4K Stream Edition
+    '046d:0944', # MX Brio
 ]
 LOGITECH_BRIO_FOV_SEL = 0x05
 LOGITECH_BRIO_FOV_LEN = 1
@@ -1562,6 +1563,7 @@ class LogitechCtrls:
 
         brio_unit_id = find_unit_id_in_sysfs(self.device, LOGITECH_BRIO_GUID)
         if brio_unit_id != 0 and self.usb_ids in LOGITECH_BRIO_FOV_DEV_MATCH:
+        #if self.usb_ids in LOGITECH_BRIO_FOV_DEV_MATCH:
             self.ctrls.extend([
                 LogitechCtrl(
                     'logitech_brio_fov',
