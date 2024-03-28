@@ -668,7 +668,7 @@ class CameraCtrlsApp(Gtk.Application):
         about.set_authors(['Gergo Koteles <soyer@irl.hu>'])
         about.set_artists(['Jorge Toledo https://lacajita.es'])
         about.set_copyright('Copyright © 2022 - 2024 Gergo Koteles')
-        about.set_license_type(Gtk.License.MIT_X11)
+        about.set_license_type(Gtk.License.GPL_3_0)
         about.set_logo_icon_name('hu.irl.cameractrls')
         about.set_website(ghurl)
         about.set_website_label('GitHub')
