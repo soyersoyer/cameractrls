@@ -4,7 +4,7 @@
 
 Camera controls for Linux
 
-It's a standalone Python CLI and GUI (GTK3, GTK4, TK) and camera Viewer (SDL) to set the camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, Relative Pan/Tilt, PTZ presets), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Systemd extension (Save and restore controls with Systemd path+service).
+It's a standalone Python CLI and GUI (GTK3, GTK4) and camera Viewer (SDL) to set the camera controls in Linux. It can set the V4L2 controls and it is extendable with the non standard controls. Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, Relative Pan/Tilt, PTZ presets), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Preset extension (Save and restore controls), Control Restore Daemon (to restore presets at device connection).
 
 # Installation
 
@@ -113,6 +113,12 @@ optional arguments:
 example:
   ./cameractrls.py -c brightness=128,kiyo_pro_hdr=on,kiyo_pro_fov=wide
 ```
+
+# cameractrlsd.py
+
+The control restore daemon.
+
+Add it to SystemD/Desktop portal with the GUI/CLI.
 
 # cameraview.py
 
@@ -225,13 +231,22 @@ PGM0-7 => PTZ presets 1-8
 git pull
 ```
 
-# Deleting the cameractrls
+# Updating from 0.5.x -> 0.6.x
 
-Disable, stop and delete the systemd paths, services:
+Disable, stop and delete the old systemd paths, services:
 ```shell
 cd ~/.config/systemd/user
 systemctl --user disable --now cameractrls-*
 rm cameractrls-*
+```
+
+# Deleting the cameractrls
+
+Disable, stop and delete the systemd service:
+```shell
+cd ~/.config/systemd/user
+systemctl --user disable --now cameractrlsd.service
+rm cameractrlsd.service
 ```
 
 Remove launcher shortcut
