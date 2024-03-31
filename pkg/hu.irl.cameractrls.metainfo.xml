@@ -14,8 +14,8 @@
             Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, Relative Pan/Tilt, PTZ presets), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Preset extension (Save and restore controls), Control Restore Daemon (to restore presets at device connection).
         </p>
     </description>
-    <metadata_license>MIT</metadata_license>
-    <project_license>MIT</project_license>
+    <metadata_license>FSFAP</metadata_license>
+    <project_license>GPL-3.0-or-later</project_license>
     <supports>
         <control>pointing</control>
         <control>keyboard</control>
