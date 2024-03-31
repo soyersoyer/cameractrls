@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import ctypes, ctypes.util, logging, os.path, getopt, sys, subprocess, select, time, math
+import ctypes, ctypes.util, logging, os.path, getopt, sys, subprocess, select, time, math, configparser
 from fcntl import ioctl
 from threading import Thread
 
@@ -1127,7 +1127,7 @@ class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
                 inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
                 zeroer = False, scale_class = None, kernel_id = None, get_default = None,
-                format_value = None, step_big = None):
+                format_value = None, step_big = None, unrestorable = False):
         self.text_id = text_id
         self.kernel_id = kernel_id
         self.name = name
@@ -1147,6 +1147,7 @@ class BaseCtrl:
         self.get_default = get_default
         self.format_value = format_value
         self.step_big = step_big
+        self.unrestorable = unrestorable
 
 class BaseCtrlMenu:
     def __init__(self, text_id, name, value, gui_hidden=False, lp_text_id=None, use_shortcut=False):
@@ -2354,6 +2355,96 @@ PathExists={device}
 WantedBy=paths.target
 """
 
+class ConfigPreset:
+    def __init__(self, cam_ctrls):
+        self.cam_ctrls = cam_ctrls
+        self.ctrls = [
+            BaseCtrl('preset', 'Preset', 'button',
+                tooltip = 'Preset\nClick loads the preset\nLong press saves it',
+                menu = [
+                    BaseCtrlMenu('load_1', '1', 'load_1', lp_text_id='save_1'),
+                    BaseCtrlMenu('load_2', '2', 'load_2', lp_text_id='save_2'),
+                    BaseCtrlMenu('load_3', '3', 'load_3', lp_text_id='save_3'),
+                    BaseCtrlMenu('load_4', '4', 'load_4', lp_text_id='save_4'),
+                    #BaseCtrlMenu('load_5', '5', 'load_5', lp_text_id='save_5'),
+                    #BaseCtrlMenu('load_6', '6', 'load_6', lp_text_id='save_6'),
+                    #BaseCtrlMenu('load_7', '7', 'load_7', lp_text_id='save_7'),
+                    #BaseCtrlMenu('load_8', '8', 'load_8', lp_text_id='save_8'),
+                    BaseCtrlMenu('save_1', 'Save 1', 'save_1', gui_hidden=True),
+                    BaseCtrlMenu('save_2', 'Save 2', 'save_2', gui_hidden=True),
+                    BaseCtrlMenu('save_3', 'Save 3', 'save_3', gui_hidden=True),
+                    BaseCtrlMenu('save_4', 'Save 4', 'save_4', gui_hidden=True),
+                    #BaseCtrlMenu('save_5', 'Save 5', 'save_5', gui_hidden=True),
+                    #BaseCtrlMenu('save_6', 'Save 6', 'save_6', gui_hidden=True),
+                    #BaseCtrlMenu('save_7', 'Save 7', 'save_7', gui_hidden=True),
+                    #BaseCtrlMenu('save_8', 'Save 8', 'save_8', gui_hidden=True),
+                ],
+                reopener = True,
+            )
+        ]
+
+    def get_ctrls(self):
+        return self.ctrls
+
+    def setup_ctrls(self, params, errs):
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl is None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu is None:
+                collect_warning(f'ConfigPreset: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+            [op, preset_num] = menu.text_id.split('_')
+            if op == 'load':
+                self.load_preset(self.cam_ctrls.device, preset_num, errs)
+            elif op == 'save':
+                self.save_preset(self.cam_ctrls.device, preset_num, errs)
+
+    def get_claimed_controls(self):
+        return {
+            c.text_id: c.value
+            for c in self.cam_ctrls.get_ctrls()
+            if not c.inactive and c.value is not None and c.type != 'info' and not c.unrestorable
+        }
+
+    def load_preset(self, device, preset_num, errs):
+        filename = get_configfilename(device)
+        if not os.path.exists(filename):
+            collect_warning(f'ConfigPreset: preset file {filename} not found', errs)
+            return
+
+        config = configparser.ConfigParser()
+        config.read(filename)
+        preset = f'preset_{preset_num}'
+        if preset not in config:
+            collect_warning(f'ConfigPreset: {preset} not found in {filename}', errs)
+            return
+        
+        for ctrl in config[preset]:
+            self.cam_ctrls.setup_ctrls({ctrl: config[preset][ctrl]}, errs)
+
+    def save_preset(self, device, preset_num, errs):
+        try:
+            configdir = get_configdir()
+            os.makedirs(configdir, mode=0o755, exist_ok=True)
+
+            filename = get_configfilename(device)
+            config = configparser.ConfigParser()
+            config.read(filename)
+            config[f'preset_{preset_num}'] = self.get_claimed_controls()
+            with open(filename, 'w') as configfile:
+                config.write(configfile)
+        except Exception as e:
+            collect_warning(f'ConfigPreset: save_preset failed: {e}', errs)
+
+def get_configdir():
+    return os.getenv("XDG_CONFIG_HOME", os.path.expanduser('~/.config/hu.irl.cameractrls'))
+
+def get_configfilename(device):
+    dev_id = os.path.basename(device)
+    return os.path.join(get_configdir(), f'{dev_id}.ini')
+
 def set_repeat_interval(ctrl, e2e_ns):
     if ctrl:
         ctrl.repeat = e2e_ns / ((ctrl.max - ctrl.min) / ctrl.step)
@@ -2477,6 +2568,7 @@ class CameraCtrls:
             LogitechCtrls(device, fd),
             SystemdSaver(self),
             ColorPreset(self),
+            ConfigPreset(self),
         ]
 
     def has_ptz(self):
@@ -2639,7 +2731,7 @@ class CameraCtrls:
                 CtrlCategory('Info', pop_list_by_text_ids(ctrls, ['card', 'driver', 'path', 'real_path'])),
             ]),
             CtrlPage('Settings', [
-                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save'])),
+                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save', 'preset'])),
             ], target='footer')
         ]
         pages[3].categories += CtrlCategory('Other', ctrls), #the rest
