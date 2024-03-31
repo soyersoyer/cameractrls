@@ -2599,7 +2599,7 @@ class CameraCtrls:
                 ),
             ]),
             CtrlPage('Color', [
-                CtrlCategory('Preset', pop_list_by_text_ids(ctrls, ['color_preset'])),
+                CtrlCategory('Color Preset', pop_list_by_text_ids(ctrls, ['color_preset'])),
                 CtrlCategory('Balance', pop_list_by_ids(ctrls, [
                     V4L2_CID_AUTO_WHITE_BALANCE,
                     V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE,
