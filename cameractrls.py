@@ -2171,7 +2171,7 @@ def resolve_v4l_ids(v4l_ctrls, preset):
             ret[c.text_id] = v
     return ret
 
-class PresetCtrls:
+class ColorPreset:
     def __init__(self, cam_ctrls):
         self.ctrls = []
         self.cam_ctrls = cam_ctrls
@@ -2266,7 +2266,7 @@ class PresetCtrls:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu is None:
-                collect_warning(f'PresetCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                collect_warning(f'ColorPreset: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                 continue
 
             self.cam_ctrls.setup_ctrls({**self.defaults, **menu.presets}, errs)
@@ -2476,7 +2476,7 @@ class CameraCtrls:
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
             SystemdSaver(self),
-            PresetCtrls(self),
+            ColorPreset(self),
         ]
 
     def has_ptz(self):
