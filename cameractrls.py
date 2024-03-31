@@ -1992,6 +1992,9 @@ class V4L2FmtCtrls:
             collect_warning(f'V4L2FmtCtrls: Can\'t get fmt {e}', errs)
             return
 
+        if pixelformat == pxf2str(fmt.fmt.pix.pixelformat):
+            return
+        
         fmt.fmt.pix.pixelformat = str2pxf(pixelformat)
 
         try:
@@ -2013,6 +2016,9 @@ class V4L2FmtCtrls:
             ioctl(self.fd, VIDIOC_G_FMT, fmt)
         except Exception as e:
             collect_warning(f'V4L2FmtCtrls: Can\'t get fmt {e}', errs)
+            return
+
+        if wh2str(fmt.fmt.pix) == resolution:
             return
 
         str2wh(resolution, fmt.fmt.pix)
@@ -2057,6 +2063,9 @@ class V4L2FmtCtrls:
         return dn2str(parm.parm.capture.timeperframe)
 
     def set_fps(self, ctrl, fps, errs):
+        if fps == self.get_fps():
+            return
+
         parm = v4l2_streamparm()
         parm.type = V4L2_BUF_TYPE_VIDEO_CAPTURE
         parm.parm.capture.timeperframe.numerator = 10
