@@ -2439,6 +2439,88 @@ def set_repeat_interval(ctrl, e2e_ns):
     if ctrl:
         ctrl.repeat = e2e_ns / ((ctrl.max - ctrl.min) / ctrl.step)
 
+class DesktopPortal():
+    def __init__(self, ctrls):
+        self.cam_ctrls = ctrls
+        if not self.portal_available():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            BaseCtrl('desktop_portal_cameractrlsd', 'Start with Desktop Portal (re-login required)', 'button',
+                tooltip = 'Start cameractrlsd with Desktop Portal to restore Preset 1 at device connection\nRe-login required to start the daemon',
+                unrestorable = True,
+                menu = [
+                    BaseCtrlMenu('disable', 'Disable', 'disable'),
+                    BaseCtrlMenu('enable', 'Enable', 'enable'),
+                ],
+            )
+        ]
+
+    def get_ctrls(self):
+        return self.ctrls
+
+    def setup_ctrls(self, params, errs):
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl is None:
+                continue
+            menu  = find_by_text_id(ctrl.menu, v)
+            if menu is None:
+                collect_warning(f'DesktopPortal: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+            if menu.value == 'enable':
+                self.request_autostart(True, errs)
+            else:
+                self.request_autostart(False, errs)
+
+    def portal_available(self):
+        return 'FLATPAK_ID' in os.environ
+
+    def receive_autostart(self, connection, sender_name, object_path, interface_name, signal_name, parameters, user_data):
+        logging.info(f'DesktopPortal: receive_autostart: {parameters[1]}')
+
+    def request_autostart(self, is_enabled, errs):
+        from gi.repository import Gio, GLib
+        from random import randint
+
+        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        proxy = Gio.DBusProxy.new_sync(
+            bus,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            'org.freedesktop.portal.Desktop',
+            '/org/freedesktop/portal/desktop',
+            'org.freedesktop.portal.Background',
+            None,
+        )
+
+        token = randint(10000000, 20000000)
+        options = {
+            'handle_token': GLib.Variant('s', f'hu/irl/cameractrls/{token}'),
+            'reason': GLib.Variant('s', ('Autostart cameractrlsd in the background.')),
+            'autostart': GLib.Variant('b', is_enabled),
+            'commandline': GLib.Variant('as', ['cameractrlsd.py']),
+            'dbus-activatable': GLib.Variant('b', False),
+        }
+
+        request = proxy.RequestBackground('(sa{sv})', "wayland:", options)
+        if request is None:
+            collect_warning(f'DesktopPortal: RequestBackground failed.', errs)
+        try:
+            bus.signal_subscribe(
+                'org.freedesktop.portal.Desktop',
+                'org.freedesktop.portal.Request',
+                'Response',
+                request,
+                None,
+                Gio.DBusSignalFlags.NO_MATCH_RULE,
+                self.receive_autostart,
+                None,
+            )
+        except Exception as e:
+            collect.warning(f'DesktopPortal: signal_subscribe failed: {e}', errs)
+
 class PTZController():
     def __init__(self, ctrls):
         self.ctrls = ctrls
@@ -2559,6 +2641,7 @@ class CameraCtrls:
             SystemdSaver(self),
             ColorPreset(self),
             ConfigPreset(self),
+            DesktopPortal(self),
         ]
 
     def has_ptz(self):
@@ -2711,7 +2794,7 @@ class CameraCtrls:
                 CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
                 CtrlCategory('Image Source Control', pop_list_by_base_id(ctrls, V4L2_CID_IMAGE_SOURCE_CLASS_BASE)),
                 CtrlCategory('Image Process Control', pop_list_by_base_id(ctrls, V4L2_CID_IMAGE_PROC_CLASS_BASE)),
-                CtrlCategory('Cameractrlsd', pop_list_by_text_ids(ctrls, ['systemd_cameractrlsd'])),
+                CtrlCategory('Cameractrlsd', pop_list_by_text_ids(ctrls, ['systemd_cameractrlsd', 'desktop_portal_cameractrlsd'])),
             ]),
             CtrlPage('Compression', [
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
