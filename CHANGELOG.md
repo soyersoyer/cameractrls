@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.6.0] - 2024-04-01
+
+### Added
+ - Control Presets
+ - Cameractrlsd, a deamon which restores the controls at device connection
+ - Starter for Cameractrlsd with SystemD and DesktopPortal
+ - MX Brio FoV support (thx wanderboessenkool)
+ - PTZ control keys in cameraview
+
+### Changed
+ - use GPLv3 License
+
+### Fixed
+ - Various camera opening fixes
+ - Better relative MIDI control support
+ - Added Zoom Continuous to zeroers to work
+
+### Removed
+ - removed cameractrlstk
+
 ## [0.5.15] - 2024-02-17
 
 ### Fixed

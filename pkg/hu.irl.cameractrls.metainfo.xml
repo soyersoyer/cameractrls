@@ -31,25 +31,40 @@
     <url type="bugtracker">https://github.com/soyersoyer/cameractrls/issues</url>
     <screenshots>
         <screenshot type="default">
-            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_1.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_1.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_2.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_2.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_3.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_3.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_4.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_4.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_5.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_5.png</image>
         </screenshot>
         <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/v0.5.14/screenshots/gui_screen_gtk_6.png</image>
+            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_6.png</image>
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.0" date="2024-04-01">
+            <description>
+                <ul>
+                    <li>Control Presets</li>
+                    <li>Cameractrlsd, a deamon which restores the controls at device connection</li>
+                    <li>Starter for Cameractrlsd with SystemD and DesktopPortal</li>
+                    <li>MX Brio FoV support (thx wanderboessenkool)</li>
+                    <li>PTZ control keys in cameraview</li>
+                    <li>use GPLv3 License</li>
+                    <li>Various camera opening fixes</li>
+                    <li>Better relative MIDI control support</li>
+                    <li>Added Zoom Continuous to zeroers to work</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.5.15" date="2024-02-17">
             <description>
                 <ul>
