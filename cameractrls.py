@@ -2274,15 +2274,28 @@ class ColorPreset:
 
 class SystemdSaver:
     def __init__(self, cam_ctrls):
+        self.systemd_user_dir = os.path.expanduser('~/.config/systemd/user')
+        self.service_file = 'cameractrlsd.service'
+
         self.cam_ctrls = cam_ctrls
-        self.ctrls = [] if not self.systemd_available() else [
-            BaseCtrl('systemd_save', 'Save settings to Systemd', 'button',
-                menu = [ BaseCtrlMenu('save', 'Save', 'save') ], tooltip = 'Save settings into a systemd path triggered user service',
+        if not self.systemd_available():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            BaseCtrl('systemd_cameractrlsd', 'Start with Systemd', 'boolean',
+                tooltip = 'Start cameractrlsd with Systemd to restore Preset 1 at device connection',
+                unrestorable = True,
+                value = self.is_service_enabled(),
             )
         ]
 
     def systemd_available(self):
         return os.path.exists('/bin/systemctl')
+
+    def is_service_enabled(self):
+        return os.path.exists(os.path.join(self.systemd_user_dir, self.service_file)) and \
+            subprocess.run(["systemctl", "--user", "is-enabled", self.service_file], capture_output=True).returncode == 0
 
     def get_ctrls(self):
         return self.ctrls
@@ -2292,67 +2305,44 @@ class SystemdSaver:
             ctrl = find_by_text_id(self.ctrls, k)
             if ctrl is None:
                 continue
-            menu = find_by_text_id(ctrl.menu, v)
-            if menu is None:
-                collect_warning(f'SystemdSaver: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
-                continue
-            if menu.text_id == 'save':
-                self.create_systemd_service_and_path()
+            ctrl.value = to_bool(v)
+            if ctrl.value:
+                self.create_systemd_service(errs)
+            else:
+                self.disable_systemd_service(errs)
 
-    def create_systemd_service_and_path(self):
-        device = self.cam_ctrls.device
-        dev_id = os.path.basename(device)
-        controls = self.get_claimed_controls()
+    def create_systemd_service(self, errs):
+        service_file_str = self.get_service_file(sys.path[0])
 
-        service_file_str = self.get_service_file(sys.path[0], device, dev_id, controls)
-        path_file_str = self.get_path_file(device)
+        os.makedirs(self.systemd_user_dir, mode=0o755, exist_ok=True)
 
-        systemd_user_dir = os.path.expanduser('~/.config/systemd/user')
-        prefix = 'cameractrls'
-
-        service_file = f'{prefix}-{dev_id}.service'
-        path_file = f'{prefix}-{dev_id}.path'
-
-        os.makedirs(systemd_user_dir, exist_ok=True)
-
-        with open(f'{systemd_user_dir}/{service_file}', 'w', encoding="utf-8") as f:
+        with open(os.path.join(self.systemd_user_dir, self.service_file), 'w', encoding="utf-8") as f:
             f.write(service_file_str)
 
-        with open(f'{systemd_user_dir}/{path_file}', 'w', encoding="utf-8") as f:
-            f.write(path_file_str)
+        pdr = subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
+        if pdr.returncode:
+            errs.extend(pdr.stderr.decode().splitlines())
 
-        subprocess.run(["systemctl", "--user", "enable", "--now", service_file])
-        subprocess.run(["systemctl", "--user", "enable", "--now", path_file])
+        pen = subprocess.run(["systemctl", "--user", "enable", "--now", self.service_file], capture_output=True)
+        if pen.returncode:
+            errs.extend(pen.stderr.decode().splitlines())
 
-    def get_claimed_controls(self):
-        ctrls = [
-            f'{c.text_id}={c.value}'
-            for c in self.cam_ctrls.get_ctrls()
-            if not c.inactive and c.value is not None and c.value != c.default
-        ]
-        return ','.join(ctrls)
+    def disable_systemd_service(self, errs):
+        p = subprocess.run(["systemctl", "--user", "disable", "--now", self.service_file], capture_output=True)
+        if p.returncode:
+            errs.extend(p.stderr.decode().splitlines())
 
-    def get_service_file(self, script_path, device, dev_id, controls):
+
+    def get_service_file(self, script_path):
         return f"""[Unit]
-Description=Restore {dev_id} controls
+Description=CameraCtrls daemon - restore control values
 
 [Service]
-Type=oneshot
-ExecStart={script_path}/cameractrls.py -d {device} -c {controls}
+Type=simple
+ExecStart={script_path}/cameractrlsd.py
 
 [Install]
 WantedBy=graphical-session.target
-"""
-
-    def get_path_file(self, device):
-        return f"""[Unit]
-Description=Watch {device} and restore controls
-
-[Path]
-PathExists={device}
-
-[Install]
-WantedBy=paths.target
 """
 
 class ConfigPreset:
@@ -2721,6 +2711,7 @@ class CameraCtrls:
                 CtrlCategory('Rotate/Flip', pop_list_by_ids(ctrls, [V4L2_CID_ROTATE, V4L2_CID_HFLIP, V4L2_CID_VFLIP])),
                 CtrlCategory('Image Source Control', pop_list_by_base_id(ctrls, V4L2_CID_IMAGE_SOURCE_CLASS_BASE)),
                 CtrlCategory('Image Process Control', pop_list_by_base_id(ctrls, V4L2_CID_IMAGE_PROC_CLASS_BASE)),
+                CtrlCategory('Cameractrlsd', pop_list_by_text_ids(ctrls, ['systemd_cameractrlsd'])),
             ]),
             CtrlPage('Compression', [
                 CtrlCategory('Codec', pop_list_by_base_id(ctrls, V4L2_CID_CODEC_BASE)),
@@ -2731,10 +2722,10 @@ class CameraCtrls:
                 CtrlCategory('Info', pop_list_by_text_ids(ctrls, ['card', 'driver', 'path', 'real_path'])),
             ]),
             CtrlPage('Settings', [
-                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['systemd_save', 'kiyo_pro_save', 'preset'])),
+                CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['kiyo_pro_save', 'preset'])),
             ], target='footer')
         ]
-        pages[3].categories += CtrlCategory('Other', ctrls), #the rest
+        pages[3].categories.insert(-1, CtrlCategory('Other', ctrls)) # the rest before cameractrlsd
 
         # filter out the empty categories and pages
         for page in pages:
