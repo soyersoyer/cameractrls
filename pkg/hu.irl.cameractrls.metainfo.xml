@@ -26,7 +26,7 @@
     <recommends>
         <display_length compare="ge">550</display_length>
     </recommends>
-    <content_rating type="oars-1.0"/>
+    <content_rating type="oars-1.1"/>
     <url type="homepage">https://github.com/soyersoyer/cameractrls</url>
     <url type="bugtracker">https://github.com/soyersoyer/cameractrls/issues</url>
     <screenshots>
