@@ -92,39 +92,6 @@ Run from the launcher or from the shell
 ./cameractrlsgtk4.py
 ```
 
-# cameractrlstk
-TKinter GUI for the Camera controls
-
-If you like old looking user interfaces.
-
-<img alt="cameractrls tk screen" src="https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_tk.png" width="400">
-
-### TK GUI install
-
-Install the python3 tkinter dependency via apt:
-```shell
-sudo apt install python3-tk
-```
-
-or via dnf:
-```shell
-sudo dnf install python3-tkinter
-```
-
-Add desktop file to the launcher
-```shell
-desktop-file-install --dir="$HOME/.local/share/applications" \
---set-key=Exec --set-value="$PWD/cameractrlstk.py" \
---set-key=Path --set-value="$PWD" \
---set-key=Icon --set-value="$PWD/pkg/hu.irl.cameractrls.svg" \
-pkg/hu.irl.cameractrls.desktop
-```
-
-Run from the launcher or from the shell
-```shell
-./cameractrlstk.py
-```
-
 # cameractrls.py
 
 The CLI.
