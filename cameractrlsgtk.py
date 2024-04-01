@@ -75,13 +75,21 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        if bus is not None:
-            proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
+        try:
+            self.desktop_portal = Gio.DBusProxy.new_for_bus_sync(
+                Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
                 'org.freedesktop.portal.Desktop', '/org/freedesktop/portal/desktop',
                 'org.freedesktop.portal.Settings', None)
-            if proxy and proxy.Read('(ss)', 'org.freedesktop.appearance', 'color-scheme') == 1:
-                self.get_settings().set_property('gtk-application-prefer-dark-theme', True)
+            prefer_dark = self.desktop_portal.Read('(ss)', 'org.freedesktop.appearance', 'color-scheme') == 1
+            self.get_settings().set_property('gtk-application-prefer-dark-theme', prefer_dark)
+            self.desktop_portal.connect('g-signal', lambda p, sender, signal, params:
+                signal == 'SettingChanged' and
+                params[0] == 'org.freedesktop.appearance' and
+                params[1] == 'color-scheme' and
+                self.get_settings().set_property('gtk-application-prefer-dark-theme', params[2] == 1)
+            )
+        except Exception as e:
+            logging.warning(f'desktop_portal failed: {e}')
 
         about_button = Gtk.Button(
             action_name='app.about',
