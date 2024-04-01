@@ -75,6 +75,12 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
+        gschema = Gio.SettingsSchemaSource.get_default().lookup("org.gnome.desktop.interface", False)
+        if gschema:
+            gsettings = Gio.Settings.new_full(gschema)
+            if gsettings.get_string('color-scheme') == 'prefer-dark':
+                self.get_settings().set_property('gtk-application-prefer-dark-theme', True)
+
         about_button = Gtk.Button(
             action_name='app.about',
             image=Gtk.Image(icon_name='info-symbolic', icon_size=Gtk.IconSize.MENU),
