@@ -78,10 +78,12 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        gschema = Gio.SettingsSchemaSource.get_default().lookup("org.gnome.desktop.interface", False)
-        if gschema:
-            gsettings = Gio.Settings.new_full(gschema)
-            if gsettings.get_string('color-scheme') == 'prefer-dark':
+        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        if bus is not None:
+            proxy = Gio.DBusProxy.new_sync(bus, Gio.DBusProxyFlags.NONE, None,
+                'org.freedesktop.portal.Desktop', '/org/freedesktop/portal/desktop',
+                'org.freedesktop.portal.Settings', None)
+            if proxy and proxy.Read('(ss)', 'org.freedesktop.appearance', 'color-scheme') == 1:
                 self.get_settings().set_property('gtk-application-prefer-dark-theme', True)
 
         about_button = Gtk.Button(
