@@ -11,7 +11,7 @@ if clib is None:
     sys.exit(2)
 c = ctypes.CDLL(clib)
 
-logging.getLogger().setLevel(logging.DEBUG)
+logging.getLogger().setLevel(logging.INFO)
 
 inotify_init1 = c.inotify_init1
 inotify_init1.restype = ctypes.c_int
