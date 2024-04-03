@@ -969,7 +969,7 @@ def try_xu_control(fd, unit_id, selector):
     try:
        ioctl(fd, UVCIOC_CTRL_QUERY, xu_ctrl_query)
     except Exception as e:
-        logging.info(f'try_xu_control: UVCIOC_CTRL_QUERY (GET_LEN) - Fd: {fd} - Error: {e}')
+        logging.debug(f'try_xu_control: UVCIOC_CTRL_QUERY (GET_LEN) - Fd: {fd} - Error: {e}')
         return False
 
     return True
@@ -2479,7 +2479,7 @@ class DesktopPortal():
         return 'FLATPAK_ID' in os.environ
 
     def receive_autostart(self, connection, sender_name, object_path, interface_name, signal_name, parameters, user_data):
-        logging.info(f'DesktopPortal: receive_autostart: {parameters[1]}')
+        logging.debug(f'DesktopPortal: receive_autostart: {parameters[1]}')
 
     def request_autostart(self, is_enabled, errs):
         from gi.repository import Gio, GLib
@@ -2681,7 +2681,7 @@ class CameraCtrls:
                     print()
 
     def setup_ctrls(self, params, errs):
-        logging.info(f'CameraCtrls.setup_ctrls: {params}')
+        logging.debug(f'CameraCtrls.setup_ctrls: {params}')
         for c in self.ctrls:
             c.setup_ctrls(params, errs)
         unknown_ctrls = list(set(params.keys()) - set([c.text_id for c in self.get_ctrls()]))
