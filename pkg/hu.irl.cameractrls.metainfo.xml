@@ -64,6 +64,7 @@
                     <li>Check if systemctl enable is successfull</li>
                     <li>Set cameractrlsd loglevel to INFO</li>
                 </ul>
+            </description>
         </release>
         <release version="0.6.0" date="2024-04-01">
             <description>
