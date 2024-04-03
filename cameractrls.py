@@ -2483,7 +2483,7 @@ class DesktopPortal():
                 self.request_autostart(False, errs)
 
     def portal_available(self):
-        return 'FLATPAK_ID' in os.environ
+        return 'FLATPAK_ID' in os.environ or 'SNAP' in os.environ
 
     def receive_autostart(self, connection, sender_name, object_path, interface_name, signal_name, parameters, user_data):
         logging.debug(f'DesktopPortal: receive_autostart: {parameters[1]}')
