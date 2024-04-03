@@ -2492,42 +2492,29 @@ class DesktopPortal():
         from gi.repository import Gio, GLib
         from random import randint
 
-        bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        proxy = Gio.DBusProxy.new_sync(
-            bus,
-            Gio.DBusProxyFlags.NONE,
-            None,
-            'org.freedesktop.portal.Desktop',
-            '/org/freedesktop/portal/desktop',
-            'org.freedesktop.portal.Background',
-            None,
-        )
-
-        token = randint(10000000, 20000000)
-        options = {
-            'handle_token': GLib.Variant('s', f'hu/irl/cameractrls/{token}'),
-            'reason': GLib.Variant('s', ('Autostart cameractrlsd in the background.')),
-            'autostart': GLib.Variant('b', is_enabled),
-            'commandline': GLib.Variant('as', ['cameractrlsd.py']),
-            'dbus-activatable': GLib.Variant('b', False),
-        }
-
-        request = proxy.RequestBackground('(sa{sv})', "wayland:", options)
-        if request is None:
-            collect_warning(f'DesktopPortal: RequestBackground failed.', errs)
         try:
-            bus.signal_subscribe(
-                'org.freedesktop.portal.Desktop',
-                'org.freedesktop.portal.Request',
-                'Response',
-                request,
+            proxy = Gio.DBusProxy.new_for_bus_sync(
+                Gio.BusType.SESSION,
+                Gio.DBusProxyFlags.NONE,
                 None,
-                Gio.DBusSignalFlags.NO_MATCH_RULE,
-                self.receive_autostart,
+                'org.freedesktop.portal.Desktop',
+                '/org/freedesktop/portal/desktop',
+                'org.freedesktop.portal.Background',
                 None,
             )
+
+            token = randint(10000000, 20000000)
+            options = {
+                'handle_token': GLib.Variant('s', f'hu/irl/cameractrls/{token}'),
+                'reason': GLib.Variant('s', ('Autostart cameractrlsd in the background.')),
+                'autostart': GLib.Variant('b', is_enabled),
+                'commandline': GLib.Variant('as', ['cameractrlsd.py']),
+                'dbus-activatable': GLib.Variant('b', False),
+            }
+
+            request = proxy.RequestBackground('(sa{sv})', "wayland:", options)
         except Exception as e:
-            collect.warning(f'DesktopPortal: signal_subscribe failed: {e}', errs)
+            collect_warning(f'DesktopPortal: RequestBackground failed: {e}', errs)
 
 class PTZController():
     def __init__(self, ctrls):
