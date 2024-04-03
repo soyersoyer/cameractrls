@@ -2308,11 +2308,11 @@ class SystemdSaver:
                 continue
             ctrl.value = to_bool(v)
             if ctrl.value:
-                self.create_systemd_service(errs)
+                self.create_systemd_service(ctrl, errs)
             else:
                 self.disable_systemd_service(errs)
 
-    def create_systemd_service(self, errs):
+    def create_systemd_service(self, ctrl, errs):
         service_file_str = self.get_service_file(sys.path[0])
 
         os.makedirs(self.systemd_user_dir, mode=0o755, exist_ok=True)
@@ -2327,6 +2327,13 @@ class SystemdSaver:
         pen = subprocess.run(["systemctl", "--user", "enable", "--now", self.service_file], capture_output=True)
         if pen.returncode:
             errs.extend(pen.stderr.decode().splitlines())
+
+        pen = subprocess.run(["systemctl", "--user", "is-active", "--now", self.service_file], capture_output=True)
+        if pen.returncode:
+            ctrl.value = False
+
+            pen = subprocess.run(["journalctl", "-p", "3", "-n", "1", "-o", "cat", "--user-unit", self.service_file], capture_output=True)
+            errs.extend(pen.stdout.decode().splitlines())
 
     def disable_systemd_service(self, errs):
         p = subprocess.run(["systemctl", "--user", "disable", "--now", self.service_file], capture_output=True)
