@@ -74,13 +74,17 @@ def usage():
     print(f'  -h, --help         show this help message and exit')
 
 def preset_device(path, dev_id):
-    logging.debug(f'preset_device: {path} {dev_id}')
+    logging.debug(f'trying to preset_device: {path} {dev_id}')
 
     device = os.path.join(path, dev_id)
     configfile = get_configfilename(device)
+
+    # if config file does not exists, we should not open the device
     if not os.path.exists(configfile):
         logging.debug(f'preset_device: {configfile} does not exists')
         return
+
+    logging.info(f'preset_device: {path} {dev_id}')
 
     try:
         fd = os.open(device, os.O_RDWR, 0)
