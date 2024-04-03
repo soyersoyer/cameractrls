@@ -2287,16 +2287,16 @@ class SystemdSaver:
             BaseCtrl('systemd_cameractrlsd', 'Start with Systemd', 'boolean',
                 tooltip = 'Start cameractrlsd with Systemd to restore Preset 1 at device connection',
                 unrestorable = True,
-                value = self.is_service_enabled(),
+                value = self.is_service_active(),
             )
         ]
 
     def systemd_available(self):
         return os.path.exists('/bin/systemctl')
 
-    def is_service_enabled(self):
+    def is_service_active(self):
         return os.path.exists(os.path.join(self.systemd_user_dir, self.service_file)) and \
-            subprocess.run(["systemctl", "--user", "is-enabled", self.service_file], capture_output=True).returncode == 0
+            subprocess.run(["systemctl", "--user", "is-active", self.service_file], capture_output=True).returncode == 0
 
     def get_ctrls(self):
         return self.ctrls
