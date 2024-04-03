@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.1] - 2024-04-03
+
+### Added
+ - Set dark mode based on color-scheme
+ - Enable DesktopPortal launcer for snap as well
+
+### Changed
+ - Check if systemctl enable is successfull
+ - Set cameractrlsd loglevel to INFO
+
 ## [0.6.0] - 2024-04-01
 
 ### Added

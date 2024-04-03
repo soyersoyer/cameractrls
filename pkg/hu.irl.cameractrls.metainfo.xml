@@ -56,6 +56,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.1" date="2024-04-03">
+            <description>
+                <ul>
+                    <li>Set dark mode based on color-scheme</li>
+                    <li>Enable DesktopPortal launcer for snap as well</li>
+                    <li>Check if systemctl enable is successfull</li>
+                    <li>Set cameractrlsd loglevel to INFO</li>
+                </ul>
+        </release>
         <release version="0.6.0" date="2024-04-01">
             <description>
                 <ul>
