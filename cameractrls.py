@@ -2114,6 +2114,7 @@ class V4L2FmtCtrls:
                 break
             resolutions.append(wh2str(frm.discrete))
             frm.index += 1
+        resolutions.sort(key=lambda r: list(map(int, r.split('x'))), reverse=True)
         return resolutions
 
     def get_framerates(self, pixelformat, width, height):
