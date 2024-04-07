@@ -406,6 +406,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         for m in filtered_menu:
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
                             b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
+                            if c.child_tooltip:
+                                b.set_tooltip_markup(c.child_tooltip)
                             if m.lp_text_id is not None:
                                 lp = Gtk.GestureLongPress(propagation_phase=Gtk.PropagationPhase.CAPTURE)
                                 lp.connect('pressed', lambda lp, x, y, c=c, m=m, b=b: [
