@@ -1126,7 +1126,7 @@ def collect_warning(w, ws):
 
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
-                inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None,
+                inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None, child_tooltip = None,
                 zeroer = False, scale_class = None, kernel_id = None, get_default = None,
                 format_value = None, step_big = None, unrestorable = False):
         self.text_id = text_id
@@ -1143,6 +1143,7 @@ class BaseCtrl:
         self.menu_dd = menu_dd
         self.menu = menu
         self.tooltip = tooltip
+        self.child_tooltip = child_tooltip
         self.zeroer = zeroer
         self.scale_class = scale_class
         self.get_default = get_default
@@ -1380,8 +1381,8 @@ LOGITECH_BRIO_FOV_90 = 0x00
 
 
 class LogitechCtrl(BaseCtrl):
-    def __init__(self, text_id, name, type, tooltip, unit_id, selector, len, offset, menu = None):
-        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
+    def __init__(self, text_id, name, type, tooltip, unit_id, selector, len, offset, menu = None, child_tooltip = None):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu, child_tooltip=child_tooltip)
         self._unit_id = unit_id
         self._selector = selector
         self._len = len
@@ -1514,6 +1515,7 @@ class LogitechCtrls:
                             BaseCtrlMenu('save_7', 'Save 7', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_7, gui_hidden=True),
                             BaseCtrlMenu('save_8', 'Save 8', LOGITECH_PERIPHERAL_PANTILT_PRESET_SAVE_8, gui_hidden=True),                            
                         ],
+                        child_tooltip='Click to load, long press to save',
                     ),
                 ])
 
@@ -2360,6 +2362,7 @@ class ConfigPreset:
         self.ctrls = [
             BaseCtrl('preset', 'Preset', 'button',
                 tooltip = 'Preset\nClick loads the preset\nLong press saves it',
+                child_tooltip = 'Click to load, long press to save',
                 menu = [
                     BaseCtrlMenu('load_1', '1', 'load_1', lp_text_id='save_1'),
                     BaseCtrlMenu('load_2', '2', 'load_2', lp_text_id='save_2'),
