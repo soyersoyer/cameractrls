@@ -36,6 +36,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.2" date="2024-04-07">
+            <description>
+                <ul>
+                    <li>Add tooltips to preset controls</li>
+                    <li>Sort resolutions in descendng order</li>
+                    <li>Use only 1 screenshot in metainfo to make the Flatpak image less bloated</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.1" date="2024-04-03">
             <description>
                 <ul>

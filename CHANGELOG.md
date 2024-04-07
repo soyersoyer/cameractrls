@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.2] - 2024-04-07
+
+### Added
+ - Add tooltips to preset controls
+
+### Changed
+ - Sort resolutions in descendng order
+ - Use only 1 screenshot in metainfo to make the Flatpak image less bloated
+
 ## [0.6.1] - 2024-04-03
 
 ### Added
