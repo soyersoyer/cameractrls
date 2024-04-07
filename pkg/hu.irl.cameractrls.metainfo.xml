@@ -34,26 +34,6 @@
             <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_1.png</image>
             <caption>Basic page</caption>
         </screenshot>
-        <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_2.png</image>
-            <caption>Exposure page</caption>
-        </screenshot>
-        <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_3.png</image>
-            <caption>Color page</caption>
-        </screenshot>
-        <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_4.png</image>
-            <caption>Advanced page</caption>
-        </screenshot>
-        <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_5.png</image>
-            <caption>Capture page</caption>
-        </screenshot>
-        <screenshot>
-            <image>https://github.com/soyersoyer/cameractrls/raw/main/screenshots/gui_screen_gtk_6.png</image>
-            <caption>PTZ Controller selector</caption>
-        </screenshot>
     </screenshots>
     <releases>
         <release version="0.6.1" date="2024-04-03">
