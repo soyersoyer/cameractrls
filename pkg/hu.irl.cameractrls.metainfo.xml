@@ -36,6 +36,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.3" date="2024-04-11">
+            <description>
+                <ul>
+                    <li>Added scrollbar to the control panel</li>
+                    <li>Cameractrlsd can start even if there is no /dev/v4l directory</li>
+                    <li>Preset save writes the config file based on v4l ID</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.2" date="2024-04-07">
             <description>
                 <ul>

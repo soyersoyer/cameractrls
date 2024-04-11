@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.6.3] - 2024-04-11
+
+### Added
+ - Added scrollbar to the control panel
+
+### Fixed
+ - Cameractrlsd can start even if there is no /dev/v4l directory
+ - Preset save writes the config file based on v4l ID
+
 ## [0.6.2] - 2024-04-07
 
 ### Added
