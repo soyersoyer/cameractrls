@@ -3,7 +3,7 @@
 import sys, os, ctypes, ctypes.util, logging, getopt, time
 from collections import namedtuple
 from struct import unpack_from, calcsize
-from cameractrls import CameraCtrls, get_configfilename
+from cameractrls import CameraCtrls, find_symlink_in, get_configfilename
 
 clib = ctypes.util.find_library('c')
 if clib is None:
@@ -113,15 +113,6 @@ def parse_events(data):
         name = data[pos - namesize : pos].split(b'\x00', 1)[0]
         events.append(Event(wd, mask, cookie, namesize, name.decode()))
     return events
-
-def find_symlink_in(dir, paths):
-    for path in paths:
-        if not os.path.isdir(path):
-            continue
-        for p in os.scandir(path):
-            if p.is_symlink() and os.path.realpath(p) == dir:
-                return p
-    return None
 
 def main():
     try:

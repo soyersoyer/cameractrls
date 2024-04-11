@@ -2440,6 +2440,15 @@ class ConfigPreset:
         except Exception as e:
             collect_warning(f'ConfigPreset: save_preset failed: {e}', errs)
 
+def find_symlink_in(dir, paths):
+    for path in paths:
+        if not os.path.isdir(path):
+            continue
+        for p in os.scandir(path):
+            if p.is_symlink() and os.path.realpath(p) == dir:
+                return p
+    return None
+
 def get_configdir():
     return os.getenv("XDG_CONFIG_HOME", os.path.expanduser('~/.config/hu.irl.cameractrls'))
 
