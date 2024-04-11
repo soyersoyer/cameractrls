@@ -261,8 +261,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         if self.frame:
             self.grid.remove(self.frame)
             self.frame = None
-            # forget old size
-            self.set_default_size(-1, -1)
 
         if self.device is None:
             return
@@ -275,7 +273,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=500)
         stack_sw = Gtk.StackSwitcher(stack=stack, hexpand=True, halign=Gtk.Align.CENTER)
         stack_box.append(stack_sw)
-        stack_box.append(stack)
+        scrolledwindow = Gtk.ScrolledWindow(child=stack, propagate_natural_height=True, hscrollbar_policy=Gtk.PolicyType.NEVER, vscrollbar_policy=Gtk.PolicyType.AUTOMATIC)
+        stack_box.append(scrolledwindow)
 
         footer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin_top=10)
         stack_box.append(footer)
@@ -478,6 +477,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             c.gui_default_btn = refresh
 
         self.update_ctrls_state()
+        _, natsize = self.get_preferred_size()
+        self.set_default_size(natsize.width, natsize.height)
 
     def close_notify(self):
         self._revealer.set_reveal_child(False)
