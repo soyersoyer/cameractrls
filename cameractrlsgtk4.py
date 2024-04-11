@@ -96,7 +96,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
         about_button = Gtk.Button(
             action_name='app.about',
-            icon_name='info-symbolic',
+            icon_name='open-menu-symbolic',
             has_frame=False,
             tooltip_text='About',
         )
