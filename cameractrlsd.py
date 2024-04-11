@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, os, ctypes, ctypes.util, logging, getopt
+import sys, os, ctypes, ctypes.util, logging, getopt, time
 from collections import namedtuple
 from struct import unpack_from, calcsize
 from cameractrls import CameraCtrls, get_configfilename
@@ -73,10 +73,9 @@ def usage():
     print(f'optional arguments:')
     print(f'  -h, --help         show this help message and exit')
 
-def preset_device(path, dev_id):
-    logging.debug(f'trying to preset_device: {path} {dev_id}')
+def preset_device(device):
+    logging.debug(f'trying to preset_device: {device}')
 
-    device = os.path.join(path, dev_id)
     configfile = get_configfilename(device)
 
     # if config file does not exists, we should not open the device
@@ -84,7 +83,7 @@ def preset_device(path, dev_id):
         logging.debug(f'preset_device: {configfile} does not exists')
         return
 
-    logging.info(f'preset_device: {path} {dev_id}')
+    logging.info(f'preset_device: {device}')
 
     try:
         fd = os.open(device, os.O_RDWR, 0)
@@ -115,6 +114,15 @@ def parse_events(data):
         events.append(Event(wd, mask, cookie, namesize, name.decode()))
     return events
 
+def find_symlink_in(dir, paths):
+    for path in paths:
+        if not os.path.isdir(path):
+            continue
+        for p in os.scandir(path):
+            if p.is_symlink() and os.path.realpath(p) == dir:
+                return p
+    return None
+
 def main():
     try:
         arguments, values = getopt.getopt(sys.argv[1:], 'h', ['help'])
@@ -128,32 +136,35 @@ def main():
             usage()
             return 0
 
+    dev_path = '/dev'
     v4l_paths = ['/dev/v4l/by-id/', '/dev/v4l/by-path/']
 
     for v4l_path in v4l_paths:
         for dirpath, dirs, files in os.walk(v4l_path):
             for device in files:
-                preset_device(v4l_path, device)
+                preset_device(os.path.join(v4l_path, device))
 
     fd = inotify_init1(0)
     if fd == -1:
         logging.error(f'inotify_init1 failed')
         return 1
 
-    wddirs = {}
-
-    for path in v4l_paths:
-        wd = inotify_add_watch(fd, path.encode(), IN_MOVED_TO)
-        if wd == -1:
-            logging.error(f'inotify_add_watch failed {path}')
-            return 1
-        wddirs[wd] = path
+    wd = inotify_add_watch(fd, dev_path.encode(), IN_CREATE)
+    if wd == -1:
+        logging.error(f'inotify_add_watch failed {dev_path}')
+        return 1
 
     while True:
         data = os.read(fd, EVENT_SIZE + NAME_MAX + 1)
         for e in parse_events(data):
             logging.debug(f'event: {e}')
-            preset_device(wddirs[e.wd], e.name)
+            if e.name.startswith('video'):
+                time.sleep(2) # waiting for udev to create dirs
+                path = find_symlink_in(os.path.join(dev_path, e.name), v4l_paths)
+                if path is None:
+                    logging.warning(f'can\'t find {e.name} in {v4l_paths}')
+                    continue
+                preset_device(path.path)
 
 if __name__ == '__main__':
     sys.exit(main())
