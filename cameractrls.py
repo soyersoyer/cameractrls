@@ -2453,6 +2453,10 @@ def get_configdir():
     return os.getenv("XDG_CONFIG_HOME", os.path.expanduser('~/.config/hu.irl.cameractrls'))
 
 def get_configfilename(device):
+    if device.startswith('/dev/video'):
+        path = find_symlink_in(device, v4ldirs.keys())
+        if path:
+            device = path.path
     dev_id = os.path.basename(device)
     return os.path.join(get_configdir(), f'{dev_id}.ini')
 
