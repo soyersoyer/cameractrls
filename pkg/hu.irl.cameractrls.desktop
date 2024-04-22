@@ -6,4 +6,5 @@ Comment=Camera controls for Linux
 Exec=cameractrlsgtk.py
 Icon=hu.irl.cameractrls
 Terminal=false
-Categories=Settings;
+Categories=Settings;AudioVideo;Video;Office;Utility;GNOME;GTK;
+Keywords=picture;photos;camera;webcam;
