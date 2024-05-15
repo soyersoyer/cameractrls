@@ -225,13 +225,13 @@ CC121 => PTZ reset
 PGM0-7 => PTZ presets 1-8
 ```
 
-# Updating the cameractrls
+# Update cameractrls
 
 ```shell
 git pull
 ```
 
-# Updating from 0.5.x -> 0.6.x
+# Update from 0.5.x -> 0.6.x
 
 Disable, stop and delete the old systemd paths, services:
 ```shell
@@ -240,7 +240,7 @@ systemctl --user disable --now cameractrls-*
 rm cameractrls-*
 ```
 
-# Deleting the cameractrls
+# Delete cameractrls
 
 Disable, stop and delete the systemd service:
 ```shell
