@@ -2449,6 +2449,26 @@ def find_symlink_in(dir, paths):
                 return p
     return None
 
+# remove in 0.7.0
+# see https://github.com/soyersoyer/cameractrls/pull/50
+def migrate_old_config(dev_id):
+    xdg_config = os.getenv("XDG_CONFIG_HOME")
+    if not xdg_config:
+        return
+
+    filename = os.path.join(xdg_config, f'{dev_id}.ini')
+    if not os.path.exists(filename):
+        return
+
+    configdir = get_configdir()
+    try:
+        os.makedirs(configdir, mode=0o755, exist_ok=True)
+        new_filename = os.path.join(configdir, f'{dev_id}.ini')
+
+        os.rename(filename, new_filename)
+    except Exception as e:
+        logging.debug(f'ConfigPreset: migrate_old_config failed: {e}')
+
 def get_configdir():
     config_dir_base = os.path.expanduser(os.getenv("XDG_CONFIG_HOME", '~/.config'))
     return os.path.join(config_dir_base, 'hu.irl.cameractrls')
@@ -2459,6 +2479,10 @@ def get_configfilename(device):
         if path:
             device = path.path
     dev_id = os.path.basename(device)
+
+    # remove in 0.7.0
+    migrate_old_config(dev_id)
+
     return os.path.join(get_configdir(), f'{dev_id}.ini')
 
 def set_repeat_interval(ctrl, e2e_ns):
