@@ -2450,7 +2450,8 @@ def find_symlink_in(dir, paths):
     return None
 
 def get_configdir():
-    return os.getenv("XDG_CONFIG_HOME", os.path.expanduser('~/.config/hu.irl.cameractrls'))
+    config_dir_base = os.path.expanduser(os.getenv("XDG_CONFIG_HOME", '~/.config'))
+    return os.path.join(config_dir_base, 'hu.irl.cameractrls')
 
 def get_configfilename(device):
     if device.startswith('/dev/video'):
