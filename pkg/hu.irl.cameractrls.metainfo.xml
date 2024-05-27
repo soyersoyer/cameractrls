@@ -36,6 +36,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.4" date="2024-05-28">
+            <description>
+                <ul>
+                    <li>Fix config location when XDG_CONFIG_DIR is set (thx Daniel Fox)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.3" date="2024-04-11">
             <description>
                 <ul>

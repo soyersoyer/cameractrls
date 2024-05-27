@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [0.6.4] - 2024-05-28
+
+### Fixed
+ - Fix config location when XDG_CONFIG_DIR is set (thx Daniel Fox)
+
 ## [0.6.3] - 2024-04-11
 
 ### Added
