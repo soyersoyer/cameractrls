@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+ - Gray out the readonly controls
+
 ## [0.6.4] - 2024-05-28
 
 ### Fixed
