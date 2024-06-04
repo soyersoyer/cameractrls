@@ -58,17 +58,31 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
             padding-left: 10px;
             padding-right: 10px;
         }
-        /* scale layout fix */
-        scale trough {
-            margin-top: 7px;
-            margin-bottom: -7px;
-        }
         '''
-        if (Gtk.get_major_version(), Gtk.get_minor_version()) >= (4, 12):
+
+        gtk_version = (Gtk.get_major_version(), Gtk.get_minor_version(), Gtk.get_micro_version())
+
+        if gtk_version >= (4, 14, 2):
+            css += '''
+            /* scale layout fix */
+            scale {
+                padding: 8px;
+            }
+            '''
+        else:
+            css += '''
+            /* scale layout fix */
+            scale trough {
+                margin-top: 7px;
+                margin-bottom: -7px;
+            }
+            '''
+
+        if gtk_version >= (4, 12, 0):
             css_provider.load_from_string(css)
         # XXX: remove workaround when merged and pygobject 3.46 is widespread
         # https://gitlab.gnome.org/GNOME/pygobject/-/merge_requests/231/
-        elif (Gtk.get_major_version(), Gtk.get_minor_version()) >= (4, 9):
+        elif gtk_version >= (4, 9, 0):
             css_provider.load_from_data(css, -1)
         else:
             css_provider.load_from_data(css.encode())
