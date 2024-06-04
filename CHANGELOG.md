@@ -2,8 +2,10 @@
 
 ## [Unreleased]
 
+## [0.6.5] - 2024-06-04
+
 ### Added
- - Gray out the readonly controls
+ - Gray out the readonly controls (thx Daniel Schaefer @ Framework)
 
 ### Fixed
  - Fix GKT4 scale layout for version 4.14.2+
