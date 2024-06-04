@@ -516,9 +516,9 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
     def update_ctrl_state(self, c):
         for gui_ctrl in c.gui_ctrls:
-            gui_ctrl.set_sensitive(not c.inactive)
+            gui_ctrl.set_sensitive(not c.inactive and not c.readonly)
         if c.gui_default_btn is not None:
-            visible = not c.inactive and (
+            visible = not c.inactive and not c.readonly and (
                 c.default is not None and c.value is not None and c.default != c.value or \
                 c.get_default is not None and not c.get_default()
             )

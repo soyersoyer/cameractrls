@@ -585,6 +585,7 @@ v4l2_ctrl_type = enum
     V4L2_CTRL_TYPE_INTEGER_MENU,
 ) = range(1, 10)
 
+V4L2_CTRL_FLAG_READ_ONLY = 0x0004
 V4L2_CTRL_FLAG_UPDATE = 0x0008
 V4L2_CTRL_FLAG_INACTIVE = 0x0010
 V4L2_CTRL_FLAG_NEXT_CTRL = 0x80000000
@@ -1127,7 +1128,7 @@ def collect_warning(w, ws):
 class BaseCtrl:
     def __init__(self, text_id, name, type, value = None, default = None, min = None, max = None, step = None,
                 inactive = False, reopener = False, menu_dd = False, menu = None, tooltip = None, child_tooltip = None,
-                zeroer = False, scale_class = None, kernel_id = None, get_default = None,
+                zeroer = False, scale_class = None, kernel_id = None, get_default = None, readonly = False,
                 format_value = None, step_big = None, unrestorable = False):
         self.text_id = text_id
         self.kernel_id = kernel_id
@@ -1139,6 +1140,7 @@ class BaseCtrl:
         self.max = max
         self.step = step
         self.inactive = inactive
+        self.readonly = readonly
         self.reopener = reopener
         self.menu_dd = menu_dd
         self.menu = menu
@@ -1763,6 +1765,7 @@ class V4L2Ctrls:
                     v4l2ctrl = V4L2Ctrl(qctrl.id, text_id, text, ctrl_type, None, menu = [ BaseCtrlMenu(text_id, text, text_id) ])
 
                 v4l2ctrl.inactive = bool(qctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
+                v4l2ctrl.readonly = bool(qctrl.flags & V4L2_CTRL_FLAG_READ_ONLY)
                 ctrl_info = V4L2_CTRL_INFO.get(qctrl.id)
                 if ctrl_info is not None:
                     v4l2ctrl.kernel_id = ctrl_info[0]
@@ -1895,6 +1898,7 @@ class V4L2Listener(Thread):
                 break
             ctrl = self.ctrls.find_by_v4l2_id(event.id)
             ctrl.inactive = bool(event.ctrl.flags & V4L2_CTRL_FLAG_INACTIVE)
+            ctrl.readonly = bool(event.ctrl.flags & V4L2_CTRL_FLAG_READ_ONLY)
             errs = []
             self.ctrls.set_ctrl_int_value(ctrl, int(event.ctrl.value), errs)
             logging.info(f'VIDIOC_DQEVENT {ctrl.text_id}={ctrl.value} (pending: {event.pending})')
@@ -2257,7 +2261,9 @@ class ColorPreset:
 
     def get_default(self):
         for c in self.default_controls:
-            if c.value != c.default and not c.inactive:
+            # If the control can't be changed (inactive or readonly), don't
+            # allow reverting to defaults
+            if c.value != c.default and not c.inactive and not c.readonly:
                 return False
         return True
 
@@ -2407,7 +2413,7 @@ class ConfigPreset:
         return {
             c.text_id: c.value
             for c in self.cam_ctrls.get_ctrls()
-            if not c.inactive and c.value is not None and c.type != 'info' and not c.unrestorable
+            if not c.inactive and not readonly and c.value is not None and c.type != 'info' and not c.unrestorable
         }
 
     def load_preset(self, device, preset_num, errs):
@@ -2714,6 +2720,8 @@ class CameraCtrls:
                         print(' )', end = '')
                     if c.inactive:
                         print(' | inactive', end = '')
+                    if c.readonly:
+                        print(' | readonly', end = '')
                     print()
 
     def setup_ctrls(self, params, errs):
