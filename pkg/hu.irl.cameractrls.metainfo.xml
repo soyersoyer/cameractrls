@@ -36,6 +36,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.6" date="2024-06-11">
+            <description>
+                <ul>
+                    <li>Fixes typo, which prevents from saving any config (thx morbno)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.5" date="2024-06-04">
             <description>
                 <ul>

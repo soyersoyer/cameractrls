@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.6.6] - 2024-06-11
+
+### Fixed
+
+- Fixes typo, which prevents from saving any config (thx morbno)
+
 ## [0.6.5] - 2024-06-04
 
 ### Added
