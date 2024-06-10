@@ -2413,7 +2413,7 @@ class ConfigPreset:
         return {
             c.text_id: c.value
             for c in self.cam_ctrls.get_ctrls()
-            if not c.inactive and not readonly and c.value is not None and c.type != 'info' and not c.unrestorable
+            if not c.inactive and not c.readonly and c.value is not None and c.type != 'info' and not c.unrestorable
         }
 
     def load_preset(self, device, preset_num, errs):
