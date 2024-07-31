@@ -1655,6 +1655,138 @@ class LogitechCtrls:
     def get_ctrls(self):
         return self.ctrls
 
+# Dell UltraSharp WB7022 GUID 23e49ed0-1178-4f31-ae52-d2fb8a8d3b48 in little-endian
+DELL_ULTRASHARP_GUID = b'\xd0\x9e\xe4\x23\x78\x11\x31\x4f\xae\x52\xd2\xfb\x8a\x8d\x3b\x48'
+
+DELL_ULTRASHARP_DEV_MATCH = [
+    '413c:c015',
+]
+
+DELL_ULTRASHARP_SET = 0x01
+DELL_ULTRASHARP_GET = 0x02
+
+DELL_ULTRASHARP_AUTO_FRAMING_OFF = b'\xff\x14\x01\x00\x00\x00\x00\x00'
+DELL_ULTRASHARP_AUTO_FRAMING_ON = b'\xff\x14\x01\x01\x00\x00\x00\x00'
+
+DELL_ULTRASHARP_CAMERA_TRANSITION_OFF = b'\xff\x14\x10\x00\x00\x00\x00\x00'
+DELL_ULTRASHARP_CAMERA_TRANSITION_ON = b'\xff\x14\x10\x01\x00\x00\x00\x00'
+
+DELL_ULTRASHARP_TRACKING_SENSITIVITY_NORMAL = b'\xff\x14\x11\x01\x00\x00\x00\x00'
+DELL_ULTRASHARP_TRACKING_SENSITIVITY_FAST = b'\xff\x14\x11\x02\x00\x00\x00\x00'
+
+DELL_ULTRASHARP_TRACKING_FRAME_SIZE_STANDARD = b'\xff\x14\x12\x01\x00\x00\x00\x00'
+DELL_ULTRASHARP_TRACKING_FRAME_SIZE_NARROW = b'\xff\x14\x12\x02\x00\x00\x00\x00'
+
+DELL_ULTRASHARP_FOV_65 = b'\xff\x10\x01\x41\x00\x00\x00\x00'
+DELL_ULTRASHARP_FOV_78 = b'\xff\x10\x01\x4e\x00\x00\x00\x00'
+DELL_ULTRASHARP_FOV_90 = b'\xff\x10\x01\x5a\x00\x00\x00\x00'
+
+DELL_ULTRASHARP_HDR_OFF = b'\xff\x11\x00\x00\x00\x00\x00\x00'
+DELL_ULTRASHARP_HDR_ON = b'\xff\x11\x01\x00\x00\x00\x00\x00'
+
+class DellUltraSharpCtrl(BaseCtrl):
+    def __init__(self, text_id, name, type, tooltip, menu, ):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
+
+class DellUltraSharpCtrls:
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, DELL_ULTRASHARP_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids in DELL_ULTRASHARP_DEV_MATCH
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            DellUltraSharpCtrl(
+                'dell_ultrasharp_auto_framing',
+                'Auto Framing',
+                'menu',
+                'Enable Auto-framing to keep your face in the center of the frame when you move',
+                [
+                    BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_AUTO_FRAMING_OFF),
+                    BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_AUTO_FRAMING_ON),
+                ]
+            ),
+            DellUltraSharpCtrl(
+                'dell_ultrasharp_camera_transition',
+                'Camera Transition',
+                'menu',
+                'Intelligent scene analysis and facial tracking to zoom and pan the view when you move',
+                [
+                    BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_CAMERA_TRANSITION_OFF),
+                    BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_CAMERA_TRANSITION_ON),
+                ]
+            ),
+            DellUltraSharpCtrl(
+                'dell_ultrasharp_tracking_sensitivity',
+                'Tracking Sensitivity',
+                'menu',
+                'Adjust how quickly you\'d like the camera to respond to your movement and readjust your position in the frame',
+                [
+                    BaseCtrlMenu('normal', 'Normal', DELL_ULTRASHARP_TRACKING_SENSITIVITY_NORMAL),
+                    BaseCtrlMenu('fast', 'Fast', DELL_ULTRASHARP_TRACKING_SENSITIVITY_FAST),
+                ]
+            ),
+            DellUltraSharpCtrl(
+                'dell_ultrasharp_tracking_frame_size',
+                'Tracking Frame Size',
+                'menu',
+                'It enables a smooth transition by panning and zooming when the camera readjusts your position in the frame',
+                [
+                    BaseCtrlMenu('narrow', 'Narrow', DELL_ULTRASHARP_TRACKING_FRAME_SIZE_NARROW),
+                    BaseCtrlMenu('standard', 'Standard', DELL_ULTRASHARP_TRACKING_FRAME_SIZE_STANDARD),
+                ]
+            ),
+            DellUltraSharpCtrl(
+                'dell_ultrasharp_fov',
+                'FoV',
+                'menu',
+                'Field Of View',
+                [
+                    BaseCtrlMenu('65', '65°', DELL_ULTRASHARP_FOV_65),
+                    BaseCtrlMenu('78', '78°', DELL_ULTRASHARP_FOV_78),
+                    BaseCtrlMenu('90', '90°', DELL_ULTRASHARP_FOV_90),
+                ]
+            ),
+            DellUltraSharpCtrl(
+                'dell_ultrasharp_hdr',
+                'HDR',
+                'menu',
+                'Enable High Dynamic Range to enhance image quality, particularly in extreme lighting conditions',
+                [
+                    BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_HDR_OFF),
+                    BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_HDR_ON),
+                ]
+            ),
+        ]
+
+    def setup_ctrls(self, params, errs):
+        if not self.supported():
+            return
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl is None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu is None:
+                collect_warning(f'DellUltraSharpCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+            ctrl.value = menu.text_id
+
+            query_xu_control(self.fd, self.unit_id, DELL_ULTRASHARP_SET, UVC_SET_CUR, to_buf(menu.value))
+
+    def get_ctrls(self):
+        return self.ctrls
+
 class V4L2Ctrl(BaseCtrl):
     def __init__(self, v4l2_id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
         super().__init__(text_id, name, type, value, default, min, max, step, menu=menu)
@@ -2680,6 +2812,7 @@ class CameraCtrls:
             self.fmt_ctrls,
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
+            DellUltraSharpCtrls(device, fd),
             SystemdSaver(self),
             ColorPreset(self),
             ConfigPreset(self),
@@ -2745,7 +2878,15 @@ class CameraCtrls:
         pages = [
             CtrlPage('Basic', [
                 CtrlCategory('Crop',
-                    pop_list_by_text_ids(ctrls, ['kiyo_pro_fov', 'logitech_brio_fov']) +
+                    pop_list_by_text_ids(ctrls, [
+                        'kiyo_pro_fov',
+                        'logitech_brio_fov',
+                        'dell_ultrasharp_fov',
+                        'dell_ultrasharp_auto_framing',
+                        'dell_ultrasharp_camera_transition',
+                        'dell_ultrasharp_tracking_sensitivity',
+                        'dell_ultrasharp_tracking_frame_size',
+                    ]) +
                     pop_list_by_ids(ctrls, [
                         V4L2_CID_ZOOM_ABSOLUTE,
                         V4L2_CID_ZOOM_CONTINUOUS,
@@ -2804,7 +2945,10 @@ class CameraCtrls:
                         V4L2_CID_WIDE_DYNAMIC_RANGE,
                         V4L2_CID_HDR_SENSOR_MODE,
                     ]) +
-                    pop_list_by_text_ids(ctrls, ['kiyo_pro_hdr'])
+                    pop_list_by_text_ids(ctrls, [
+                        'kiyo_pro_hdr',
+                        'dell_ultrasharp_hdr',
+                    ])
                 ),
             ]),
             CtrlPage('Color', [

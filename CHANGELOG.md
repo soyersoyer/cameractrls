@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 ### Added
+ - Dell UltraSharp WB7022 Extension (thx Sensape)
  - Add SpinButtons next to Scales
  - Allow PageUp/PageDown buttons to work with scales and spin buttons
  - Use Alt+n shortcuts to switch between pages
