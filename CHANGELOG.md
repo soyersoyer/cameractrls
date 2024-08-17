@@ -4,6 +4,7 @@
 
 ### Added
  - Add SpinButtons next to Scales
+ - Allow PageUp/PageDown buttons to work with scales and spin buttons
 
 ## [0.6.6] - 2024-06-11
 

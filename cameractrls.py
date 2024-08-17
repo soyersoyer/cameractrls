@@ -1775,8 +1775,8 @@ class V4L2Ctrls:
                     v4l2ctrl.zeroer = True
                     v4l2ctrl.default = 0
                 
-                if qctrl.id == V4L2_CID_ZOOM_ABSOLUTE:
-                    v4l2ctrl.step_big = 20
+                if v4l2ctrl.step:
+                    v4l2ctrl.step_big = v4l2ctrl.step * 20
 
                 if qctrl.id == V4L2_CID_WHITE_BALANCE_TEMPERATURE:
                     v4l2ctrl.scale_class = 'white-balance-temperature'
