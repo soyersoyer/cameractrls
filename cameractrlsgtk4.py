@@ -395,13 +395,14 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         next_button.connect('clicked', lambda e, st=scale_stack, sp=spin_box: st.set_visible_child(sp))
                         scale_box.append(scale)
                         scale_box.append(next_button)
-                        spin_box.append(Gtk.SpinButton(adjustment=scale.get_adjustment()))
+                        spin = Gtk.SpinButton(adjustment=scale.get_adjustment())
+                        spin_box.append(spin)
                         spin_box.append(prev_button)
                         scale_stack.add_child(scale_box)
                         scale_stack.add_child(spin_box)
                         ctrl_box.append(scale_stack)
                         c.gui_value_set = scale.set_value
-                        c.gui_ctrls += [scale, refresh]
+                        c.gui_ctrls += [scale, spin, refresh]
                         c.gui_default_btn = refresh
 
                     elif c.type == 'boolean':
