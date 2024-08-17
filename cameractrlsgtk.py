@@ -375,7 +375,20 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.pack_start(refresh, False, False, 0)
-                        ctrl_box.pack_end(scale, False, False, 0)
+                        scale_stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=500)
+                        scale_box = Gtk.Box(halign=Gtk.Align.END)
+                        spin_box = Gtk.Box(halign=Gtk.Align.END)
+                        prev_button = Gtk.Button(image=Gtk.Image(icon_name='go-previous-symbolic', icon_size=Gtk.IconSize.BUTTON), relief=Gtk.ReliefStyle.NONE, opacity=0.2)
+                        prev_button.connect('clicked', lambda e, st=scale_stack, sc=scale_box: st.set_visible_child(sc))
+                        next_button = Gtk.Button(image=Gtk.Image(icon_name='go-next-symbolic', icon_size=Gtk.IconSize.BUTTON), relief=Gtk.ReliefStyle.NONE, opacity=0.2)
+                        next_button.connect('clicked', lambda e, st=scale_stack, sp=spin_box: st.set_visible_child(sp))
+                        scale_box.pack_start(scale, False, False, 0)
+                        scale_box.pack_start(next_button, False, False, 0)
+                        spin_box.pack_start(Gtk.SpinButton(adjustment=scale.get_adjustment()), False, False, 0)
+                        spin_box.pack_start(prev_button, False, False, 0)
+                        scale_stack.add(scale_box)
+                        scale_stack.add(spin_box)
+                        ctrl_box.pack_end(scale_stack, False, False, 0)
                         c.gui_value_set = scale.set_value
                         c.gui_ctrls += [scale, refresh]
                         c.gui_default_btn = refresh

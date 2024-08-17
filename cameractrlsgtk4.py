@@ -386,7 +386,20 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                         refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         refresh.connect('clicked', lambda e, c=c, sc=scale: sc.get_adjustment().set_value(c.default))
                         ctrl_box.append(refresh)
-                        ctrl_box.append(scale)
+                        scale_stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=500)
+                        scale_box = Gtk.Box(halign=Gtk.Align.END)
+                        spin_box = Gtk.Box(halign=Gtk.Align.END)
+                        prev_button = Gtk.Button(icon_name='go-previous-symbolic', has_frame=False, opacity=0.2)
+                        prev_button.connect('clicked', lambda e, st=scale_stack, sc=scale_box: st.set_visible_child(sc))
+                        next_button = Gtk.Button(icon_name='go-next-symbolic', has_frame=False, opacity=0.2)
+                        next_button.connect('clicked', lambda e, st=scale_stack, sp=spin_box: st.set_visible_child(sp))
+                        scale_box.append(scale)
+                        scale_box.append(next_button)
+                        spin_box.append(Gtk.SpinButton(adjustment=scale.get_adjustment()))
+                        spin_box.append(prev_button)
+                        scale_stack.add_child(scale_box)
+                        scale_stack.add_child(spin_box)
+                        ctrl_box.append(scale_stack)
                         c.gui_value_set = scale.set_value
                         c.gui_ctrls += [scale, refresh]
                         c.gui_default_btn = refresh

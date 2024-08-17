@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+ - Add SpinButtons next to Scales
+
 ## [0.6.6] - 2024-06-11
 
 ### Fixed
