@@ -427,9 +427,6 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                     lp.set_state(Gtk.EventSequenceState.CLAIMED),
                                     self.update_ctrl(c, m.lp_text_id)
                                 ])
-                            if m.use_shortcut:
-                                b.set_label('_' + m.name)
-                                b.set_use_underline(True)
                             box.add(b)
                             c.gui_ctrls += b
                         if c.default is not None:
