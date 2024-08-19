@@ -5,6 +5,7 @@
 ### Added
  - Add SpinButtons next to Scales
  - Allow PageUp/PageDown buttons to work with scales and spin buttons
+ - Use Alt+n shortcuts to switch between pages
 
 ### Removed
  - Remove Alt+n shortcuts for Logitech PTZ presets

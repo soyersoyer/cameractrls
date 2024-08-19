@@ -296,10 +296,10 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
         self.frame.attach(stack_box, 0, 1, 1, 1)
         self.stack = stack
 
-        for page in self.camera.get_ctrl_pages():
+        for page_n, page in enumerate(self.camera.get_ctrl_pages()):
             page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             if page.target == 'main':
-                stack.add_titled(page_box, page.title.lower(), page.title)
+                stack.add_titled(page_box, str(page_n), page.title)
             elif page.target == 'footer':
                 sep = Gtk.Separator(margin_bottom=10)
                 footer.append(sep)
@@ -689,7 +689,18 @@ class CameraCtrlsApp(Gtk.Application):
         action.connect('activate', self.on_quit)
         self.add_action(action)
 
+        action = Gio.SimpleAction.new('alt_n', GLib.VariantType('i'))
+        action.connect('activate', self.on_alt_n)
+        self.add_action(action)
+
         self.set_accels_for_action('app.quit', ["<Primary>Q"])
+        self.set_accels_for_action('app.alt_n(0)', ["<Alt>1"])
+        self.set_accels_for_action('app.alt_n(1)', ["<Alt>2"])
+        self.set_accels_for_action('app.alt_n(2)', ["<Alt>3"])
+        self.set_accels_for_action('app.alt_n(3)', ["<Alt>4"])
+        self.set_accels_for_action('app.alt_n(4)', ["<Alt>5"])
+        self.set_accels_for_action('app.alt_n(5)', ["<Alt>6"])
+        self.set_accels_for_action('app.alt_n(6)', ["<Alt>7"])
 
     def do_activate(self):
         self.window = CameraCtrlsWindow(application=self, title='Cameractrls')
@@ -710,6 +721,11 @@ class CameraCtrlsApp(Gtk.Application):
 
     def on_quit(self, action, param):
         self.window.close()
+
+    def on_alt_n(self, action, param):
+        page_n = str(param)
+        if self.window.stack and self.window.stack.get_child_by_name(page_n):
+            self.window.stack.set_visible_child_name(page_n)
 
     def check_preview_open(self, p):
         # if process returned
