@@ -687,7 +687,7 @@ class CameraCtrlsApp(Gtk.Application):
         action.connect('activate', self.on_quit)
         self.add_action(action)
 
-        self.set_accels_for_action('app.quit',["<Primary>Q"])
+        self.set_accels_for_action('app.quit', ["<Primary>Q"])
 
     def do_activate(self):
         self.window = CameraCtrlsWindow(application=self, title='Cameractrls')
