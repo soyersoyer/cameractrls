@@ -15,7 +15,7 @@
         </p>
     </description>
     <metadata_license>FSFAP</metadata_license>
-    <project_license>GPL-3.0-or-later</project_license>
+    <project_license>LGPL-3.0-or-later</project_license>
     <supports>
         <control>pointing</control>
         <control>keyboard</control>
