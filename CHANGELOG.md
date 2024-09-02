@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.7] - 2024-09-02
+
 ### Added
  - Dell UltraSharp WB7022 Extension (thx Sensape)
  - Add SpinButtons next to Scales

@@ -11,7 +11,7 @@
         <p>
             It's a standalone Python CLI and GUI (GTK3, GTK4) and camera Viewer (SDL) to set the camera controls in Linux.
             It can set the V4L2 controls and it is extendable with the non standard controls.
-            Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, Relative Pan/Tilt, PTZ presets), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Preset extension (Save and restore controls), Control Restore Daemon (to restore presets at device connection).
+            Currently it has a Logitech extension (LED mode, LED frequency, BRIO FoV, Relative Pan/Tilt, PTZ presets), Kiyo Pro extension (HDR, HDR mode, FoV, AF mode, Save), Dell UltraSharp WB7022 extension, Preset extension (Save and restore controls), Control Restore Daemon (to restore presets at device connection).
         </p>
     </description>
     <metadata_license>FSFAP</metadata_license>
@@ -36,6 +36,17 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.7" date="2024-09-02">
+            <description>
+                <ul>
+                    <li>Dell UltraSharp WB7022 Extension (thx Sensape)</li>
+                    <li>Add SpinButtons next to Scales</li>
+                    <li>Allow PageUp/PageDown buttons to work with scales and spin buttons</li>
+                    <li>Use Alt+n shortcuts to switch between pages</li>
+                    <li>Remove Alt+n shortcuts for Logitech PTZ presets</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.6" date="2024-06-11">
             <description>
                 <ul>
