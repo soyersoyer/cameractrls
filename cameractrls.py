@@ -1709,7 +1709,7 @@ class DellUltraSharpCtrls:
                 'dell_ultrasharp_auto_framing',
                 'Auto Framing',
                 'menu',
-                'Enable Auto-framing to keep your face in the center of the frame when you move',
+                'Intelligent scene analysis and facial tracking to zoom and pan the view when you move',
                 [
                     BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_AUTO_FRAMING_OFF),
                     BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_AUTO_FRAMING_ON),
@@ -1719,7 +1719,7 @@ class DellUltraSharpCtrls:
                 'dell_ultrasharp_camera_transition',
                 'Camera Transition',
                 'menu',
-                'Intelligent scene analysis and facial tracking to zoom and pan the view when you move',
+                'It enables a smooth transition by panning and zooming when the camera readjusts your position in the frame',
                 [
                     BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_CAMERA_TRANSITION_OFF),
                     BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_CAMERA_TRANSITION_ON),
@@ -1739,7 +1739,7 @@ class DellUltraSharpCtrls:
                 'dell_ultrasharp_tracking_frame_size',
                 'Tracking Frame Size',
                 'menu',
-                'It enables a smooth transition by panning and zooming when the camera readjusts your position in the frame',
+                'Adjust the frame size',
                 [
                     BaseCtrlMenu('narrow', 'Narrow', DELL_ULTRASHARP_TRACKING_FRAME_SIZE_NARROW),
                     BaseCtrlMenu('standard', 'Standard', DELL_ULTRASHARP_TRACKING_FRAME_SIZE_STANDARD),
@@ -1749,7 +1749,7 @@ class DellUltraSharpCtrls:
                 'dell_ultrasharp_fov',
                 'FoV',
                 'menu',
-                'Field Of View',
+                'Angle selection for the camera\'s field of view',
                 [
                     BaseCtrlMenu('65', '65°', DELL_ULTRASHARP_FOV_65),
                     BaseCtrlMenu('78', '78°', DELL_ULTRASHARP_FOV_78),
