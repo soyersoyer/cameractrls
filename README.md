@@ -261,7 +261,7 @@ rm -rf cameractrls
 
 # Partnership opportunity for vendors
 
-Linux usage is increasing every year, currently around 3-4%.
+Linux usage is increasing every year, currently around 4-5%.
 
 Due to the low adoption of Linux, Camera control software with custom controls
 is usually only available for Windows/MacOS, so Linux users cannot take
