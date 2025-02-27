@@ -258,17 +258,3 @@ Delete the cameractrls:
 ```shell
 rm -rf cameractrls
 ```
-
-# Partnership opportunity for vendors
-
-Linux usage is increasing every year, currently around 4-5%.
-
-Due to the low adoption of Linux, Camera control software with custom controls
-is usually only available for Windows/MacOS, so Linux users cannot take
-advantage of the true potential of each camera.
-
-If you want happy Linux customers and if your camera has custom controls that
-are missing from this app, just send me a camera and I'll add them.
-[Contact](mailto:soyer@irl.hu?subject=Partnership)
-
-Or of course, you can create a PR.
