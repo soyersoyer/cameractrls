@@ -200,9 +200,9 @@ Guide => PTZ Reset
 
 ## MIDI Controllers
 
-Control you camera with your MIDI Controller (e.g. [MPK Mini](https://www.akaipro.com/mpk-mini-mk3.html) or any with configurable knobs/joys)
+Control you camera with your MIDI Controller (e.g. [MPK Mini](https://www.akaipro.com/mpk-mini-mk3.html) or [Arturias](https://www.arturia.com/products?categories=hybrid-synths) or any with configurable knobs/joys)
 
-[Configure](https://github.com/tsmetana/mpk3-settings) your MIDI Controller as follows:
+Configure with [SysEx Controls](https://github.com/soyersoyer/sysex-controls) or [MPK3 Settings](https://github.com/tsmetana/mpk3-settings) your MIDI Controller as follows:
 
 ```
 With joystick:
