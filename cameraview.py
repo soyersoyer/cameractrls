@@ -683,7 +683,7 @@ def V4L2Format2SDL(format):
 
     formats = 'Sorry, only YUYV, YVYU, UYVY, NV12, NV21, YU12, RGBP, RGB3, BGR3, RX24, MJPG, JPEG, GREY are supported yet.'
     logging.error(f'Invalid pixel format: {formats}')
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', bytes(formats, 'utf-8'), None)
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, b'Invalid pixel format', formats.encode(), None)
     sys.exit(3)
 
 class SDLCameraWindow():
@@ -741,7 +741,7 @@ class SDLCameraWindow():
         self.camera_error_event = SDL_Event()
         self.camera_error_event.type = self.sdl_camera_error_event
 
-        self.window = SDL_CreateWindow(bytes(device, 'utf-8'), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, win_width, win_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
+        self.window = SDL_CreateWindow(device.encode(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, win_width, win_height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
         if self.window is None:
             logging.error(f'SDL_CreateWindow failed: {SDL_GetError()}')
             sys.exit(1)

@@ -55,7 +55,8 @@ def get_devices(dirs):
             caps = get_device_capability(device)
             if not(caps.device_caps & V4L2_CAP_VIDEO_CAPTURE):
                 continue
-            devices.append(Device(f'{str(caps.card, "utf-8")} ({resolved})', device, resolved, str(caps.driver)))
+            name = f'{caps.card.decode()} ({resolved})'
+            devices.append(Device(name, device, resolved, str(caps.driver)))
             resolved_devices.append(resolved)
     devices.sort()
     return devices
@@ -1878,7 +1879,7 @@ class V4L2Ctrls:
                 V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU, V4L2_CTRL_TYPE_BUTTON]:
 
                 text_id = self.to_text_id(qctrl.name)
-                text = str(qctrl.name, 'utf-8')
+                text = qctrl.name.decode()
                 ctrl_type = V4L2Ctrls.to_type.get(qctrl.type)
                 if ctrl_type == 'integer' and qctrl.minimum == 0 and qctrl.maximum == 1 and qctrl.step == 1:
                     ctrl_type = 'boolean'
@@ -1929,7 +1930,7 @@ class V4L2Ctrls:
                         except:
                             continue
                         if qctrl.type == V4L2_CTRL_TYPE_MENU:
-                            menu_text = str(qmenu.name, 'utf-8')
+                            menu_text = qmenu.name.decode()
                             menu_text_id = self.to_text_id(qmenu.name)
                         else:
                             menu_text_id = str(qmenu.value)
@@ -1957,7 +1958,7 @@ class V4L2Ctrls:
         return self.ctrls
 
     def to_text_id(self, text):
-        return str(text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_'), 'utf-8')
+        return text.lower().translate(V4L2Ctrls.strtrans, delete = b',&(.)/').replace(b'__', b'_').decode()
 
     def find_by_v4l2_id(self, v4l2_id):
         idx = find_idx(self.ctrls, lambda c: hasattr(c, 'v4l2_id') and c.v4l2_id == v4l2_id)
@@ -2094,8 +2095,8 @@ class V4L2FmtCtrls:
         resolutions = self.get_resolutions(fmt.fmt.pix.pixelformat)
         framerates = self.get_framerates(fmt.fmt.pix.pixelformat, fmt.fmt.pix.width, fmt.fmt.pix.height)
         cap = self.get_capability()
-        card = str(cap.card, 'utf-8')
-        driver = str(cap.driver, 'utf-8')
+        card = cap.card.decode()
+        driver = cap.driver.decode()
         path = self.device
         real_path = os.path.abspath(os.path.join(os.path.dirname(path), os.readlink(path))) if os.path.islink(path) else path
 

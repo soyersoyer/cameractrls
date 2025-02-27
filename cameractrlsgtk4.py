@@ -731,7 +731,7 @@ class CameraCtrlsApp(Gtk.Application):
         # if process returned
         if p.poll() is not None:
             (stdout, stderr) = p.communicate()
-            errstr = str(stderr, 'utf-8')
+            errstr = stderr.decode()
             sys.stderr.write(errstr)
             if p.returncode != 0:
                 self.window.notify(errstr.strip())
