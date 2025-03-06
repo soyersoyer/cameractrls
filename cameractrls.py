@@ -1969,13 +1969,14 @@ class AnkerWorkCtrls:
                 'ankerwork_face_compensation',
                 'Face Compensation',
                 'integer',
-                'Set compensation for face exposure settings.',
+                'Set compensation for face exposure settings. Range goes from -3.5 EV as the lowest value (0) '
+                'and 6.5 EV as the highest value (6.5 EV). The default is 30 (which is equivalent to 0 EV).',
                 ANKERWORK_FACE_EXPOSURE_COMP_SELECTOR,
                 [],
                 ANKERWORK_FACE_EXPOSURE_COMP_LENGTH,
-                min = '-3.5 EV',
-                max = '6.5 EV',
-                default = '0 EV'
+                min = '0',
+                max = '100',
+                default = '30'
             ),
             AnkerWorkCtrl(
                 'ankerwork_hor_flip',
@@ -2036,15 +2037,13 @@ class AnkerWorkCtrls:
         return number.to_bytes(1, byteorder='little', signed=False)
 
     @staticmethod
-    def _map_comp_to_int(value: float) -> int:
-        assert -3.5 <= value <= 6.5, "Value out of range!"
-        res = int(((value + 3.5) / 10) * ANKERWORK_FACE_EXPOSURE_COMP_MAX) << 8
-        return res
+    def _map_comp_to_int(value: int) -> int:
+        assert 0 <= value <= 100, "Value out of range!"
+        return value << 8
 
     @staticmethod
     def _map_int_to_comp(value: int) -> float:
-        res = ((value >> 8) / ANKERWORK_FACE_EXPOSURE_COMP_MAX) * 10 - 3.5
-        return res
+        return value >> 8
 
     def setup_ctrls(self, params, errs):
         if not self.supported():
@@ -2074,7 +2073,7 @@ class AnkerWorkCtrls:
                 match ctrl.text_id:
                     case 'ankerwork_face_compensation':
                         cur_enable = self._int_from_bytes(current_config) & 0xff
-                        desired = to_buf(self._bytes_from_int(self._map_comp_to_int(float(v)) + cur_enable))
+                        desired = to_buf(self._bytes_from_int(self._map_comp_to_int(int(v)) + cur_enable))
                     case _:
                         desired = int(v)
             else:
