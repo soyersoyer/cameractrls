@@ -1970,13 +1970,13 @@ class AnkerWorkCtrls:
                 'Face Compensation',
                 'integer',
                 'Set compensation for face exposure settings. Range goes from -3.5 EV as the lowest value (0) '
-                'and 6.5 EV as the highest value (6.5 EV). The default is 30 (which is equivalent to 0 EV).',
+                'and 6.5 EV as the highest value (6.5 EV). The default is 35 (which is equivalent to 0 EV).',
                 ANKERWORK_FACE_EXPOSURE_COMP_SELECTOR,
                 [],
                 ANKERWORK_FACE_EXPOSURE_COMP_LENGTH,
                 min = '0',
                 max = '100',
-                default = '30'
+                default = '35'
             ),
             AnkerWorkCtrl(
                 'ankerwork_hor_flip',
