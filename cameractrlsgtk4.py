@@ -419,18 +419,12 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
                     elif c.type == 'button':
                         filtered_menu = [m for m in c.menu if m.value is not None and not m.gui_hidden]
-                        children_per_line = min(len(filtered_menu), 4)
-                        box = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True,
-                                        min_children_per_line=children_per_line, max_children_per_line=children_per_line,
-                                        selection_mode=Gtk.SelectionMode.NONE, hexpand=True,
-                                        # halign=Gtk.Align.END
-                                        # GTK4 workaround
-                                        halign=Gtk.Align.FILL if len(filtered_menu) > 4 else Gtk.Align.END)
-                        box.set_filter_func(lambda child: child.set_focusable(False) or True)
+                        children_per_line = 4
+                        grid = Gtk.Grid(column_homogeneous=True, row_homogeneous=True, column_spacing=4, row_spacing=4, hexpand=True, halign=Gtk.Align.END)
                         refresh = Gtk.Button(icon_name='edit-undo-symbolic', valign=Gtk.Align.CENTER, halign=Gtk.Align.START, has_frame=False)
                         ctrl_box.append(refresh)
-                        ctrl_box.append(box)
-                        for m in filtered_menu:
+                        ctrl_box.append(grid)
+                        for idx, m in enumerate(filtered_menu):
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
                             b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
                             if c.child_tooltip:
@@ -442,7 +436,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                     self.update_ctrl(c, m.lp_text_id)
                                 ])
                                 b.add_controller(lp)
-                            box.append(b)
+                            grid.attach(b, idx % children_per_line, idx // children_per_line, 1, 1)
                             c.gui_ctrls += b
                         if c.default is not None:
                             refresh.connect('clicked', lambda e,c=c: self.update_ctrl(c, c.default))

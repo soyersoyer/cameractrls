@@ -408,15 +408,12 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
                     elif c.type == 'button':
                         filtered_menu = [m for m in c.menu if m.value is not None and not m.gui_hidden]
-                        children_per_line = min(len(filtered_menu), 4)
-                        box = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL, homogeneous=True,
-                                        min_children_per_line=children_per_line, max_children_per_line=children_per_line,
-                                        selection_mode=Gtk.SelectionMode.NONE)
-                        box.set_filter_func(lambda child: child.set_can_focus(False) or True)
+                        children_per_line = 4
+                        grid = Gtk.Grid(column_homogeneous=True, row_homogeneous=True, column_spacing=4, row_spacing=4)
                         refresh = Gtk.Button(image=Gtk.Image(icon_name='edit-undo-symbolic', icon_size=Gtk.IconSize.BUTTON), valign=Gtk.Align.CENTER, halign=Gtk.Align.START, relief=Gtk.ReliefStyle.NONE)
                         ctrl_box.pack_start(refresh, False, False, 0)
-                        ctrl_box.pack_end(box, False, False, 0)
-                        for m in filtered_menu:
+                        ctrl_box.pack_end(grid, False, False, 0)
+                        for idx, m in enumerate(filtered_menu):
                             b = Gtk.Button(label=m.name, valign=Gtk.Align.CENTER)
                             b.connect('clicked', lambda e, c=c, m=m: self.update_ctrl(c, m.text_id))
                             if c.child_tooltip:
@@ -427,7 +424,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                     lp.set_state(Gtk.EventSequenceState.CLAIMED),
                                     self.update_ctrl(c, m.lp_text_id)
                                 ])
-                            box.add(b)
+                            grid.attach(b, idx % children_per_line, idx // children_per_line, 1, 1)
                             c.gui_ctrls += b
                         if c.default is not None:
                             refresh.connect('clicked', lambda e,c=c: self.update_ctrl(c, c.default))
