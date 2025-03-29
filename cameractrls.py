@@ -1788,6 +1788,324 @@ class DellUltraSharpCtrls:
     def get_ctrls(self):
         return self.ctrls
 
+# AnkerWork C310 GUID 41769ea2-04de-e347-8b2b-f4341aff003b in little endian
+ANKERWORK_GUID = b'\xa2\x9e\x76\x41\xde\x04\x47\xe3\x8b\x2b\xf4\x34\x1a\xff\x00\x3b'
+ANKERWORK_DEV_MATCH = [
+    '291a:3367',
+]
+
+## FOV settings commands
+ANKERWORK_FOV_SELECTOR = 0x10
+ANKERWORK_FOV_LENGTH = 0x7
+
+ANKERWORK_SOLO_FRAME = b'\x02\x01\x5f\x00\x00\x00\x00'
+ANKERWORK_FOV_65 = b'\x00\x01\x5f\x00\x00\x00\x00'
+ANKERWORK_FOV_78 = b'\x00\x01\x4e\x00\x00\x00\x00'
+ANKERWORK_FOV_95 = b'\x00\x01\x41\x00\x00\x00\x00'
+
+## Horizontal flip commands
+# FIXME: Nothing seems to work with this. I'm not really bothered by this.
+ANKERWORK_HOR_SELECTOR = 0x11
+ANKERWORK_HOR_LENGTH = 0x1
+
+ANKERWORK_HOR_FLIP_OFF = 0x00
+ANKERWORK_HOR_FLIP_ON = 0x01
+
+## Face focus commands
+ANKERWORK_FACE_FOCUS_SELECTOR = 0x1b
+ANKERWORK_FACE_FOCUS_LENGTH = 0x1
+
+ANKERWORK_FACE_FOCUS_OFF = 0x00
+ANKERWORK_FACE_FOCUS_ON = 0x01
+
+## Face exposure compensation commands
+ANKERWORK_FACE_EXPOSURE_COMP_SELECTOR = 0xb
+ANKERWORK_FACE_EXPOSURE_COMP_LENGTH = 0x2
+ANKERWORK_FACE_EXPOSURE_OFF = 0x00
+ANKERWORK_FACE_EXPOSURE_ON = 0x01
+
+# Integer between 1 and 25600 as data field, rounded to the nearest 256 number (only the second byte is used, first is
+# just 00 or 01 used as a switch on/off)
+# Setup as values from +6.5EV (25601) to -3.5EV (1)
+# 0EV is 8961. This looks a linear scale then. (2560 * 3.5 = 8960)
+ANKERWORK_FACE_EXPOSURE_COMP_MIN = 0x01
+ANKERWORK_FACE_EXPOSURE_COMP_MAX = 0x64
+
+## HDR selector commands
+# FIXME: This do seems to be the right selector toggled
+#  but nothing on Linux happens. Need more investigation.
+ANKERWORK_HDR_SELECTOR = 0x13
+ANKERWORK_HDR_LENGTH = 0x1
+
+ANKERWORK_HDR_OFF = 0x00
+ANKERWORK_HDR_ON = 0x01
+
+ANKERWORK_EXP_COMPENSATION_SELECTOR = 0x18
+AKKERWORK_EXP_COMPENSATION_LENGTH = 0x9
+
+# TODO: Raw data below
+#   Center position for the exposure point + radius?
+#   80026801 seems to be constant when switching between positions
+#   014006840380026801
+#   018701e70080026801
+#   01ad0a740080026801
+#   013206b00380026801
+#   015a065c0380026801
+#   017006720380026801
+#   016c06760380026801
+
+## Microphone AI Noise Reduction commands
+ANKERWORK_MIC_AI_NOISERED_SELECTOR = 0x1d
+ANKERWORK_MIC_AI_NOISERED_LENGTH = 0x1
+
+ANKERWORK_MIC_AI_NOISERED_OFF = 0x00
+ANKERWORK_MIC_AI_NOISERED_ON = 0x01
+
+## Microphone pickup pattern commands
+ANKERWORK_MIC_PICKUP_MODE_SELECTOR = 0x1f
+ANKERWORK_MIC_PICKUP_MODE_LENGTH = 0x1
+
+ANKERWORK_MIC_PICKUP_360 = 0x0
+ANKERWORK_MIC_PICKUP_90 = 0x5a
+
+class AnkerWorkCtrl(BaseCtrl):
+    def __init__(self, text_id, name, type, tooltip, selector, menu, length, min = None, max = None, default=None):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu, min=min, max=max, default=default)
+        self.selector = selector
+        self.length = length
+
+class AnkerWorkCtrls:
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, ANKERWORK_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids in ANKERWORK_DEV_MATCH
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            AnkerWorkCtrl(
+                'ankerwork_fov',
+                'FoV',
+                'menu',
+                'Angle selection for the camera\'s field of view',
+                ANKERWORK_FOV_SELECTOR,
+                [
+                    BaseCtrlMenu('65', '65°', ANKERWORK_FOV_65),
+                    BaseCtrlMenu('78', '78°', ANKERWORK_FOV_78),
+                    BaseCtrlMenu('95', '95°', ANKERWORK_FOV_95),
+                    BaseCtrlMenu('auto', 'Auto', ANKERWORK_SOLO_FRAME),
+                ],
+                ANKERWORK_FOV_LENGTH,
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_face_focus',
+                'FF',
+                'menu',
+                'If the camera should track focusing on faces or not',
+                ANKERWORK_FACE_FOCUS_SELECTOR,
+                [
+                    BaseCtrlMenu('on', 'On', ANKERWORK_FACE_FOCUS_ON),
+                    BaseCtrlMenu('off', 'Off', ANKERWORK_FACE_FOCUS_OFF),
+                ],
+                ANKERWORK_FACE_FOCUS_LENGTH,
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_mic_noisered',
+                'mic',
+                'menu',
+                'Enable or disable the microphone noise reduction algorithm',
+                ANKERWORK_MIC_AI_NOISERED_SELECTOR,
+                [
+                    BaseCtrlMenu('on', 'On', ANKERWORK_MIC_AI_NOISERED_ON),
+                    BaseCtrlMenu('off', 'Off', ANKERWORK_MIC_AI_NOISERED_OFF),
+                ],
+                ANKERWORK_MIC_AI_NOISERED_LENGTH,
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_mic_pickup',
+                'mic',
+                'menu',
+                'Set which microphone pickup pattern to use, either 360 or 90',
+                ANKERWORK_MIC_PICKUP_MODE_SELECTOR,
+                [
+                    BaseCtrlMenu('90', '90°', ANKERWORK_MIC_PICKUP_90),
+                    BaseCtrlMenu('360', '360°', ANKERWORK_MIC_PICKUP_360),
+                ],
+                ANKERWORK_MIC_PICKUP_MODE_LENGTH,
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_hdr',
+                'HDR',
+                'menu',
+                'Enable High Dynamic Range to enhance image quality, particularly in extreme lighting conditions',
+                ANKERWORK_HDR_SELECTOR,
+                [
+                    BaseCtrlMenu('off', 'Off', ANKERWORK_HDR_OFF),
+                    BaseCtrlMenu('on', 'On', ANKERWORK_HDR_ON),
+                ],
+                ANKERWORK_HDR_LENGTH,
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_face_compensation_enable',
+                'Face Compensation Enable',
+                'menu',
+                'Enable face compensation algorithm',
+                ANKERWORK_FACE_EXPOSURE_COMP_SELECTOR,
+                [
+                    BaseCtrlMenu('off', 'Off', ANKERWORK_FACE_EXPOSURE_OFF),
+                    BaseCtrlMenu('on', 'On', ANKERWORK_FACE_EXPOSURE_ON),
+                ],
+                ANKERWORK_FACE_EXPOSURE_COMP_LENGTH,
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_face_compensation',
+                'Face Compensation',
+                'integer',
+                'Set compensation for face exposure settings. Range goes from -3.5 EV as the lowest value (0) '
+                'and 6.5 EV as the highest value (6.5 EV). The default is 35 (which is equivalent to 0 EV).',
+                ANKERWORK_FACE_EXPOSURE_COMP_SELECTOR,
+                [],
+                ANKERWORK_FACE_EXPOSURE_COMP_LENGTH,
+                min = '0',
+                max = '100',
+                default = '35'
+            ),
+            AnkerWorkCtrl(
+                'ankerwork_hor_flip',
+                'Flip Horizontal',
+                'menu',
+                'Flip the camera view horizontally.',
+                ANKERWORK_HOR_SELECTOR,
+                [
+                    BaseCtrlMenu('off', 'Off', ANKERWORK_HOR_FLIP_OFF),
+                    BaseCtrlMenu('on', 'On', ANKERWORK_HOR_FLIP_ON),
+                ],
+                ANKERWORK_HOR_LENGTH,
+            ),
+        ]
+
+        for c in self.ctrls:
+            if c.type == 'button':
+                continue
+
+            current_config = to_buf(bytes(c.length))
+            query_xu_control(self.fd, self.unit_id, c.selector, UVC_GET_CUR, current_config)
+            set_value = self._int_from_bytes(current_config)
+            match c.text_id:
+                case 'ankerwork_hdr' | 'ankerwork_mic_noisered' | 'ankerwork_face_focus':
+                    c.value = 'on' if set_value == 1 else 'off'
+                case 'ankerwork_mic_pickup':
+                    c.value = '90°' if set_value == ANKERWORK_MIC_PICKUP_90 else '360°'
+                case 'ankerwork_face_compensation':
+                    c.value = f'{self._map_int_to_comp(set_value):.1f} EV'
+                case 'ankerwork_face_compensation_enable':
+                    c.value = 'on' if set_value & 0xff == 1 else 'off'
+                case 'ankerwork_fov':
+                    if set_value == self._int_from_bytes(ANKERWORK_FOV_65):
+                        c.value = '65°'
+                    elif set_value == self._int_from_bytes(ANKERWORK_FOV_78):
+                        c.value = '78°'
+                    elif set_value == self._int_from_bytes(ANKERWORK_FOV_95):
+                        c.value = '95°'
+                    elif set_value == self._int_from_bytes(ANKERWORK_SOLO_FRAME):
+                        c.value = 'auto'
+                    else:
+                        c.value = '?'
+                case _:
+                    set_value = self._int_from_bytes(current_config)
+                    c.value = set_value
+
+            if c.type == 'menu':
+                valmenu = find_by_value(c.menu, c.value)
+                if valmenu:
+                    c.value = valmenu.text_id
+
+    @staticmethod
+    def _int_from_bytes(bytes):
+        return int.from_bytes(bytes, byteorder='little', signed=False)
+
+    @staticmethod
+    def _bytes_from_int(number):
+        return number.to_bytes(1, byteorder='little', signed=False)
+
+    @staticmethod
+    def _map_comp_to_int(value: int) -> int:
+        assert 0 <= value <= 100, "Value out of range!"
+        return value << 8
+
+    @staticmethod
+    def _map_int_to_comp(value: int) -> float:
+        return value >> 8
+
+    def setup_ctrls(self, params, errs):
+        if not self.supported():
+            return
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl is None:
+                continue
+
+            current_config = to_buf(bytes(ctrl.length))
+            query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_GET_CUR, current_config)
+
+            if ctrl.type == 'menu' or ctrl.type == 'button':
+                menu = find_by_text_id(ctrl.menu, v)
+                if menu is None:
+                    collect_warning(f'AnkerWorkCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                    continue
+                match ctrl.text_id:
+                    # Need to keep the previous value and change the first byte of the char array as on/off toggle
+                    case 'ankerwork_face_compensation_enable':
+                        desired = current_config
+                        desired[0] = menu.value
+                    case _:
+                        desired = to_buf(menu.value)
+            elif ctrl.type == 'integer':
+                match ctrl.text_id:
+                    case 'ankerwork_face_compensation':
+                        cur_enable = self._int_from_bytes(current_config) & 0xff
+                        desired = to_buf(self._bytes_from_int(self._map_comp_to_int(int(v)) + cur_enable))
+                    case _:
+                        desired = int(v)
+            else:
+                collect_warning(f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})', errs)
+                continue
+
+            if ctrl.type == 'button':
+                query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_SET_CUR, to_buf(desired))
+                continue
+
+
+            current_config = desired
+            query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_SET_CUR, current_config)
+            query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_GET_CUR, current_config)
+            current = current_config
+
+            if ctrl.type == 'menu':
+                desmenu = find_by_value(ctrl.menu, desired)
+                if desmenu:
+                    desired = desmenu.text_id
+                curmenu = find_by_value(ctrl.menu, current)
+                if curmenu:
+                    current = curmenu.text_id
+            if current != desired:
+                collect_warning( f'AnkerWorkCtrls: failed to set {k} to {desired}, current value {current}\n', errs)
+                continue
+
+            ctrl.value = desired
+
+    def get_ctrls(self):
+        return self.ctrls
+
 class V4L2Ctrl(BaseCtrl):
     def __init__(self, v4l2_id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
         super().__init__(text_id, name, type, value, default, min, max, step, menu=menu)
@@ -2814,6 +3132,7 @@ class CameraCtrls:
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
             DellUltraSharpCtrls(device, fd),
+            AnkerWorkCtrls(device, fd),
             SystemdSaver(self),
             ColorPreset(self),
             ConfigPreset(self),
@@ -2887,6 +3206,9 @@ class CameraCtrls:
                         'dell_ultrasharp_camera_transition',
                         'dell_ultrasharp_tracking_sensitivity',
                         'dell_ultrasharp_tracking_frame_size',
+                        'ankerwork_fov',
+                        'ankerwork_auto_framing',
+                        'ankerwork_hor_flip',
                     ]) +
                     pop_list_by_ids(ctrls, [
                         V4L2_CID_ZOOM_ABSOLUTE,
@@ -2914,7 +3236,7 @@ class CameraCtrls:
                         V4L2_CID_AUTO_FOCUS_RANGE,
                         V4L2_CID_AUTO_FOCUS_STATUS,
                     ]) +
-                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode', 'logitech_motor_focus'])
+                    pop_list_by_text_ids(ctrls, ['kiyo_pro_af_mode', 'logitech_motor_focus', 'ankerwork_face_focus'])
                 ),
             ]),
             CtrlPage('Exposure', [
@@ -2949,6 +3271,9 @@ class CameraCtrls:
                     pop_list_by_text_ids(ctrls, [
                         'kiyo_pro_hdr',
                         'dell_ultrasharp_hdr',
+                        'ankerwork_hdr',
+                        'ankerowrk_face_compensation_enable',
+                        'ankerwork_face_compensation',
                     ])
                 ),
             ]),
