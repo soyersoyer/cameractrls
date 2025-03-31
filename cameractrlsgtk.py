@@ -425,7 +425,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                                     self.update_ctrl(c, m.lp_text_id)
                                 ])
                             grid.attach(b, idx % children_per_line, idx // children_per_line, 1, 1)
-                            c.gui_ctrls += b
+                            c.gui_ctrls += [b]
                         if c.default is not None:
                             refresh.connect('clicked', lambda e,c=c: self.update_ctrl(c, c.default))
                         c.gui_ctrls += [refresh]
