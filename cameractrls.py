@@ -1999,29 +1999,28 @@ class AnkerWorkCtrls:
             current_config = to_buf(bytes(c.length))
             query_xu_control(self.fd, self.unit_id, c.selector, UVC_GET_CUR, current_config)
             set_value = self._int_from_bytes(current_config)
-            match c.text_id:
-                case 'ankerwork_hdr' | 'ankerwork_mic_noisered' | 'ankerwork_face_focus':
-                    c.value = 'on' if set_value == 1 else 'off'
-                case 'ankerwork_mic_pickup':
-                    c.value = '90°' if set_value == ANKERWORK_MIC_PICKUP_90 else '360°'
-                case 'ankerwork_face_compensation':
-                    c.value = f'{self._map_int_to_comp(set_value):.1f} EV'
-                case 'ankerwork_face_compensation_enable':
-                    c.value = 'on' if set_value & 0xff == 1 else 'off'
-                case 'ankerwork_fov':
-                    if set_value == self._int_from_bytes(ANKERWORK_FOV_65):
-                        c.value = '65°'
-                    elif set_value == self._int_from_bytes(ANKERWORK_FOV_78):
-                        c.value = '78°'
-                    elif set_value == self._int_from_bytes(ANKERWORK_FOV_95):
-                        c.value = '95°'
-                    elif set_value == self._int_from_bytes(ANKERWORK_SOLO_FRAME):
-                        c.value = 'auto'
-                    else:
-                        c.value = '?'
-                case _:
-                    set_value = self._int_from_bytes(current_config)
-                    c.value = set_value
+            if c.text_id in ['ankerwork_hdr', 'ankerwork_mic_noisered', 'ankerwork_face_focus']:
+                c.value = 'on' if set_value == 1 else 'off'
+            elif c.text_id == 'ankerwork_mic_pickup':
+                c.value = '90°' if set_value == ANKERWORK_MIC_PICKUP_90 else '360°'
+            elif c.text_id == 'ankerwork_face_compensation':
+                c.value = f'{self._map_int_to_comp(set_value):.1f} EV'
+            elif c.text_id == 'ankerwork_face_compensation_enable':
+                c.value = 'on' if set_value & 0xff == 1 else 'off'
+            elif c.text_id == 'ankerwork_fov':
+                if set_value == self._int_from_bytes(ANKERWORK_FOV_65):
+                    c.value = '65°'
+                elif set_value == self._int_from_bytes(ANKERWORK_FOV_78):
+                    c.value = '78°'
+                elif set_value == self._int_from_bytes(ANKERWORK_FOV_95):
+                    c.value = '95°'
+                elif set_value == self._int_from_bytes(ANKERWORK_SOLO_FRAME):
+                    c.value = 'auto'
+                else:
+                    c.value = '?'
+            else:
+                set_value = self._int_from_bytes(current_config)
+                c.value = set_value
 
             if c.type == 'menu':
                 valmenu = find_by_value(c.menu, c.value)
@@ -2062,20 +2061,18 @@ class AnkerWorkCtrls:
                 if menu is None:
                     collect_warning(f'AnkerWorkCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
                     continue
-                match ctrl.text_id:
-                    # Need to keep the previous value and change the first byte of the char array as on/off toggle
-                    case 'ankerwork_face_compensation_enable':
-                        desired = current_config
-                        desired[0] = menu.value
-                    case _:
-                        desired = to_buf(menu.value)
+                # Need to keep the previous value and change the first byte of the char array as on/off toggle
+                if ctrl.text_id == 'ankerwork_face_compensation_enable':
+                    desired = current_config
+                    desired[0] = menu.value
+                else:
+                    desired = to_buf(menu.value)
             elif ctrl.type == 'integer':
-                match ctrl.text_id:
-                    case 'ankerwork_face_compensation':
-                        cur_enable = self._int_from_bytes(current_config) & 0xff
-                        desired = to_buf(self._bytes_from_int(self._map_comp_to_int(int(v)) + cur_enable))
-                    case _:
-                        desired = int(v)
+                if ctrl.text_id == 'ankerwork_face_compensation':
+                    cur_enable = self._int_from_bytes(current_config) & 0xff
+                    desired = to_buf(self._bytes_from_int(self._map_comp_to_int(int(v)) + cur_enable))
+                else:
+                    desired = int(v)
             else:
                 collect_warning(f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})', errs)
                 continue
