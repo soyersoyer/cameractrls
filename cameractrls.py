@@ -3,6 +3,7 @@
 import ctypes, ctypes.util, logging, os.path, getopt, sys, subprocess, select, time, math, configparser
 from fcntl import ioctl
 from threading import Thread
+from errno import EINVAL
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
 version = 'v0.6.7'
@@ -2120,6 +2121,7 @@ class V4L2Ctrls:
     }
     strtrans = bytes.maketrans(b' -', b'__')
 
+    explained_workaround = False
 
     def __init__(self, device, fd):
         self.device = device
@@ -2183,13 +2185,33 @@ class V4L2Ctrls:
 
     def get_device_controls(self):
         ctrls = []
+        current_ctrl_id = 0
         next_flag = V4L2_CTRL_FLAG_NEXT_CTRL | V4L2_CTRL_FLAG_NEXT_COMPOUND
         qctrl = v4l2_queryctrl(next_flag)
         while True:
             try:
                 ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
-            except:
+            except OSError as err:
+                if err.errno == EINVAL:
+                    break
+
+                if qctrl.id <= current_ctrl_id:
+                    if not self.explained_workaround:
+                        logging.error(f'The driver behind device {self.device} has a slightly buggy implementation '
+                        'of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not return the next higher '
+                        'control ID if a control query fails. A workaround has been enabled.')
+                        self.explained_workaround = True
+                    qctrl = v4l2_queryctrl(current_ctrl_id | next_flag)
+                    current_ctrl_id += 1
+                else:
+                    current_ctrl_id = qctrl.id
+                continue
+            if qctrl.id == current_ctrl_id:
+                logging.error(f'Error: The driver behind device {self.device} has a buggy '
+                'implementation of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not raise an '
+                'error or return the next control. Canceling control enumeration.')
                 break
+            current_ctrl_id = qctrl.id
             if qctrl.type in [V4L2_CTRL_TYPE_INTEGER, V4L2_CTRL_TYPE_BOOLEAN,
                 V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU, V4L2_CTRL_TYPE_BUTTON]:
 
