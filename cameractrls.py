@@ -2121,8 +2121,6 @@ class V4L2Ctrls:
     }
     strtrans = bytes.maketrans(b' -', b'__')
 
-    explained_workaround = False
-
     def __init__(self, device, fd):
         self.device = device
         self.fd = fd
@@ -2192,11 +2190,9 @@ class V4L2Ctrls:
                 ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
             except OSError as err:
                 if err.errno == EIO:
-                    if not self.explained_workaround:
-                        logging.warning(f'The driver behind device {self.device} has a slightly buggy implementation '
-                        'of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not return the next higher '
-                        'control ID if a control query fails. A workaround has been enabled.')
-                        self.explained_workaround = True
+                    logging.warning(f'The driver behind device {self.device} has a slightly buggy implementation '
+                    'of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not return the next higher '
+                    'control ID if a control query fails. A workaround has been enabled.')
                     qctrl = v4l2_queryctrl(qctrl.id + 1 | next_flag)
                     continue
                 else:
