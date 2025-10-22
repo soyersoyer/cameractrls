@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.6.8] - 2025-10-22
+
+### Added
+- AnkerWork C310 extension (thx RodoMa92)
+- Workaround for VIDIOC_QUERYCTRL -EIO return value (thx lbrooney)
+
+### Fixed
+- GTK4 scale layout
+- GTK4 GtkGrid instead of GtkFlowBox
+- GTK4 GUI is no longer experimental
+
 ## [0.6.7] - 2024-09-02
 
 ### Added
