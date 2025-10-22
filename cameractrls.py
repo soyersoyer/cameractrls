@@ -2185,28 +2185,22 @@ class V4L2Ctrls:
 
     def get_device_controls(self):
         ctrls = []
-        current_ctrl_id = 0
         next_flag = V4L2_CTRL_FLAG_NEXT_CTRL | V4L2_CTRL_FLAG_NEXT_COMPOUND
         qctrl = v4l2_queryctrl(next_flag)
         while True:
             try:
                 ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
             except OSError as err:
-                if err.errno in [EIO, EPIPE, ETIMEDOUT]:
-                    if qctrl.id <= current_ctrl_id:
-                        if not self.explained_workaround:
-                            logging.error(f'The driver behind device {self.device} has a slightly buggy implementation '
-                            'of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not return the next higher '
-                            'control ID if a control query fails. A workaround has been enabled.')
-                            self.explained_workaround = True
-                        qctrl = v4l2_queryctrl(current_ctrl_id | next_flag)
-                        current_ctrl_id += 1
-                    else:
-                        current_ctrl_id = qctrl.id
+                if err.errno == EIO:
+                    if not self.explained_workaround:
+                        logging.warning(f'The driver behind device {self.device} has a slightly buggy implementation '
+                        'of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not return the next higher '
+                        'control ID if a control query fails. A workaround has been enabled.')
+                        self.explained_workaround = True
+                    qctrl = v4l2_queryctrl(qctrl.id + 1 | next_flag)
                     continue
                 else:
                     break
-            current_ctrl_id = qctrl.id
             if qctrl.type in [V4L2_CTRL_TYPE_INTEGER, V4L2_CTRL_TYPE_BOOLEAN,
                 V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU, V4L2_CTRL_TYPE_BUTTON]:
 
