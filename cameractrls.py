@@ -3,6 +3,7 @@
 import ctypes, ctypes.util, logging, os.path, getopt, sys, subprocess, select, time, math, configparser
 from fcntl import ioctl
 from threading import Thread
+from errno import EIO
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
 version = 'v0.6.7'
@@ -2120,7 +2121,6 @@ class V4L2Ctrls:
     }
     strtrans = bytes.maketrans(b' -', b'__')
 
-
     def __init__(self, device, fd):
         self.device = device
         self.fd = fd
@@ -2188,8 +2188,13 @@ class V4L2Ctrls:
         while True:
             try:
                 ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
-            except:
-                break
+            except OSError as err:
+                if err.errno == EIO:
+                    logging.warning(f'V4L2Ctrls: VIDIOC_QUERYCTL returned EIO for {self.to_text_id(qctrl.name)}. Skipping...')
+                    qctrl = v4l2_queryctrl(qctrl.id + 1 | next_flag)
+                    continue
+                else:
+                    break
             if qctrl.type in [V4L2_CTRL_TYPE_INTEGER, V4L2_CTRL_TYPE_BOOLEAN,
                 V4L2_CTRL_TYPE_MENU, V4L2_CTRL_TYPE_INTEGER_MENU, V4L2_CTRL_TYPE_BUTTON]:
 
