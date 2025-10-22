@@ -2190,9 +2190,7 @@ class V4L2Ctrls:
                 ioctl(self.fd, VIDIOC_QUERYCTRL, qctrl)
             except OSError as err:
                 if err.errno == EIO:
-                    logging.warning(f'The driver behind device {self.device} has a slightly buggy implementation '
-                    'of the V4L2_CTRL_FLAG_NEXT_CTRL flag. It does not return the next higher '
-                    'control ID if a control query fails. A workaround has been enabled.')
+                    logging.warning(f'V4L2Ctrls: VIDIOC_QUERYCTL returned EIO for {self.to_text_id(qctrl.name)}. Skipping...')
                     qctrl = v4l2_queryctrl(qctrl.id + 1 | next_flag)
                     continue
                 else:
