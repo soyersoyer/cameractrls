@@ -76,7 +76,7 @@ Run from the launcher or from the shell
 ./cameractrlsgtk.py
 ```
 
-### GTK4 GUI install (experimental)
+### GTK4 GUI install
 
 Add desktop file to the launcher
 ```shell
