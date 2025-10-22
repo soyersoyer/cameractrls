@@ -3,7 +3,7 @@
 import ctypes, ctypes.util, logging, os.path, getopt, sys, subprocess, select, time, math, configparser
 from fcntl import ioctl
 from threading import Thread
-from errno import EIO, EPIPE, ETIMEDOUT
+from errno import EIO
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
 version = 'v0.6.7'
