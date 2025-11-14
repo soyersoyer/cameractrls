@@ -512,7 +512,7 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
 
     def update_ctrl(self, ctrl, value):
         # only update if out of sync (when new value comes from the gui)
-        if ctrl.value != value:
+        if ctrl.value != value and not ctrl.inactive:
             errs = []
             self.camera.setup_ctrls({ctrl.text_id: value}, errs)
             if errs:
