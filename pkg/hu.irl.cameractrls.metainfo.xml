@@ -36,6 +36,15 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.9" date="2025-11-14">
+            <description>
+                <ul>
+                    <li>Fixed a GTK3 GSignal warning</li>
+                    <li>Fixed a bug where the actual buffer size was not used</li>
+                    <li>Fixed a bug where auto white balance was reporting errors in the GUI</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.8" date="2025-10-22">
             <description>
                 <ul>

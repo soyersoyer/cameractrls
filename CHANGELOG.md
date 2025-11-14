@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [0.6.9] - 2025-11-14
+
+### Fixed
+- Fixed a GTK3 GSignal warning
+- Fixed a bug where the actual buffer size was not used
+- Fixed a bug where auto white balance was reporting errors in the GUI
+
 ## [0.6.8] - 2025-10-22
 
 ### Added
