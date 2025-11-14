@@ -419,8 +419,8 @@ class CameraCtrlsWindow(Gtk.ApplicationWindow):
                             if c.child_tooltip:
                                 b.set_tooltip_markup(c.child_tooltip)
                             if m.lp_text_id is not None:
-                                m.gui_lp = Gtk.GestureLongPress(widget=b)
-                                m.gui_lp.connect('pressed', lambda lp, x, y, c=c, m=m: [
+                                b.gui_lp = Gtk.GestureLongPress(widget=b)
+                                b.gui_lp.connect('pressed', lambda lp, x, y, c=c, m=m: [
                                     lp.set_state(Gtk.EventSequenceState.CLAIMED),
                                     self.update_ctrl(c, m.lp_text_id)
                                 ])
