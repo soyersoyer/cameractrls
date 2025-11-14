@@ -995,13 +995,11 @@ def get_length_xu_control(fd, unit_id, selector):
     return length
 
 def query_xu_control(fd, unit_id, selector, query, data):
-    len = get_length_xu_control(fd, unit_id, selector)
-
     xu_ctrl_query = uvc_xu_control_query()
     xu_ctrl_query.unit = unit_id
     xu_ctrl_query.selector = selector
     xu_ctrl_query.query = query
-    xu_ctrl_query.size = len
+    xu_ctrl_query.size = len(data) - 1  # to_buf() ctypes.create_string_buffer() adds + 1 byte
     xu_ctrl_query.data = ctypes.cast(ctypes.pointer(data), ctypes.c_void_p)
 
     try:
