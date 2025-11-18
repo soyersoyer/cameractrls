@@ -10,7 +10,7 @@ It's a standalone Python CLI and GUI (GTK3, GTK4) and camera Viewer (SDL) to set
 
 ## From Flathub
 
-<a href='https://flathub.org/apps/details/hu.irl.cameractrls'><img width='240' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/></a>
+<a href='https://flathub.org/apps/details/hu.irl.cameractrls'><img width='240' alt='Download on Flathub' src='https://flathub.org/api/badge?locale=en'/></a>
 
 ```
 flatpak install flathub hu.irl.cameractrls
