@@ -1892,7 +1892,7 @@ class AnkerWorkCtrls:
         self.ctrls = [
             AnkerWorkCtrl(
                 'ankerwork_fov',
-                'FoV',
+                'Field of View',
                 'menu',
                 'Angle selection for the camera\'s field of view',
                 ANKERWORK_FOV_SELECTOR,
@@ -1906,7 +1906,7 @@ class AnkerWorkCtrls:
             ),
             AnkerWorkCtrl(
                 'ankerwork_face_focus',
-                'FF',
+                'Face Focus',
                 'menu',
                 'If the camera should track focusing on faces or not',
                 ANKERWORK_FACE_FOCUS_SELECTOR,
@@ -1918,7 +1918,7 @@ class AnkerWorkCtrls:
             ),
             AnkerWorkCtrl(
                 'ankerwork_mic_noisered',
-                'mic',
+                'AI Noise Reduction',
                 'menu',
                 'Enable or disable the microphone noise reduction algorithm',
                 ANKERWORK_MIC_AI_NOISERED_SELECTOR,
@@ -1930,9 +1930,9 @@ class AnkerWorkCtrls:
             ),
             AnkerWorkCtrl(
                 'ankerwork_mic_pickup',
-                'mic',
+                'Microphone Pickup Pattern',
                 'menu',
-                'Set which microphone pickup pattern to use, either 360 or 90',
+                'Set which microphone pickup pattern to use, either 360° or 90°',
                 ANKERWORK_MIC_PICKUP_MODE_SELECTOR,
                 [
                     BaseCtrlMenu('90', '90°', ANKERWORK_MIC_PICKUP_90),
@@ -1965,17 +1965,17 @@ class AnkerWorkCtrls:
                 ANKERWORK_FACE_EXPOSURE_COMP_LENGTH,
             ),
             AnkerWorkCtrl(
-                'ankerwork_face_compensation',
-                'Face Compensation',
+                'ankerwork_face_compensation_value',
+                'Face Compensation Amount',
                 'integer',
                 'Set compensation for face exposure settings. Range goes from -3.5 EV as the lowest value (0) '
                 'and 6.5 EV as the highest value (6.5 EV). The default is 35 (which is equivalent to 0 EV).',
                 ANKERWORK_FACE_EXPOSURE_COMP_SELECTOR,
                 [],
                 ANKERWORK_FACE_EXPOSURE_COMP_LENGTH,
-                min = '0',
-                max = '100',
-                default = '35'
+                min = 0,
+                max = 100,
+                default = 35
             ),
             AnkerWorkCtrl(
                 'ankerwork_hor_flip',
@@ -2001,18 +2001,18 @@ class AnkerWorkCtrls:
             if c.text_id in ['ankerwork_hdr', 'ankerwork_mic_noisered', 'ankerwork_face_focus']:
                 c.value = 'on' if set_value == 1 else 'off'
             elif c.text_id == 'ankerwork_mic_pickup':
-                c.value = '90°' if set_value == ANKERWORK_MIC_PICKUP_90 else '360°'
-            elif c.text_id == 'ankerwork_face_compensation':
-                c.value = f'{self._map_int_to_comp(set_value):.1f} EV'
+                c.value = '90' if set_value == ANKERWORK_MIC_PICKUP_90 else '360'
             elif c.text_id == 'ankerwork_face_compensation_enable':
                 c.value = 'on' if set_value & 0xff == 1 else 'off'
+            elif c.text_id == 'ankerwork_face_compensation_value':
+                c.value = self._map_int_to_comp(set_value)
             elif c.text_id == 'ankerwork_fov':
                 if set_value == self._int_from_bytes(ANKERWORK_FOV_65):
-                    c.value = '65°'
+                    c.value = '65'
                 elif set_value == self._int_from_bytes(ANKERWORK_FOV_78):
-                    c.value = '78°'
+                    c.value = '78'
                 elif set_value == self._int_from_bytes(ANKERWORK_FOV_95):
-                    c.value = '95°'
+                    c.value = '95'
                 elif set_value == self._int_from_bytes(ANKERWORK_SOLO_FRAME):
                     c.value = 'auto'
                 else:
@@ -2031,8 +2031,8 @@ class AnkerWorkCtrls:
         return int.from_bytes(bytes, byteorder='little', signed=False)
 
     @staticmethod
-    def _bytes_from_int(number):
-        return number.to_bytes(1, byteorder='little', signed=False)
+    def _bytes_from_int(number, bytes_to_use):
+        return number.to_bytes(bytes_to_use, byteorder='little', signed=False)
 
     @staticmethod
     def _map_comp_to_int(value: int) -> int:
@@ -2040,7 +2040,7 @@ class AnkerWorkCtrls:
         return value << 8
 
     @staticmethod
-    def _map_int_to_comp(value: int) -> float:
+    def _map_int_to_comp(value: int) -> int:
         return value >> 8
 
     def setup_ctrls(self, params, errs):
@@ -2067,9 +2067,9 @@ class AnkerWorkCtrls:
                 else:
                     desired = to_buf(menu.value)
             elif ctrl.type == 'integer':
-                if ctrl.text_id == 'ankerwork_face_compensation':
+                if ctrl.text_id == 'ankerwork_face_compensation_value':
                     cur_enable = self._int_from_bytes(current_config) & 0xff
-                    desired = to_buf(self._bytes_from_int(self._map_comp_to_int(int(v)) + cur_enable))
+                    desired = to_buf(self._bytes_from_int(self._map_comp_to_int(value=int(v)) + cur_enable, 2))
                 else:
                     desired = int(v)
             else:
@@ -3272,8 +3272,8 @@ class CameraCtrls:
                         'kiyo_pro_hdr',
                         'dell_ultrasharp_hdr',
                         'ankerwork_hdr',
-                        'ankerowrk_face_compensation_enable',
-                        'ankerwork_face_compensation',
+                        'ankerwork_face_compensation_enable',
+                        'ankerwork_face_compensation_value',
                     ])
                 ),
             ]),
