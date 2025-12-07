@@ -1862,7 +1862,7 @@ ANKERWORK_MIC_AI_NOISERED_ON = 0x01
 
 ## Microphone pickup pattern commands
 ANKERWORK_MIC_PICKUP_MODE_SELECTOR = 0x1f
-ANKERWORK_MIC_PICKUP_MODE_LENGTH = 0x1
+ANKERWORK_MIC_PICKUP_MODE_LENGTH = 0x2
 
 ANKERWORK_MIC_PICKUP_360 = 0x0
 ANKERWORK_MIC_PICKUP_90 = 0x5a
@@ -2065,19 +2065,15 @@ class AnkerWorkCtrls:
                     desired = current_config
                     desired[0] = menu.value
                 else:
-                    desired = to_buf(menu.value)
+                    desired = to_buf(self._bytes_from_int(int(menu.value), ctrl.length))
             elif ctrl.type == 'integer':
                 if ctrl.text_id == 'ankerwork_face_compensation_value':
                     cur_enable = self._int_from_bytes(current_config) & 0xff
-                    desired = to_buf(self._bytes_from_int(self._map_comp_to_int(value=int(v)) + cur_enable, 2))
+                    desired = to_buf(self._bytes_from_int(self._map_comp_to_int(value=int(v)) + cur_enable, ctrl.length))
                 else:
                     desired = int(v)
             else:
                 collect_warning(f'Can\'t set {k} to {v} (Unsupported control type {ctrl.type})', errs)
-                continue
-
-            if ctrl.type == 'button':
-                query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_SET_CUR, to_buf(desired))
                 continue
 
 
