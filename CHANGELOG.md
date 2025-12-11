@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.6.10] - 2025-12-11
+
+### Fixed
 - Fixed GTK related issues regarding the AnkerWorks C310 webcam.
 - Fixed specific buttons not working for AnkerWorks C310 webcam.
 - As of today, this camera is nearly feature complete with the Windows version. The only sections that still need some work are HDR support (that is implemented in code following the Windows app, but it doesn't work on Linux for some reason) and exposure compensation on a specific area (the Windows app allows you to set a square to always keep exposed). The packet stream is documented in the source, in case someone wants to complete the work.

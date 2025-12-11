@@ -36,6 +36,13 @@
         </screenshot>
     </screenshots>
     <releases>
+        <release version="0.6.10" date="2025-12-11">
+            <description>
+                <ul>
+                    <li>AnkerWorks C310 related fixes (thx RodoMa92)</li>
+                </ul>
+            </description>
+        </release>
         <release version="0.6.9" date="2025-11-14">
             <description>
                 <ul>

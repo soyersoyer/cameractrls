@@ -6,7 +6,7 @@ from threading import Thread
 from errno import EIO
 
 ghurl = 'https://github.com/soyersoyer/cameractrls'
-version = 'v0.6.9'
+version = 'v0.6.10'
 
 
 v4ldirs = {
