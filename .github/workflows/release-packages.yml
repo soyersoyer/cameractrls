@@ -1,0 +1,111 @@
+name: Build And Release Packages
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide release publishing
+        id: publish_gate
+        run: |
+          set -euo pipefail
+          publish_release=false
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            default_branch="${{ github.event.repository.default_branch }}"
+            git fetch origin "${default_branch}" --depth=1
+            if git merge-base --is-ancestor "${GITHUB_SHA}" "origin/${default_branch}"; then
+              publish_release=true
+            fi
+          fi
+
+          echo "publish_release=${publish_release}" >> "${GITHUB_OUTPUT}"
+
+      - name: Validate tag format
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag '${GITHUB_REF_NAME}' does not match required format vX.Y.Z"
+            exit 1
+          fi
+
+      - name: Validate tag vs Debian upstream version
+        if: steps.publish_gate.outputs.publish_release == 'true'
+        run: |
+          set -euo pipefail
+          tag_version="${GITHUB_REF_NAME#v}"
+          debian_version="$(dpkg-parsechangelog -S Version)"
+          upstream_version="${debian_version%%-*}"
+
+          if [[ "${tag_version}" != "${upstream_version}" ]]; then
+            echo "Tag version (${tag_version}) does not match debian upstream version (${upstream_version})"
+            exit 1
+          fi
+
+      - name: Install build dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            debhelper \
+            desktop-file-utils \
+            devscripts \
+            dpkg-dev \
+            rsync
+
+      - name: Build Debian packages
+        run: |
+          set -euo pipefail
+          make deb
+
+      - name: Create source zip archive
+        id: bundle
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          ref_name_safe="${GITHUB_REF_NAME//\//-}"
+          zip_name="cameractrls-${ref_name_safe}-source.zip"
+          git archive \
+            --format=zip \
+            --prefix="cameractrls-${ref_name_safe}/" \
+            --output="dist/${zip_name}" \
+            HEAD
+          echo "zip_asset=dist/${zip_name}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-packages-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            dist/deb/*
+            dist/*.zip
+          if-no-files-found: error
+
+      - name: Publish GitHub release assets
+        if: steps.publish_gate.outputs.publish_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/deb/*.deb
+            dist/deb/*.changes
+            dist/deb/*.buildinfo
+            ${{ steps.bundle.outputs.zip_asset }}

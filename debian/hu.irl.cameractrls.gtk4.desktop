@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Cameractrls (GTK4)
+Comment=Camera controls for Linux
+Exec=cameractrlsgtk4.py
+Icon=hu.irl.cameractrls
+Terminal=false
+Categories=AudioVideo;Video;GTK;
+Keywords=picture;photos;camera;webcam;

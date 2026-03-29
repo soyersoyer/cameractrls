@@ -1,0 +1,63 @@
+Source: cameractrls
+Section: video
+Priority: optional
+Maintainer: Sebels <sebels@localhost>
+Build-Depends:
+ debhelper-compat (= 13),
+ desktop-file-utils
+Standards-Version: 4.7.0
+Rules-Requires-Root: no
+Homepage: https://github.com/soyersoyer/cameractrls
+
+Package: cameractrls
+Architecture: all
+Depends:
+ ${misc:Depends},
+ libasound2,
+ libsdl2-2.0-0,
+ libspnav0,
+ libturbojpeg0 | libturbojpeg,
+ python3
+Recommends:
+ spacenavd
+Description: Camera controls for Linux (CLI, daemon, viewer, PTZ helpers)
+ Standalone Python tools to configure V4L2 camera controls on Linux.
+ .
+ This package provides:
+ * cameractrls.py (CLI)
+ * cameractrlsd.py (restore daemon)
+ * cameraview.py (SDL viewer)
+ * cameraptzgame.py, cameraptzmidi.py, cameraptzspnav.py (PTZ input helpers)
+  * desktop launcher for cameraview.py
+  * shared icon used by desktop launchers
+
+Package: cameractrls-gtk
+Architecture: all
+Depends:
+ ${misc:Depends},
+ cameractrls (= ${binary:Version}),
+ gir1.2-gtk-3.0,
+ python3,
+ python3-gi
+Description: Camera controls for Linux (GTK3 GUI)
+ GTK3 graphical frontend for cameractrls.
+ .
+ This package installs:
+  * cameractrlsgtk.py
+  * hu.irl.cameractrls.desktop launcher
+  * hu.irl.cameractrls.metainfo.xml AppStream metadata
+
+Package: cameractrls-gtk4
+Architecture: all
+Depends:
+ ${misc:Depends},
+ cameractrls (= ${binary:Version}),
+ gir1.2-gtk-4.0,
+ python3,
+ python3-gi
+Description: Camera controls for Linux (GTK4 GUI)
+ GTK4 graphical frontend for cameractrls.
+ .
+ This package installs:
+  * cameractrlsgtk4.py
+  * hu.irl.cameractrls.gtk4.desktop launcher

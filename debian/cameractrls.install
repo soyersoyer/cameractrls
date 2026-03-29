@@ -1,0 +1,8 @@
+cameractrls.py usr/bin/
+cameractrlsd.py usr/bin/
+cameraview.py usr/bin/
+cameraptzgame.py usr/bin/
+cameraptzmidi.py usr/bin/
+cameraptzspnav.py usr/bin/
+debian/hu.irl.cameractrls.viewer.desktop usr/share/applications/
+pkg/hu.irl.cameractrls.svg usr/share/icons/hicolor/scalable/apps/

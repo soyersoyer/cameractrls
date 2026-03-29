@@ -1,0 +1,3 @@
+cameractrlsgtk.py usr/bin/
+pkg/hu.irl.cameractrls.desktop usr/share/applications/
+pkg/hu.irl.cameractrls.metainfo.xml usr/share/metainfo/

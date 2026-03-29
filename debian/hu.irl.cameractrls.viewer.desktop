@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Cameractrls Viewer
+Comment=Camera viewer for Linux
+Exec=cameraview.py
+Icon=hu.irl.cameractrls
+Terminal=false
+Categories=AudioVideo;Video;
+Keywords=picture;photos;camera;webcam;viewer;

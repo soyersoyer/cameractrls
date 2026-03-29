@@ -28,6 +28,26 @@ pacman -S cameractrls
 pamac install cameractrls
 ```
 
+## From GitHub Releases (Ubuntu .deb packages)
+
+Supported Ubuntu versions: 22.04, 24.04, 26.xx.
+
+Download the `.deb` files from the latest release:
+
+https://github.com/soyersoyer/cameractrls/releases/latest
+
+Install all apps (CLI + GTK3 + GTK4):
+```shell
+sudo apt install ./cameractrls_*_all.deb \
+                 ./cameractrls-gtk_*_all.deb \
+                 ./cameractrls-gtk4_*_all.deb
+```
+
+Or install only the CLI/core tools:
+```shell
+sudo apt install ./cameractrls_*_all.deb
+```
+
 ## Git Install method
 
 Install the dependencies via apt:

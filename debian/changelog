@@ -1,0 +1,14 @@
+cameractrls (0.6.10-2) unstable; urgency=medium
+
+  * Fix Ubuntu dependency name for TurboJPEG runtime:
+    accept libturbojpeg0 or libturbojpeg.
+
+ -- Sebels <sebels@localhost>  Thu, 26 Feb 2026 21:11:01 +0100
+
+cameractrls (0.6.10-1) unstable; urgency=medium
+
+  * Initial Debian/Ubuntu packaging for all shipped apps.
+  * Split GUI applications into GTK3 and GTK4 binary packages.
+  * Install desktop entries, icon, and AppStream metadata.
+
+ -- Sebels <sebels@localhost>  Thu, 26 Feb 2026 20:49:35 +0100
