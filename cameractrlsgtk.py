@@ -698,7 +698,9 @@ class CameraCtrlsApp(Gtk.Application):
         self.set_accels_for_action('app.alt_n(6)', ["<Alt>7"])
 
     def do_activate(self):
-        self.window = CameraCtrlsWindow(application=self, title='Cameractrls')
+        if not self.window:
+            self.window = CameraCtrlsWindow(application=self, title='Cameractrls')
+
         self.window.present()
 
     def on_about(self, action, param):
