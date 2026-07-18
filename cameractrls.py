@@ -2386,14 +2386,35 @@ class V4L2FmtCtrls:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu is None:
-                collect_warning(f'V4L2FmtCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
-                continue
+                if k == 'resolution' and self.reload_resolutions():
+                    menu = find_by_text_id(ctrl.menu, v)
+                if menu is None:
+                    collect_warning(f'V4L2FmtCtrls: Can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                    continue
             if ctrl.text_id == 'pixelformat':
                 self.set_pixelformat(ctrl, v, errs)
             elif ctrl.text_id == 'resolution':
                 self.set_resolution(ctrl, v, errs)
             elif ctrl.text_id == 'fps':
                 self.set_fps(ctrl, v, errs)
+
+    # In some devices, the list of supported resolutions depend on the selected
+    # pixel format. If the pixel format changed since the last call to get_format_ctrls(),
+    # then this reloads the list of supported resolutions to match that pixel format.
+    def reload_resolutions(self):
+        fmt = self.get_fmt()
+        if fmt is None:
+            return False
+
+        resolutions = self.get_resolutions(fmt.fmt.pix.pixelformat)
+        if len(resolutions) == 0:
+            return False
+
+        self.res_ctrl.menu = [
+            BaseCtrlMenu(resolution, resolution, None) for resolution in resolutions
+        ]
+        logging.debug(f'V4L2FmtCtrls.reload_resolutions: {resolutions}')
+        return True
 
     def get_format_ctrls(self):
         fmt = self.get_fmt()
