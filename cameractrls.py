@@ -2098,6 +2098,218 @@ class AnkerWorkCtrls:
     def get_ctrls(self):
         return self.ctrls
 
+# Insta360 Link 2 GUID: FAF1672D-B71B-4793-8C91-7B1C9B7F95F8 in little endian
+INSTA360_LINK2_GUID = b'\x2d\x67\xf1\xfa\x1b\xb7\x93\x47\x8c\x91\x7b\x1c\x9b\x7f\x95\xf8'
+INSTA360_LINK2_DEV_MATCH = [
+    '2e1a:4c04',  # Link 2
+    '2e1a:4c05',  # Link 2C
+    '2e1a:4c06',  # Link 2 Pro
+    '2e1a:4c07',  # Link 2C Pro
+]
+
+## Gesture status commands (XU_GESTURE_STATUS_CONTROL, selector 0x05, 1 byte bitmask)
+INSTA360_LINK2_GESTURE_SELECTOR = 0x05
+INSTA360_LINK2_GESTURE_LENGTH = 1
+
+INSTA360_LINK2_GESTURE_BIT_PALM = 0x02
+INSTA360_LINK2_GESTURE_BIT_L = 0x04
+INSTA360_LINK2_GESTURE_BIT_V = 0x08
+
+## Exposure bias commands (XU_EXPOSURE_VALUE_CONTROL, selector 0x09, 2 bytes signed LE)
+INSTA360_LINK2_EXPOSURE_BIAS_SELECTOR = 0x09
+INSTA360_LINK2_EXPOSURE_BIAS_LENGTH = 2
+
+INSTA360_LINK2_EXPOSURE_BIAS_MIN = -100
+INSTA360_LINK2_EXPOSURE_BIAS_MAX = 100
+INSTA360_LINK2_EXPOSURE_BIAS_DEFAULT = 0
+
+## Device serial number (XU_DEVICE_SN_CONTROL, selector 0x0C, 32 bytes, read-only)
+INSTA360_LINK2_DEVICE_SN_SELECTOR = 0x0C
+INSTA360_LINK2_DEVICE_SN_LENGTH = 32
+
+## Tracking speed commands (XU_TRACK_SPEED_CONTROL, selector 0x12, 1 byte)
+INSTA360_LINK2_TRACK_SPEED_SELECTOR = 0x12
+INSTA360_LINK2_TRACK_SPEED_LENGTH = 1
+
+INSTA360_LINK2_TRACK_SPEED_SLOW = 1
+INSTA360_LINK2_TRACK_SPEED_MEDIUM = 2
+INSTA360_LINK2_TRACK_SPEED_FAST = 3
+
+## Function status (XU_FUNC_STATUS_CONTROL, selector 0x1B, 2 byte bitmask)
+INSTA360_LINK2_FUNC_STATUS_SELECTOR = 0x1B
+INSTA360_LINK2_FUNC_STATUS_LENGTH = 2
+INSTA360_LINK2_FUNC_STATUS_BIT_GESTURE_ALL = 0x10
+
+class Insta360Link2Ctrl(BaseCtrl):
+    def __init__(self, text_id, name, type, tooltip, selector, length, menu=None,
+                 min=None, max=None, default=None, readonly=False, gesture_bit=None):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu or [],
+                         min=min, max=max, default=default, readonly=readonly)
+        self.selector = selector
+        self.length = length
+        self.gesture_bit = gesture_bit
+
+class Insta360Link2Ctrls:
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, INSTA360_LINK2_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids in INSTA360_LINK2_DEV_MATCH
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            Insta360Link2Ctrl(
+                'insta360_link2_track_speed',
+                'Tracking Speed',
+                'menu',
+                'Set the speed of the AI face/body tracking',
+                INSTA360_LINK2_TRACK_SPEED_SELECTOR,
+                INSTA360_LINK2_TRACK_SPEED_LENGTH,
+                menu=[
+                    BaseCtrlMenu('slow', 'Slow', INSTA360_LINK2_TRACK_SPEED_SLOW),
+                    BaseCtrlMenu('medium', 'Medium', INSTA360_LINK2_TRACK_SPEED_MEDIUM),
+                    BaseCtrlMenu('fast', 'Fast', INSTA360_LINK2_TRACK_SPEED_FAST),
+                ],
+            ),
+            Insta360Link2Ctrl(
+                'insta360_link2_gesture_palm',
+                'Gesture: Palm',
+                'boolean',
+                'Enable or disable the Palm gesture (toggles AI tracking on/off)',
+                INSTA360_LINK2_GESTURE_SELECTOR,
+                INSTA360_LINK2_GESTURE_LENGTH,
+                gesture_bit=INSTA360_LINK2_GESTURE_BIT_PALM,
+            ),
+            Insta360Link2Ctrl(
+                'insta360_link2_gesture_l',
+                'Gesture: L',
+                'boolean',
+                'Enable or disable the L gesture (controls zoom)',
+                INSTA360_LINK2_GESTURE_SELECTOR,
+                INSTA360_LINK2_GESTURE_LENGTH,
+                gesture_bit=INSTA360_LINK2_GESTURE_BIT_L,
+            ),
+            Insta360Link2Ctrl(
+                'insta360_link2_gesture_v',
+                'Gesture: V',
+                'boolean',
+                'Enable or disable the V gesture (toggles whiteboard mode)',
+                INSTA360_LINK2_GESTURE_SELECTOR,
+                INSTA360_LINK2_GESTURE_LENGTH,
+                gesture_bit=INSTA360_LINK2_GESTURE_BIT_V,
+            ),
+            Insta360Link2Ctrl(
+                'insta360_link2_exposure_bias',
+                'Exposure Bias',
+                'integer',
+                'Signed exposure bias adjustment',
+                INSTA360_LINK2_EXPOSURE_BIAS_SELECTOR,
+                INSTA360_LINK2_EXPOSURE_BIAS_LENGTH,
+                min=INSTA360_LINK2_EXPOSURE_BIAS_MIN,
+                max=INSTA360_LINK2_EXPOSURE_BIAS_MAX,
+                default=INSTA360_LINK2_EXPOSURE_BIAS_DEFAULT,
+            ),
+            Insta360Link2Ctrl(
+                'insta360_link2_serial',
+                'Serial Number',
+                'info',
+                'Device serial number (read-only)',
+                INSTA360_LINK2_DEVICE_SN_SELECTOR,
+                INSTA360_LINK2_DEVICE_SN_LENGTH,
+                readonly=True,
+            ),
+        ]
+
+        gesture_buf = to_buf(bytes(INSTA360_LINK2_GESTURE_LENGTH))
+        query_xu_control(self.fd, self.unit_id, INSTA360_LINK2_GESTURE_SELECTOR, UVC_GET_CUR, gesture_buf)
+        gesture_mask = bytes(gesture_buf)[0]
+
+        for c in self.ctrls:
+            if c.gesture_bit is not None:
+                c.value = (gesture_mask & c.gesture_bit) == c.gesture_bit
+                continue
+
+            buf = to_buf(bytes(c.length))
+            query_xu_control(self.fd, self.unit_id, c.selector, UVC_GET_CUR, buf)
+            if c.text_id == 'insta360_link2_track_speed':
+                speed_val = bytes(buf)[0]
+                valmenu = find_by_value(c.menu, speed_val)
+                c.value = valmenu.text_id if valmenu else str(speed_val)
+            elif c.text_id == 'insta360_link2_exposure_bias':
+                c.value = int.from_bytes(bytes(buf)[:2], byteorder='little', signed=True)
+            elif c.text_id == 'insta360_link2_serial':
+                c.value = bytes(buf).rstrip(b'\x00').decode('ascii', errors='replace')
+
+    def setup_ctrls(self, params, errs):
+        if not self.supported():
+            return
+
+        gesture_buf = to_buf(bytes(INSTA360_LINK2_GESTURE_LENGTH))
+        query_xu_control(self.fd, self.unit_id, INSTA360_LINK2_GESTURE_SELECTOR, UVC_GET_CUR, gesture_buf)
+        gesture_mask = bytes(gesture_buf)[0]
+        gesture_mask_orig = gesture_mask
+
+        func_buf = to_buf(bytes(INSTA360_LINK2_FUNC_STATUS_LENGTH))
+        query_xu_control(self.fd, self.unit_id, INSTA360_LINK2_FUNC_STATUS_SELECTOR, UVC_GET_CUR, func_buf)
+        _func_buf = bytes(func_buf)
+        func_mask = _func_buf[0] | (_func_buf[1] << 8)
+        func_mask_orig = func_mask
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl is None or ctrl.readonly:
+                continue
+
+            if ctrl.gesture_bit is not None:
+                if v:
+                    gesture_mask |= ctrl.gesture_bit
+                else:
+                    gesture_mask &= ~ctrl.gesture_bit & 0xFF
+                ctrl.value = v
+                continue
+
+            if ctrl.type == 'menu':
+                menu = find_by_text_id(ctrl.menu, v)
+                if menu is None:
+                    collect_warning(f'Insta360Link2Ctrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                    continue
+
+                buf = to_buf(bytes(ctrl.length))
+                buf[0] = menu.value
+                query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_SET_CUR, buf)
+                ctrl.value = v
+            elif ctrl.type == 'integer':
+                if ctrl.text_id == 'insta360_link2_exposure_bias':
+                    val_int = int(v)
+                    buf = to_buf(val_int.to_bytes(ctrl.length, byteorder='little', signed=True))
+                    query_xu_control(self.fd, self.unit_id, ctrl.selector, UVC_SET_CUR, buf)
+                    ctrl.value = val_int
+
+        if gesture_mask != gesture_mask_orig:
+            gesture_buf[0] = gesture_mask
+            query_xu_control(self.fd, self.unit_id, INSTA360_LINK2_GESTURE_SELECTOR, UVC_SET_CUR, gesture_buf)
+
+        if gesture_mask:
+            func_mask |= INSTA360_LINK2_FUNC_STATUS_BIT_GESTURE_ALL
+        else:
+            func_mask &= ~INSTA360_LINK2_FUNC_STATUS_BIT_GESTURE_ALL & 0xFFFF
+
+        if func_mask != func_mask_orig:
+            func_buf[0] = func_mask & 0xFF
+            func_buf[1] = (func_mask >> 8) & 0xFF
+            query_xu_control(self.fd, self.unit_id, INSTA360_LINK2_FUNC_STATUS_SELECTOR, UVC_SET_CUR, func_buf)
+
+    def get_ctrls(self):
+        return self.ctrls
+
 class V4L2Ctrl(BaseCtrl):
     def __init__(self, v4l2_id, text_id, name, type, value, default = None, min = None, max = None, step = None, menu = None):
         super().__init__(text_id, name, type, value, default, min, max, step, menu=menu)
@@ -3129,6 +3341,7 @@ class CameraCtrls:
             LogitechCtrls(device, fd),
             DellUltraSharpCtrls(device, fd),
             AnkerWorkCtrls(device, fd),
+            Insta360Link2Ctrls(device, fd),
             SystemdSaver(self),
             ColorPreset(self),
             ConfigPreset(self),
@@ -3205,6 +3418,7 @@ class CameraCtrls:
                         'ankerwork_fov',
                         'ankerwork_auto_framing',
                         'ankerwork_hor_flip',
+                        'insta360_link2_track_speed',
                     ]) +
                     pop_list_by_ids(ctrls, [
                         V4L2_CID_ZOOM_ABSOLUTE,
@@ -3270,6 +3484,7 @@ class CameraCtrls:
                         'ankerwork_hdr',
                         'ankerwork_face_compensation_enable',
                         'ankerwork_face_compensation_value',
+                        'insta360_link2_exposure_bias',
                     ])
                 ),
             ]),
@@ -3312,7 +3527,7 @@ class CameraCtrls:
             ]),
             CtrlPage('Capture', [
                 CtrlCategory('Capture', pop_list_by_text_ids(ctrls, ['pixelformat', 'resolution', 'fps'])),
-                CtrlCategory('Info', pop_list_by_text_ids(ctrls, ['card', 'driver', 'path', 'real_path'])),
+                CtrlCategory('Info', pop_list_by_text_ids(ctrls, ['card', 'driver', 'path', 'real_path', 'insta360_link2_serial'])),
             ]),
             CtrlPage('Settings', [
                 CtrlCategory('Save', pop_list_by_text_ids(ctrls, ['kiyo_pro_save', 'preset'])),
