@@ -1787,6 +1787,70 @@ class DellUltraSharpCtrls:
     def get_ctrls(self):
         return self.ctrls
 
+# Elgato Facecam MK.2 GUID 23e49ed0-1178-4f31-ae52-d2fb8a8d3001 in little-endian
+FACECAM_GUID = b'\xd0\x9e\xe4\x23\x78\x11\x31\x4f\xae\x52\xd2\xfb\x8a\x8d\x30\x01'
+
+FACECAM_DEV_MATCH = [
+    '0fd9:0094',
+]
+
+FACECAM_DYNAMIC_RANGE_SELECTOR = 0x15
+
+FACECAM_DYNAMIC_RANGE_LOW = b'\x00'
+FACECAM_DYNAMIC_RANGE_HIGH = b'\x01'
+
+class FacecamCtrl(BaseCtrl):
+    def __init__(self, text_id, name, type, tooltip, menu, ):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
+
+class FacecamCtrls:
+    def __init__(self, device, fd):
+        self.device = device
+        self.fd = fd
+        self.unit_id = find_unit_id_in_sysfs(device, FACECAM_GUID)
+        self.usb_ids = find_usb_ids_in_sysfs(device)
+        self.get_device_controls()
+
+    def supported(self):
+        return self.unit_id != 0 and self.usb_ids in FACECAM_DEV_MATCH
+
+    def get_device_controls(self):
+        if not self.supported():
+            self.ctrls = []
+            return
+
+        self.ctrls = [
+            FacecamCtrl(
+                'facecam_dynamic_range',
+                'Dynamic Range',
+                'menu',
+                'Enable High Dynamic Range for better detail in both bright and dark areas of the image',
+                [
+                    BaseCtrlMenu('low', 'Low', FACECAM_DYNAMIC_RANGE_LOW),
+                    BaseCtrlMenu('high', 'High', FACECAM_DYNAMIC_RANGE_HIGH),
+                ]
+            ),
+        ]
+
+    def setup_ctrls(self, params, errs):
+        if not self.supported():
+            return
+
+        for k, v in params.items():
+            ctrl = find_by_text_id(self.ctrls, k)
+            if ctrl is None:
+                continue
+            menu = find_by_text_id(ctrl.menu, v)
+            if menu is None:
+                collect_warning(f'FacecamCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+            ctrl.value = menu.text_id
+
+            query_xu_control(self.fd, self.unit_id, FACECAM_DYNAMIC_RANGE_SELECTOR, UVC_SET_CUR, to_buf(menu.value))
+
+    def get_ctrls(self):
+        return self.ctrls
+
 # AnkerWork C310 GUID 41769ea2-04de-e347-8b2b-f4341aff003b in little endian
 ANKERWORK_GUID = b'\xa2\x9e\x76\x41\xde\x04\x47\xe3\x8b\x2b\xf4\x34\x1a\xff\x00\x3b'
 ANKERWORK_DEV_MATCH = [
@@ -3129,6 +3193,7 @@ class CameraCtrls:
             LogitechCtrls(device, fd),
             DellUltraSharpCtrls(device, fd),
             AnkerWorkCtrls(device, fd),
+            FacecamCtrls(device, fd),
             SystemdSaver(self),
             ColorPreset(self),
             ConfigPreset(self),
