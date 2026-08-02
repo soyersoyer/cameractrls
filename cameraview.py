@@ -568,9 +568,12 @@ class V4L2Camera(Thread):
             logging.error(f'Video buffer request failed on {self.device}: {e}')
             sys.exit(3)
 
-        if req.count != self.num_cap_bufs:
+        if req.count == 0:
             logging.error(f'Insufficient buffer memory on {self.device}')
             sys.exit(3)
+        if req.count != self.num_cap_bufs:
+            logging.warning(f'Got {req.count} buffers instead of {self.num_cap_bufs} on {self.device}')
+            self.num_cap_bufs = req.count
 
         for i in range(req.count):
             buf = v4l2_buffer()
