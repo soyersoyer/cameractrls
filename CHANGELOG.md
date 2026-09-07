@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- Logitech MX Brio: Show Mode control (`logitech_brio_show_mode`). While Show Mode is enabled the firmware rejects FoV changes, so it can now be turned off from Linux.
+
 ## [0.6.10] - 2025-12-11
 
 ### Fixed

@@ -1380,6 +1380,21 @@ LOGITECH_BRIO_FOV_65 = 0x02
 LOGITECH_BRIO_FOV_78 = 0x01
 LOGITECH_BRIO_FOV_90 = 0x00
 
+# Show Mode: the camera rotates the image 180° by itself when it's tilted down
+# (built-in accelerometer). While it is enabled the firmware also rejects FoV writes.
+# Selector found by diffing the XU controls of two MX Brio, one with Show Mode
+# enabled and one disabled in Logi Options+. Verified on MX Brio (046d:0944) only;
+# Brio 500/501/505 advertise the same feature but are untested.
+LOGITECH_BRIO_SHOW_MODE_DEV_MATCH = [
+    '046d:0944', # MX Brio
+]
+LOGITECH_BRIO_SHOW_MODE_SEL = 0x0d
+LOGITECH_BRIO_SHOW_MODE_LEN = 1
+LOGITECH_BRIO_SHOW_MODE_OFFSET = 0
+
+LOGITECH_BRIO_SHOW_MODE_OFF = 0x00
+LOGITECH_BRIO_SHOW_MODE_ON = 0x01
+
 
 class LogitechCtrl(BaseCtrl):
     def __init__(self, text_id, name, type, tooltip, unit_id, selector, len, offset, menu = None, child_tooltip = None):
@@ -1582,6 +1597,24 @@ class LogitechCtrls:
                         BaseCtrlMenu('65', '65°', LOGITECH_BRIO_FOV_65),
                         BaseCtrlMenu('78', '78°', LOGITECH_BRIO_FOV_78),
                         BaseCtrlMenu('90', '90°', LOGITECH_BRIO_FOV_90),
+                    ]
+                ),
+            ])
+
+        if brio_unit_id != 0 and self.usb_ids in LOGITECH_BRIO_SHOW_MODE_DEV_MATCH:
+            self.ctrls.extend([
+                LogitechCtrl(
+                    'logitech_brio_show_mode',
+                    'Show Mode',
+                    'menu',
+                    'Rotates the image 180° automatically when the camera is tilted down (accelerometer). While enabled, the firmware locks the FoV control: set Show Mode off first, then the FoV.',
+                    brio_unit_id,
+                    LOGITECH_BRIO_SHOW_MODE_SEL,
+                    LOGITECH_BRIO_SHOW_MODE_LEN,
+                    LOGITECH_BRIO_SHOW_MODE_OFFSET,
+                    [
+                        BaseCtrlMenu('off', 'Off', LOGITECH_BRIO_SHOW_MODE_OFF),
+                        BaseCtrlMenu('on', 'On', LOGITECH_BRIO_SHOW_MODE_ON),
                     ]
                 ),
             ])
@@ -3197,6 +3230,7 @@ class CameraCtrls:
                     pop_list_by_text_ids(ctrls, [
                         'kiyo_pro_fov',
                         'logitech_brio_fov',
+                        'logitech_brio_show_mode',
                         'dell_ultrasharp_fov',
                         'dell_ultrasharp_auto_framing',
                         'dell_ultrasharp_camera_transition',
