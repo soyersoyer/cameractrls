@@ -1787,10 +1787,11 @@ class DellUltraSharpCtrls:
     def get_ctrls(self):
         return self.ctrls
 
-# AnkerWork C310 GUID 41769ea2-04de-e347-8b2b-f4341aff003b in little endian
+# AnkerWork C310 and PowerConf C200 GUID 41769ea2-04de-e347-8b2b-f4341aff003b in little endian
 ANKERWORK_GUID = b'\xa2\x9e\x76\x41\xde\x04\x47\xe3\x8b\x2b\xf4\x34\x1a\xff\x00\x3b'
 ANKERWORK_DEV_MATCH = [
     '291a:3367',
+    '291a:3369',
 ]
 
 ## FOV settings commands
@@ -1798,12 +1799,13 @@ ANKERWORK_FOV_SELECTOR = 0x10
 ANKERWORK_FOV_LENGTH = 0x7
 
 ANKERWORK_SOLO_FRAME = b'\x02\x01\x5f\x00\x00\x00\x00'
-ANKERWORK_FOV_65 = b'\x00\x01\x5f\x00\x00\x00\x00'
+# Byte 2 carries the angle in degrees: 0x41 = 65, 0x4e = 78, 0x5f = 95.
+ANKERWORK_FOV_65 = b'\x00\x01\x41\x00\x00\x00\x00'
 ANKERWORK_FOV_78 = b'\x00\x01\x4e\x00\x00\x00\x00'
-ANKERWORK_FOV_95 = b'\x00\x01\x41\x00\x00\x00\x00'
+ANKERWORK_FOV_95 = b'\x00\x01\x5f\x00\x00\x00\x00'
 
 ## Horizontal flip commands
-# FIXME: Nothing seems to work with this. I'm not really bothered by this.
+# Only applies while streaming, writes made when idle are dropped.
 ANKERWORK_HOR_SELECTOR = 0x11
 ANKERWORK_HOR_LENGTH = 0x1
 
@@ -1831,8 +1833,7 @@ ANKERWORK_FACE_EXPOSURE_COMP_MIN = 0x01
 ANKERWORK_FACE_EXPOSURE_COMP_MAX = 0x64
 
 ## HDR selector commands
-# FIXME: This do seems to be the right selector toggled
-#  but nothing on Linux happens. Need more investigation.
+# The write takes effect, but GET_CUR always returns 1.
 ANKERWORK_HDR_SELECTOR = 0x13
 ANKERWORK_HDR_LENGTH = 0x1
 
@@ -1991,6 +1992,13 @@ class AnkerWorkCtrls:
             ),
         ]
 
+        # Models differ in which selectors exist and in payload length.
+        self.ctrls = [c for c in self.ctrls if try_xu_control(self.fd, self.unit_id, c.selector)]
+        for c in self.ctrls:
+            length = get_length_xu_control(self.fd, self.unit_id, c.selector).value
+            if length:
+                c.length = length
+
         for c in self.ctrls:
             if c.type == 'button':
                 continue
@@ -2007,14 +2015,12 @@ class AnkerWorkCtrls:
             elif c.text_id == 'ankerwork_face_compensation_value':
                 c.value = self._map_int_to_comp(set_value)
             elif c.text_id == 'ankerwork_fov':
-                if set_value == self._int_from_bytes(ANKERWORK_FOV_65):
-                    c.value = '65'
-                elif set_value == self._int_from_bytes(ANKERWORK_FOV_78):
-                    c.value = '78'
-                elif set_value == self._int_from_bytes(ANKERWORK_FOV_95):
-                    c.value = '95'
-                elif set_value == self._int_from_bytes(ANKERWORK_SOLO_FRAME):
+                # Byte 1 is set on write but reads back as 0, match the angle byte.
+                raw = current_config.raw
+                if raw[0] == ANKERWORK_SOLO_FRAME[0]:
                     c.value = 'auto'
+                elif raw[2] in (0x41, 0x4e, 0x5f):
+                    c.value = str(raw[2])
                 else:
                     c.value = '?'
             else:
@@ -2064,6 +2070,8 @@ class AnkerWorkCtrls:
                 if ctrl.text_id == 'ankerwork_face_compensation_enable':
                     desired = current_config
                     desired[0] = menu.value
+                elif isinstance(menu.value, (bytes, bytearray)):
+                    desired = to_buf(bytes(menu.value).ljust(ctrl.length, b'\x00'))
                 else:
                     desired = to_buf(self._bytes_from_int(int(menu.value), ctrl.length))
             elif ctrl.type == 'integer':
