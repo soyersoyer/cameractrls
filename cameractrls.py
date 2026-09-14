@@ -67,9 +67,16 @@ ptz_hw_executables = [
     f'{sys.path[0]}/cameraptzgame.py',
     f'{sys.path[0]}/cameraptzmidi.py',
 ]
+ptz_helper_timeout = 5
 
 def exec_and_get_lines(params):
-    return subprocess.run(params, capture_output=True).stdout.splitlines()
+    try:
+        return subprocess.run(
+            params, capture_output=True, timeout=ptz_helper_timeout
+        ).stdout.splitlines()
+    except subprocess.TimeoutExpired:
+        logging.warning(f'{params[0]} timed out, skipping')
+        return []
 
 def get_ptz_hw_controllers(executables):
     controllers = []
