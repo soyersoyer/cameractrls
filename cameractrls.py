@@ -2999,7 +2999,7 @@ class DesktopPortal():
 
             token = randint(10000000, 20000000)
             options = {
-                'handle_token': GLib.Variant('s', f'hu/irl/cameractrls/{token}'),
+                'handle_token': GLib.Variant('s', f'cameractrls_{token}'),
                 'reason': GLib.Variant('s', ('Autostart cameractrlsd in the background.')),
                 'autostart': GLib.Variant('b', is_enabled),
                 'commandline': GLib.Variant('as', ['cameractrlsd.py']),
