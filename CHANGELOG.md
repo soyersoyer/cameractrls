@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+- Dell extension: WB5023, WB3023 and the webcams built into Dell monitors, in addition to the WB7022
+- Dell built-in mic control, with readback (the mic of the WB5023 and WB3023 is off by default)
+- Dell background blur, exposure region, mirror, flip, mic noise reduction and beamforming for models that have them
+
 ## [0.6.10] - 2025-12-11
 
 ### Fixed

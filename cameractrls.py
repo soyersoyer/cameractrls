@@ -1655,118 +1655,299 @@ class LogitechCtrls:
     def get_ctrls(self):
         return self.ctrls
 
-# Dell UltraSharp WB7022 GUID 23e49ed0-1178-4f31-ae52-d2fb8a8d3b48 in little-endian
-DELL_ULTRASHARP_GUID = b'\xd0\x9e\xe4\x23\x78\x11\x31\x4f\xae\x52\xd2\xfb\x8a\x8d\x3b\x48'
+# Dell webcam GUID 23e49ed0-1178-4f31-ae52-d2fb8a8d3b48 in little-endian
+# Shared by the UltraSharp WB7022, the Pro WB5023, the WB3023 and the webcams built into Dell monitors.
+DELL_GUID = b'\xd0\x9e\xe4\x23\x78\x11\x31\x4f\xae\x52\xd2\xfb\x8a\x8d\x3b\x48'
 
-DELL_ULTRASHARP_DEV_MATCH = [
-    '413c:c015',
-]
+# Commands are 8 bytes written to DELL_SET: ff <group> [property] <value>, zero padded.
+# A read writes fe <group> [property] to DELL_SET and reads the answer, which starts with fe <group>, from DELL_GET.
+DELL_SET = 0x01
+DELL_GET = 0x02
+DELL_LEN = 8
 
-DELL_ULTRASHARP_SET = 0x01
-DELL_ULTRASHARP_GET = 0x02
+def dell_cmd(*b):
+    return bytes(b).ljust(DELL_LEN, b'\x00')
 
-DELL_ULTRASHARP_AUTO_FRAMING_OFF = b'\xff\x14\x01\x00\x00\x00\x00\x00'
-DELL_ULTRASHARP_AUTO_FRAMING_ON = b'\xff\x14\x01\x01\x00\x00\x00\x00'
+DELL_AUTO_FRAMING_OFF = dell_cmd(0xff, 0x14, 0x01, 0x00)
+DELL_AUTO_FRAMING_ON = dell_cmd(0xff, 0x14, 0x01, 0x01)
 
-DELL_ULTRASHARP_CAMERA_TRANSITION_OFF = b'\xff\x14\x10\x00\x00\x00\x00\x00'
-DELL_ULTRASHARP_CAMERA_TRANSITION_ON = b'\xff\x14\x10\x01\x00\x00\x00\x00'
+DELL_CAMERA_TRANSITION_OFF = dell_cmd(0xff, 0x14, 0x10, 0x00)
+DELL_CAMERA_TRANSITION_ON = dell_cmd(0xff, 0x14, 0x10, 0x01)
 
-DELL_ULTRASHARP_TRACKING_SENSITIVITY_NORMAL = b'\xff\x14\x11\x01\x00\x00\x00\x00'
-DELL_ULTRASHARP_TRACKING_SENSITIVITY_FAST = b'\xff\x14\x11\x02\x00\x00\x00\x00'
+DELL_TRACKING_SENSITIVITY_NORMAL = dell_cmd(0xff, 0x14, 0x11, 0x01)
+DELL_TRACKING_SENSITIVITY_FAST = dell_cmd(0xff, 0x14, 0x11, 0x02)
 
-DELL_ULTRASHARP_TRACKING_FRAME_SIZE_STANDARD = b'\xff\x14\x12\x01\x00\x00\x00\x00'
-DELL_ULTRASHARP_TRACKING_FRAME_SIZE_NARROW = b'\xff\x14\x12\x02\x00\x00\x00\x00'
+DELL_TRACKING_FRAME_SIZE_STANDARD = dell_cmd(0xff, 0x14, 0x12, 0x01)
+DELL_TRACKING_FRAME_SIZE_NARROW = dell_cmd(0xff, 0x14, 0x12, 0x02)
 
-DELL_ULTRASHARP_FOV_65 = b'\xff\x10\x01\x41\x00\x00\x00\x00'
-DELL_ULTRASHARP_FOV_78 = b'\xff\x10\x01\x4e\x00\x00\x00\x00'
-DELL_ULTRASHARP_FOV_90 = b'\xff\x10\x01\x5a\x00\x00\x00\x00'
+# The FoV angle is sent in the 4th byte by older models and in the 5th by newer ones
+def dell_fov(angle, newer=False):
+    return dell_cmd(0xff, 0x10, 0x01, 0x00, angle) if newer else dell_cmd(0xff, 0x10, 0x01, angle)
 
-DELL_ULTRASHARP_HDR_OFF = b'\xff\x11\x00\x00\x00\x00\x00\x00'
-DELL_ULTRASHARP_HDR_ON = b'\xff\x11\x01\x00\x00\x00\x00\x00'
+DELL_HDR_OFF = dell_cmd(0xff, 0x11, 0x00)
+DELL_HDR_ON = dell_cmd(0xff, 0x11, 0x01)
 
-class DellUltraSharpCtrl(BaseCtrl):
-    def __init__(self, text_id, name, type, tooltip, menu, ):
-        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu)
+DELL_MIC_GROUP = 0x20
+DELL_MIC_OFF = dell_cmd(0xff, DELL_MIC_GROUP, 0x00)
+DELL_MIC_ON = dell_cmd(0xff, DELL_MIC_GROUP, 0x01)
 
-class DellUltraSharpCtrls:
+DELL_BACKGROUND_BLUR_OFF = dell_cmd(0xff, 0x16, 0x00, 0x00)
+DELL_BACKGROUND_BLUR_STANDARD = dell_cmd(0xff, 0x16, 0x01, 0x07)
+DELL_BACKGROUND_BLUR_PORTRAIT = dell_cmd(0xff, 0x16, 0x01, 0x01)
+
+DELL_GROUP_VIEW_OFF = dell_cmd(0xff, 0x17, 0x01, 0x00)
+DELL_GROUP_VIEW_ON = dell_cmd(0xff, 0x17, 0x01, 0x01)
+
+DELL_SMART_SCENE_OFF = dell_cmd(0xff, 0x26, 0x00, 0x00)
+DELL_SMART_SCENE_ON = dell_cmd(0xff, 0x26, 0x01, 0x00)
+
+DELL_AE_REGION_FACE = dell_cmd(0xff, 0x27, 0x01, 0x00)
+DELL_AE_REGION_AVERAGE = dell_cmd(0xff, 0x27, 0x01, 0x01)
+DELL_AE_REGION_CENTER = dell_cmd(0xff, 0x27, 0x01, 0x02)
+
+DELL_DESK_MODE_AUTO_OFF = dell_cmd(0xff, 0x29, 0x00, 0x00)
+DELL_DESK_MODE_AUTO_ON = dell_cmd(0xff, 0x29, 0x01, 0x00)
+
+DELL_DESK_MODE_MANUAL_OFF = dell_cmd(0xff, 0x30, 0x00, 0x00)
+DELL_DESK_MODE_MANUAL_ON = dell_cmd(0xff, 0x30, 0x01, 0x00)
+
+DELL_PIP_AUTO_OFF = dell_cmd(0xff, 0x36, 0x01, 0x00)
+DELL_PIP_AUTO_ON = dell_cmd(0xff, 0x36, 0x01, 0x01)
+
+# Dell's app sends these the other way round from the other switches
+DELL_PIP_INSERT_OFF = dell_cmd(0xff, 0x36, 0x04, 0x01)
+DELL_PIP_INSERT_ON = dell_cmd(0xff, 0x36, 0x04, 0x00)
+
+DELL_PIP_MANUAL_OFF = dell_cmd(0xff, 0x37, 0x01, 0x00)
+DELL_PIP_MANUAL_ON = dell_cmd(0xff, 0x37, 0x01, 0x01)
+
+DELL_MIRROR_OFF = dell_cmd(0xff, 0x38, 0x00, 0x00)
+DELL_MIRROR_ON = dell_cmd(0xff, 0x38, 0x01, 0x00)
+
+DELL_FLIP_OFF = dell_cmd(0xff, 0x39, 0x00, 0x00)
+DELL_FLIP_ON = dell_cmd(0xff, 0x39, 0x01, 0x00)
+
+DELL_MIC_NOISE_REDUCTION_OFF = dell_cmd(0xff, 0x3a, 0x00, 0x00)
+DELL_MIC_NOISE_REDUCTION_ON = dell_cmd(0xff, 0x3a, 0x01, 0x00)
+
+DELL_MIC_BEAMFORMING_OFF = dell_cmd(0xff, 0x3b, 0x00, 0x00)
+DELL_MIC_BEAMFORMING_ON = dell_cmd(0xff, 0x3b, 0x01, 0x00)
+
+DELL_FRAMING = ['auto_framing', 'camera_transition', 'tracking_sensitivity', 'tracking_frame_size', 'fov', 'hdr']
+DELL_FOV_65_78_90 = [('65', 0x41), ('78', 0x4e), ('90', 0x5a)]
+DELL_FOV_65_81 = [('65', 0x41), ('81', 0x51)]
+DELL_NEWER = ['background_blur', 'smart_scene', 'ae_region', 'desk_mode_auto', 'desk_mode_manual',
+    'pip_auto', 'pip_manual', 'pip_insert', 'mirror', 'flip', 'mic_noise_reduction', 'mic_beamforming']
+
+# usb id -> (fov angles, the FoV angle is in the 5th byte, features), from the Dell Display and Peripheral Manager
+DELL_DEV_FEATURES = {
+    '413c:c015': (DELL_FOV_65_78_90, False, DELL_FRAMING),  # UltraSharp WB7022
+    '413c:c024': (DELL_FOV_65_78_90, False, DELL_FRAMING),  # U3223QZ monitor
+    '413c:c03d': (DELL_FOV_65_78_90, False, DELL_FRAMING),  # U3224KB monitor
+    '413c:c022': (DELL_FOV_65_78_90, False, DELL_FRAMING + ['mic']),  # Pro WB5023
+    # Dell's app also lists 90° and the framing controls, but the camera ignores them
+    '413c:c03e': ([('65', 0x41), ('78', 0x4e)], False, ['fov', 'hdr', 'mic']),  # WB3023
+    '413c:d003': (DELL_FOV_65_78_90, False, DELL_FRAMING),  # P2424HEB, P2724DEB, P3424WEB monitors
+    '413c:d005': (DELL_FOV_65_78_90, False, DELL_FRAMING),  # P2424HEB, P2724DEB, P3424WEB monitors
+    **{f'413c:d0{n:02x}': (DELL_FOV_65_81, False, DELL_FRAMING + ['background_blur'])
+        for n in range(0x06, 0x12)},  # monitors
+    '413c:c060': (DELL_FOV_65_78_90, True, DELL_FRAMING + DELL_NEWER),
+    # Dell's app sends 0x4e for 81° on this one
+    '413c:c061': ([('65', 0x41), ('81', 0x4e)], True, DELL_FRAMING + DELL_NEWER),
+    '413c:c500': (DELL_FOV_65_81, True, DELL_FRAMING + ['group_view']),  # monitor
+}
+
+class DellCtrl(BaseCtrl):
+    def __init__(self, text_id, name, type, tooltip, menu, reopener=False):
+        super().__init__(text_id, name, type, tooltip=tooltip, menu=menu, reopener=reopener)
+
+def dell_switch(text_id, name, tooltip, off, on):
+    return DellCtrl(text_id, name, 'menu', tooltip, [
+        BaseCtrlMenu('off', 'Off', off),
+        BaseCtrlMenu('on', 'On', on),
+    ])
+
+class DellCtrls:
     def __init__(self, device, fd):
         self.device = device
         self.fd = fd
-        self.unit_id = find_unit_id_in_sysfs(device, DELL_ULTRASHARP_GUID)
+        self.unit_id = find_unit_id_in_sysfs(device, DELL_GUID)
         self.usb_ids = find_usb_ids_in_sysfs(device)
         self.get_device_controls()
 
     def supported(self):
-        return self.unit_id != 0 and self.usb_ids in DELL_ULTRASHARP_DEV_MATCH
+        return self.unit_id != 0 and self.usb_ids in DELL_DEV_FEATURES
 
     def get_device_controls(self):
         if not self.supported():
             self.ctrls = []
             return
 
-        self.ctrls = [
-            DellUltraSharpCtrl(
+        fov_angles, fov_newer, features = DELL_DEV_FEATURES[self.usb_ids]
+        # the text_ids of the WB7022 controls are kept, so saved presets keep working
+        all_ctrls = {
+            'auto_framing': dell_switch(
                 'dell_ultrasharp_auto_framing',
                 'Auto Framing',
-                'menu',
                 'Intelligent scene analysis and facial tracking to zoom and pan the view when you move',
-                [
-                    BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_AUTO_FRAMING_OFF),
-                    BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_AUTO_FRAMING_ON),
-                ]
+                DELL_AUTO_FRAMING_OFF, DELL_AUTO_FRAMING_ON,
             ),
-            DellUltraSharpCtrl(
+            'camera_transition': dell_switch(
                 'dell_ultrasharp_camera_transition',
                 'Camera Transition',
-                'menu',
                 'It enables a smooth transition by panning and zooming when the camera readjusts your position in the frame',
-                [
-                    BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_CAMERA_TRANSITION_OFF),
-                    BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_CAMERA_TRANSITION_ON),
-                ]
+                DELL_CAMERA_TRANSITION_OFF, DELL_CAMERA_TRANSITION_ON,
             ),
-            DellUltraSharpCtrl(
+            'tracking_sensitivity': DellCtrl(
                 'dell_ultrasharp_tracking_sensitivity',
                 'Tracking Sensitivity',
                 'menu',
                 'Adjust how quickly you\'d like the camera to respond to your movement and readjust your position in the frame',
                 [
-                    BaseCtrlMenu('normal', 'Normal', DELL_ULTRASHARP_TRACKING_SENSITIVITY_NORMAL),
-                    BaseCtrlMenu('fast', 'Fast', DELL_ULTRASHARP_TRACKING_SENSITIVITY_FAST),
+                    BaseCtrlMenu('normal', 'Normal', DELL_TRACKING_SENSITIVITY_NORMAL),
+                    BaseCtrlMenu('fast', 'Fast', DELL_TRACKING_SENSITIVITY_FAST),
                 ]
             ),
-            DellUltraSharpCtrl(
+            'tracking_frame_size': DellCtrl(
                 'dell_ultrasharp_tracking_frame_size',
                 'Tracking Frame Size',
                 'menu',
                 'Adjust the frame size',
                 [
-                    BaseCtrlMenu('narrow', 'Narrow', DELL_ULTRASHARP_TRACKING_FRAME_SIZE_NARROW),
-                    BaseCtrlMenu('standard', 'Standard', DELL_ULTRASHARP_TRACKING_FRAME_SIZE_STANDARD),
+                    BaseCtrlMenu('narrow', 'Narrow', DELL_TRACKING_FRAME_SIZE_NARROW),
+                    BaseCtrlMenu('standard', 'Standard', DELL_TRACKING_FRAME_SIZE_STANDARD),
                 ]
             ),
-            DellUltraSharpCtrl(
+            'fov': DellCtrl(
                 'dell_ultrasharp_fov',
                 'FoV',
                 'menu',
                 'Angle selection for the camera\'s field of view',
-                [
-                    BaseCtrlMenu('65', '65°', DELL_ULTRASHARP_FOV_65),
-                    BaseCtrlMenu('78', '78°', DELL_ULTRASHARP_FOV_78),
-                    BaseCtrlMenu('90', '90°', DELL_ULTRASHARP_FOV_90),
-                ]
+                [BaseCtrlMenu(a, f'{a}°', dell_fov(v, fov_newer)) for a, v in fov_angles]
             ),
-            DellUltraSharpCtrl(
+            'hdr': dell_switch(
                 'dell_ultrasharp_hdr',
                 'HDR',
-                'menu',
                 'Enable High Dynamic Range to enhance image quality, particularly in extreme lighting conditions',
+                DELL_HDR_OFF, DELL_HDR_ON,
+            ),
+            'mic': DellCtrl(
+                'dell_mic',
+                'Enable built-in mic',
+                'menu',
+                'Enables the camera microphone. The camera restarts when this is switched',
                 [
-                    BaseCtrlMenu('off', 'Off', DELL_ULTRASHARP_HDR_OFF),
-                    BaseCtrlMenu('on', 'On', DELL_ULTRASHARP_HDR_ON),
+                    BaseCtrlMenu('off', 'Off', DELL_MIC_OFF),
+                    BaseCtrlMenu('on', 'On', DELL_MIC_ON),
+                ],
+                reopener=True,
+            ),
+            'background_blur': DellCtrl(
+                'dell_background_blur',
+                'Background Blur',
+                'menu',
+                'Save CPU by using this feature instead of background blur in conferencing apps',
+                [
+                    BaseCtrlMenu('off', 'Off', DELL_BACKGROUND_BLUR_OFF),
+                    BaseCtrlMenu('standard', 'Standard', DELL_BACKGROUND_BLUR_STANDARD),
+                    BaseCtrlMenu('portrait', 'Portrait', DELL_BACKGROUND_BLUR_PORTRAIT),
                 ]
             ),
-        ]
+            'group_view': dell_switch(
+                'dell_group_view',
+                'Group View',
+                'Group view',
+                DELL_GROUP_VIEW_OFF, DELL_GROUP_VIEW_ON,
+            ),
+            'smart_scene': dell_switch(
+                'dell_smart_scene',
+                'Smart Scene Detection',
+                'Smart scene detection',
+                DELL_SMART_SCENE_OFF, DELL_SMART_SCENE_ON,
+            ),
+            'ae_region': DellCtrl(
+                'dell_ae_region',
+                'Auto Exposure Region',
+                'menu',
+                'Face applies dynamic exposure to detected faces, Average adjusts the exposure of the entire image, Center emphasizes the central area',
+                [
+                    BaseCtrlMenu('face', 'Face', DELL_AE_REGION_FACE),
+                    BaseCtrlMenu('average', 'Average', DELL_AE_REGION_AVERAGE),
+                    BaseCtrlMenu('center', 'Center', DELL_AE_REGION_CENTER),
+                ]
+            ),
+            'desk_mode_auto': dell_switch(
+                'dell_desk_mode_auto',
+                'Desk Mode Auto',
+                'Desk mode, automatic',
+                DELL_DESK_MODE_AUTO_OFF, DELL_DESK_MODE_AUTO_ON,
+            ),
+            'desk_mode_manual': dell_switch(
+                'dell_desk_mode_manual',
+                'Desk Mode Manual',
+                'Desk mode, manual',
+                DELL_DESK_MODE_MANUAL_OFF, DELL_DESK_MODE_MANUAL_ON,
+            ),
+            'pip_auto': dell_switch(
+                'dell_pip_auto',
+                'PIP Auto',
+                'Picture-in-picture, automatic',
+                DELL_PIP_AUTO_OFF, DELL_PIP_AUTO_ON,
+            ),
+            'pip_manual': dell_switch(
+                'dell_pip_manual',
+                'PIP Manual',
+                'Picture-in-picture, manual',
+                DELL_PIP_MANUAL_OFF, DELL_PIP_MANUAL_ON,
+            ),
+            'pip_insert': dell_switch(
+                'dell_pip_insert',
+                'PIP Insert',
+                'Picture-in-picture insert',
+                DELL_PIP_INSERT_OFF, DELL_PIP_INSERT_ON,
+            ),
+            'mirror': dell_switch(
+                'dell_mirror',
+                'Mirror',
+                'Mirror your image horizontally',
+                DELL_MIRROR_OFF, DELL_MIRROR_ON,
+            ),
+            'flip': dell_switch(
+                'dell_flip',
+                'Flip',
+                'Flip your image vertically',
+                DELL_FLIP_OFF, DELL_FLIP_ON,
+            ),
+            'mic_noise_reduction': dell_switch(
+                'dell_mic_noise_reduction',
+                'Mic Noise Reduction',
+                'Removes background noise to allow your voice to be heard clearly',
+                DELL_MIC_NOISE_REDUCTION_OFF, DELL_MIC_NOISE_REDUCTION_ON,
+            ),
+            'mic_beamforming': dell_switch(
+                'dell_mic_beamforming',
+                'Mic Beamforming',
+                'Captures sound from one direction while minimizing noise from other directions',
+                DELL_MIC_BEAMFORMING_OFF, DELL_MIC_BEAMFORMING_ON,
+            ),
+        }
+
+        self.ctrls = [all_ctrls[f] for f in features]
+
+        mic = find_by_text_id(self.ctrls, 'dell_mic')
+        if mic is not None:
+            mic.value = self.read_switch(DELL_MIC_GROUP)
+
+    # returns 'on', 'off' or None when the camera does not answer
+    def read_switch(self, group):
+        query_xu_control(self.fd, self.unit_id, DELL_SET, UVC_SET_CUR, to_buf(dell_cmd(0xfe, group)))
+        answer = to_buf(bytes(DELL_LEN))
+        for _ in range(10):
+            time.sleep(0.025)
+            query_xu_control(self.fd, self.unit_id, DELL_GET, UVC_GET_CUR, answer)
+            if answer.raw[0] == 0xfe and answer.raw[1] == group:
+                return 'on' if answer.raw[2] else 'off'
+        return None
 
     def setup_ctrls(self, params, errs):
         if not self.supported():
@@ -1778,11 +1959,14 @@ class DellUltraSharpCtrls:
                 continue
             menu = find_by_text_id(ctrl.menu, v)
             if menu is None:
-                collect_warning(f'DellUltraSharpCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                collect_warning(f'DellCtrls: can\'t find {v} in {[c.text_id for c in ctrl.menu]}', errs)
+                continue
+            # switching the mic restarts the camera, skip it when nothing changes
+            if ctrl.reopener and ctrl.value == menu.text_id:
                 continue
             ctrl.value = menu.text_id
 
-            query_xu_control(self.fd, self.unit_id, DELL_ULTRASHARP_SET, UVC_SET_CUR, to_buf(menu.value))
+            query_xu_control(self.fd, self.unit_id, DELL_SET, UVC_SET_CUR, to_buf(menu.value))
 
     def get_ctrls(self):
         return self.ctrls
@@ -3127,7 +3311,7 @@ class CameraCtrls:
             self.fmt_ctrls,
             KiyoProCtrls(device, fd),
             LogitechCtrls(device, fd),
-            DellUltraSharpCtrls(device, fd),
+            DellCtrls(device, fd),
             AnkerWorkCtrls(device, fd),
             SystemdSaver(self),
             ColorPreset(self),
