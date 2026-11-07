@@ -568,7 +568,9 @@ class V4L2Camera(Thread):
             logging.error(f'Video buffer request failed on {self.device}: {e}')
             sys.exit(3)
 
-        if req.count != self.num_cap_bufs:
+        # Drivers may grant fewer buffers than requested (v4l2loopback
+        # caps them at max_buffers, 2 by default). Two are enough to stream.
+        if req.count < 2:
             logging.error(f'Insufficient buffer memory on {self.device}')
             sys.exit(3)
 
